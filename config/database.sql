@@ -75,5 +75,5 @@ CREATE TABLE detail_surat_jalan (
 -- akun user superadmin dengan password 'superadmin123' (hashed)
 INSERT INTO users (username, password, role)
 VALUES ('superadmin', 
-        '$2y$10$Q1kDgk2lbhhEim5r7i6z7uL7Dz6z8C2AEeM9pEQBgeG8UmtQhT9/O', 
+        '$2y$10$9hiJ9WRAuatvqpDVj6P0xOHhfafO8eMcVhJ28NbnppO6VCzJtnOWq', 
         'superadmin');
