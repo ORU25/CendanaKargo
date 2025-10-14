@@ -1,8 +1,8 @@
-# Aktifkan URL Rewriting
+# Aktifkan URL Rewriting dan matikan listing folder
 Options -Indexes
 RewriteEngine On
 
-# Pastikan base path sesuai dengan folder project kamu
+# Base path project
 RewriteBase /CendanaKargo/
 
 # Hapus ekstensi .php dari URL
@@ -12,3 +12,5 @@ RewriteRule ^(.*)$ $1.php [L]
 
 # Redirect folder index.php ke root folder
 RewriteRule ^(.*)/index$ /$1/ [R=301,L]
+
+RewriteRule ^(components|Bootstrap|config|templates)/ - [F,L]
