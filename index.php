@@ -3,6 +3,7 @@
     include 'config/database.php';
     include 'templates/header.php';
 ?>
+
 <?php if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
     $type = "danger";
     $message = "You are not authorized to access that page. Please log in with appropriate credentials.";

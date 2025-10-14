@@ -49,7 +49,7 @@
   <div class="container d-flex justify-content-center align-items-center min-vh-100">
     <div class="card shadow p-4" style="width: 350px; border-top: 5px solid #dc3545;">
       <h3 class="text-center text-danger mb-4">Login</h3>
-      <form action="login.php" method="post">
+      <form action="login" method="post">
         <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid'){ 
             $type = "danger";
             $message = "Invalid username or password.";
