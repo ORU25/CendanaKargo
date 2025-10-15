@@ -1,0 +1,32 @@
+<?php
+    session_start();
+    if(!isset($_SESSION['username'])){
+        header("Location: ../../../auth/login.php");
+        exit;
+    }
+
+    if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
+        header("Location: ../../../?error=unauthorized");
+        exit;
+    }
+
+    include '../../../config/database.php';
+
+    if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])){
+        $id = intval($_POST['id']);
+        try {
+            $sql = "DELETE FROM kantor_cabang WHERE id = $id";
+            $conn->query($sql);
+            header("Location: ./?success=deleted");
+            exit;
+        } catch (mysqli_sql_exception $e) {
+            // Tangkap error dan arahkan dengan pesan error
+            $errorMsg = urlencode($e->getMessage());
+            header("Location: ./?error=$errorMsg");
+            exit;
+        }
+    } else {
+        header("Location: ./");
+        exit;
+    }
+?>

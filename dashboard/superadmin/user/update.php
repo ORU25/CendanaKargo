@@ -32,35 +32,40 @@
     }
 
     # --- Proses update ---
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' ) {
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = intval($_POST['id']);
         $username = trim($_POST['username']);
         $role = $_POST['role'];
-        $id_cabang = $_POST['id_cabang'];
+        $id_cabang = !empty($_POST['id_cabang']) ? $_POST['id_cabang'] : null;
 
-        # Cek username duplikat (selain user saat ini)
-        $username_safe = mysqli_real_escape_string($conn, $username);
-        $check = "SELECT id FROM user WHERE username = '$username_safe' AND id != $id";
-        $result = $conn->query($check);
-        if ($result->num_rows > 0) {
+        $check_stmt = $conn->prepare("SELECT id FROM user WHERE username = ? AND id != ?");
+        $check_stmt->bind_param("si", $username, $id);
+        $check_stmt->execute();
+        $check_stmt->store_result();
+
+        if ($check_stmt->num_rows > 0) {
             header("Location: update?id=$id&error=username_taken");
             exit;
         }
+        $check_stmt->close();
 
-        # Ambil data user saat ini
-        $sql = "SELECT * FROM user WHERE id = $id";
-        $result = $conn->query($sql);
-        if ($result->num_rows > 0) {
-            $user = $result->fetch_assoc();
-        } else {
+        $get_stmt = $conn->prepare("SELECT password FROM user WHERE id = ?");
+        $get_stmt->bind_param("i", $id);
+        $get_stmt->execute();
+        $result = $get_stmt->get_result();
+
+        if ($result->num_rows === 0) {
             header("Location: ./?error=not_found");
             exit;
         }
-        
-        # Cek password
+
+        $user = $result->fetch_assoc();
+        $get_stmt->close();
+
         if (!empty($_POST['password']) && !empty($_POST['confirm_pasword'])) {
             $password = $_POST['password'];
             $confirm_password = $_POST['confirm_pasword'];
+
             if ($password !== $confirm_password) {
                 header("Location: update?id=$id&error=password_mismatch");
                 exit;
@@ -71,9 +76,10 @@
             $password_hash = $user['password'];
         }
 
-        # Update data
-        $stmt = $conn->prepare("UPDATE user SET username=?, password=?, role=?, id_cabang=? WHERE id=?");
-        $stmt->bind_param("ssssi", $username, $password_hash, $role, $id_cabang, $id);
+        $id_cabang_param = $id_cabang ? (int)$id_cabang : null;
+
+        $stmt = $conn->prepare("UPDATE user SET username = ?, password = ?, role = ?, id_cabang = ? WHERE id = ?");
+        $stmt->bind_param("sssii", $username, $password_hash, $role, $id_cabang_param, $id);
 
         if ($stmt->execute()) {
             header("Location: ./?success=updated");
@@ -82,7 +88,9 @@
             header("Location: update?id=$id&error=failed");
             exit;
         }
+
     }
+
 ?>
 
 <?php
@@ -164,18 +172,22 @@
                     <option value="superAdmin" <?= ($user['role'] ?? '') === 'superAdmin' ? 'selected' : '' ?>>Super Admin</option>
                 </select>
             </div>
-            <div class="mb-3">
+           <div class="mb-3">
                 <label for="cabang" class="form-label">Kantor Cabang</label>
-                <select class="form-select" id="cabang" name="id_cabang" required>
-                    <option value="">Select Cabang</option>
-                    <?php foreach ($cabangs as $cabang): ?>
-                        <option 
-                            value="<?= $cabang['id']; ?>" 
-                            <?= (isset($user['id_cabang']) && $user['id_cabang'] == $cabang['id']) ? 'selected' : '' ?>
-                        >
-                            <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                        </option>
-                    <?php endforeach; ?>
+                <select class="form-select" id="cabang" name="id_cabang">
+                    <option value="">Tidak ada (Pusat)</option>
+                    <?php if (!empty($cabangs)): ?>
+                        <?php foreach ($cabangs as $cabang): ?>
+                            <option 
+                                value="<?= htmlspecialchars($cabang['id']); ?>" 
+                                <?= (!empty($user['id_cabang']) && $user['id_cabang'] == $cabang['id']) ? 'selected' : '' ?>
+                            >
+                                <?= htmlspecialchars($cabang['nama_cabang']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <option disabled>Tidak ada cabang tersedia</option>
+                    <?php endif; ?>
                 </select>
             </div>
             <p class="text-danger">Kosongkan password jika tidak ingin mengganti</p>

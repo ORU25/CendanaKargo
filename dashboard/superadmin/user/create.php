@@ -21,18 +21,18 @@
         $cabangs = [];
     }
 
-    if($_SERVER['REQUEST_METHOD'] === 'POST'){
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $username = trim($_POST['username']);
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_pasword']; 
         $role = $_POST['role'];
-        $id_cabang = $_POST['id_cabang'];
+        $id_cabang = !empty($_POST['id_cabang']) ? $_POST['id_cabang'] : null;
 
         $username_safe = mysqli_real_escape_string($conn, $username);
         $check = "SELECT id FROM user WHERE username = '$username_safe'";
         $result = $conn->query($check);
-        if($result->num_rows > 0){
+        if ($result->num_rows > 0) {
             header("Location: create?error=username_taken");
             exit;
         }
@@ -44,21 +44,24 @@
 
         $password_hash = password_hash($password, PASSWORD_BCRYPT);
 
-        $password_safe = mysqli_real_escape_string($conn, $password_hash);
-        $role_safe = mysqli_real_escape_string($conn, $role);
-        $id_cabang_safe = mysqli_real_escape_string($conn, $id_cabang);
+        $stmt = $conn->prepare("INSERT INTO user (username, password, role, id_cabang) VALUES (?, ?, ?, ?)");
 
-        $sql = "INSERT INTO user (username, password, role, id_cabang) 
-                VALUES ('$username_safe', '$password_safe', '$role_safe', '$id_cabang_safe')";
+        $id_cabang_param = $id_cabang ? (int)$id_cabang : null;
 
-        if ($conn->query($sql) === TRUE) {
+        $stmt->bind_param("sssi", $username, $password_hash, $role, $id_cabang_param);
+
+        $stmt->execute();
+
+        if ($stmt->affected_rows > 0) {
             header("Location: ./?success=created");
             exit;
         } else {
             header("Location: create?error=failed");
             exit;
         }
+
     }
+
 ?>
 
 <?php
@@ -141,7 +144,7 @@
             </div>
             <div class="mb-3">
                 <label for="cabang" class="form-label">Kantor Cabang</label>
-                <select class="form-select" id="cabang" name="id_cabang" required>
+                <select class="form-select" id="cabang" name="id_cabang">
                     <option value="">Select Cabang</option>
                     <?php foreach ($cabangs as $cabang): ?>
                         <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>

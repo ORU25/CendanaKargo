@@ -56,9 +56,19 @@
             $message = "Kantor cabang berhasil diperbarui";
             include '../../../components/alert.php';
         }?>
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'deleted'){
+            $type = "success";
+            $message = "Kantor cabang berhasil dihapus";
+            include '../../../components/alert.php';
+        }?>
         <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
             $type = "danger";
             $message = "Kantor cabang tidak ditemukan";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error'])){
+            $type = "danger";
+            $message = "Error:".$_GET['error'];
             include '../../../components/alert.php';
         }?>
         <h1>Kantor Cabang</h1>
@@ -84,9 +94,35 @@
                     <td><?= htmlspecialchars($cabang['telp_cabang']); ?></td>
                     <td>
                         <a href="update?id=<?= $cabang['id']; ?>" class="btn btn-sm btn-primary ">Edit</a>
-                        <a href="delete?id=<?= $cabang['id']; ?>" class="btn btn-sm btn-danger ">Delete</a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $cabang['id']; ?>" class="btn btn-sm btn-danger">Delete</button>
                     </td>
                 </tr>
+                <!-- Delete Modal -->
+                <div class="modal fade" id="delete<?= $cabang['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $cabang['id']; ?>" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="deleteLabel<?= $cabang['id']; ?>">
+                                    Konfirmasi Hapus cabang
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                <p>Apakah Anda yakin ingin menghapus cabang <strong><?= htmlspecialchars($cabang['nama_cabang']); ?></strong>?</p>
+                                <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+
+                            <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <form action="delete" method="POST" class="d-inline">
+                                        <input type="hidden" name="id" value="<?= $cabang['id']; ?>">
+                                        <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
+                                    </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php endforeach; ?>
                 <?php if (empty($cabangs)): ?>
                 <tr>

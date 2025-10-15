@@ -54,6 +54,37 @@
             $message = "User berhasil ditambahkan";
             include '../../../components/alert.php';
         }?>
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'){
+            $type = "success";
+            $message = "User berhasil diperbarui";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
+            $type = "danger";
+            $message = "User tidak ditemukan";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
+            $type = "danger";
+            $message = "Gagal melakukan operasi pada user";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_id'){
+            $type = "danger";
+            $message = "ID user tidak valid";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'deleted'){
+            $type = "success";
+            $message = "User berhasil dihapus";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'cannot_delete_self'){
+            $type = "success";
+            $message = "Tidak dapat menghapus user sendiri";
+            include '../../../components/alert.php';
+        }?>
+        
         <h1>User</h1>
         <a href="create" class="btn btn-success mb-3">Add New User</a>
         <table class="table">
@@ -75,9 +106,35 @@
                     <td><?= htmlspecialchars($user['kode_cabang'] ?? '-'); ?></td>
                     <td>
                         <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">Edit</a>
-                        <a href="delete?id=<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">Delete</a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">Delete</button>
                     </td>
                 </tr>
+                <!-- Delete Modal -->
+                <div class="modal fade" id="delete<?= $user['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $user['id']; ?>" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="deleteLabel<?= $user['id']; ?>">
+                                    Konfirmasi Hapus User
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+
+                            <div class="modal-body text-center">
+                                <p>Apakah Anda yakin ingin menghapus user <strong><?= htmlspecialchars($user['username']); ?></strong>?</p>
+                                <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+                            </div>
+
+                            <div class="modal-footer justify-content-center">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <form action="delete" method="POST" class="d-inline">
+                                        <input type="hidden" name="id" value="<?= $user['id']; ?>">
+                                        <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
+                                    </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <?php endforeach; ?>
             </tbody>
         </table>
