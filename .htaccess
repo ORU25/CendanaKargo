@@ -13,4 +13,4 @@ RewriteRule ^(.*)$ $1.php [L]
 # Redirect folder index.php ke root folder
 RewriteRule ^(.*)/index$ /$1/ [R=301,L]
 
-RewriteRule ^(components|Bootstrap|config|templates)/ - [F,L]
+RewriteRule ^(components|config|templates)/ - [F,L]
