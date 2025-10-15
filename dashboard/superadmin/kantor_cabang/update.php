@@ -61,43 +61,11 @@
 ?>
 
 <?php
+    $page = "kantor_cabang";
     include '../../../templates/header.php';
+    include '../../../components/navDashboard.php';
+    include '../../../components/sidebar_offcanvas.php';
 ?>
-<nav class="navbar navbar-dark bg-danger">
-  <div class="container-fluid">
-        <div class="d-flex align-items-center">
-            
-            <a class="navbar-brand m-0" href="<?= BASE_URL; ?>">CendanaKargo</a>
-        </div>
-    <div class="d-lg-flex">
-        <span class="navbar-text text-white me-3 d-none d-lg-block">
-            <?= $_SESSION['username'];?>
-        </span>
-        <button class="navbar-toggler d-lg-none me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas" aria-controls="sidebarOffcanvas" aria-label="Toggle sidebar">
-                <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-  </div>
-</nav>
-
-<!-- Sidebar Offcanvas -->
-<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="sidebarOffcanvasLabel">Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body p-0">
-        <div class="list-group list-group-flush">
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/" class="list-group-item list-group-item-action">Dashboard</a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="list-group-item list-group-item-action">Pengiriman</a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" class="list-group-item list-group-item-action">Surat Jalan</a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" class="list-group-item list-group-item-action">Tarif</a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" class="list-group-item list-group-item-action fw-bold text-danger">Kantor Cabang</a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" class="list-group-item list-group-item-action">User</a>
-        </div>
-        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger mt-3 ms-3">Logout</a>
-    </div>
-</div>
 
 <div class="container-fluid">
   <div class="row">
