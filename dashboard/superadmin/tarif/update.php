@@ -49,6 +49,20 @@
         $tarif_tambahan_perkg_safe = mysqli_real_escape_string($conn, $tarif_tambahan_perkg);
         $status_safe = mysqli_real_escape_string($conn, $status);
 
+        $id = intval($_POST['id']);
+        $checkQuery = "SELECT COUNT(*) AS total 
+                FROM tarif_pengiriman 
+                WHERE id_cabang_asal = '$asal_safe' 
+                  AND id_cabang_tujuan = '$tujuan_safe' 
+                  AND id != '$id'"; 
+        $checkResult = $conn->query($checkQuery);
+        $row = $checkResult->fetch_assoc();
+
+        if($row['total'] > 0){
+            header("Location: update?id=$id&error=kode_taken");
+            exit;
+        }
+
         $sql = "UPDATE tarif_pengiriman SET 
                 id_cabang_asal = '$asal_safe', 
                 id_cabang_tujuan = '$tujuan_safe', 
@@ -65,7 +79,6 @@
             header("Location: update?error=failed");
             exit;
         }
-
     }
 
 ?>
