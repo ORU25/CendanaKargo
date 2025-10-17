@@ -97,35 +97,9 @@
                     <td>
                         <a href="detail?id=<?= $pengiriman['id']; ?>" class="btn btn-sm btn-secondary ">Detail</a>
                         <a href="update?id=<?= $pengiriman['id']; ?>" class="btn btn-sm btn-primary ">Edit</a>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $pengiriman['id']; ?>" class="btn btn-sm btn-danger">Delete</button>
                     </td>
                 </tr>
-                <!-- Delete Modal -->
-                <div class="modal fade" id="delete<?= $pengiriman['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $pengiriman['id']; ?>" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
-                        <div class="modal-content">
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title" id="deleteLabel<?= $pengiriman['id']; ?>">
-                                    Konfirmasi Hapus cabang
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-
-                            <div class="modal-body text-center">
-                                <p>Apakah Anda yakin ingin menghapus cabang <strong><?= htmlspecialchars($pengiriman['nama_cabang']); ?></strong>?</p>
-                                <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
-                            </div>
-
-                            <div class="modal-footer justify-content-center">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <form action="delete" method="POST" class="d-inline">
-                                        <input type="hidden" name="id" value="<?= $pengiriman['id']; ?>">
-                                        <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
-                                    </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                
                 <?php endforeach; ?>
                 <?php if (empty($pengirimans)): ?>
                 <tr>
