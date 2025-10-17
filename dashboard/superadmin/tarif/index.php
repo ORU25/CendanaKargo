@@ -79,7 +79,7 @@
         }?>
 
         <h1>Tarif</h1>
-        <a href="create.php" class="btn btn-success mb-3">Add New Cabang</a>
+        <a href="create" class="btn btn-success mb-3">Add New Tarif</a>
         <table class="table">
             <thead>
                 <tr>
@@ -99,9 +99,9 @@
                     <td><?= htmlspecialchars($tarif['id']); ?></td>
                     <td><?= htmlspecialchars($tarif['dari_cabang']); ?></td>
                     <td><?= htmlspecialchars($tarif['ke_cabang']); ?></td>
-                    <td><?= htmlspecialchars($tarif['tarif_dasar']); ?></td>
+                    <td class="tarif"><?= htmlspecialchars($tarif['tarif_dasar']); ?></td>
                     <td><?= htmlspecialchars($tarif['batas_berat_dasar']); ?></td>
-                    <td><?= htmlspecialchars($tarif['tarif_tambahan_perkg']); ?></td>
+                    <td class="tarif"><?= htmlspecialchars($tarif['tarif_tambahan_perkg']); ?></td>
                     <td><?= htmlspecialchars($tarif['status']); ?></td>
                     <td>
                         <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary ">Edit</a>
@@ -145,6 +145,18 @@
     </div>
   </div>
 </div>
+
+<script>
+    const tarifElements = document.getElementsByClassName('tarif');
+
+    for (let i = 0; i < tarifElements.length; i++) {
+        const value = parseFloat(tarifElements[i].textContent); 
+        tarifElements[i].textContent = new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR'
+        }).format(value);
+    }
+</script>
 <?php
     include '../../../templates/footer.php';
 ?>

@@ -1,4 +1,4 @@
-use cendanalintaskargo;
+use cendanakargo;
 
 CREATE TABLE Kantor_cabang (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -38,7 +38,6 @@ CREATE TABLE Pengiriman (
     user VARCHAR(100),
     cabang_pengirim VARCHAR(100),
     cabang_penerima VARCHAR(100),
-    tarif_dasar DECIMAL(10,2),
     no_resi VARCHAR(30) UNIQUE NOT NULL,
     nama_pengirim VARCHAR(100) NOT NULL,
     telp_pengirim VARCHAR(20),
@@ -50,7 +49,7 @@ CREATE TABLE Pengiriman (
     jasa_pengiriman VARCHAR(100),
     tanggal DATE NOT NULL,
     total_tarif DECIMAL(10,2) NOT NULL,
-    status varchar(50) DEFAULT 'dalam proses',
+    status varchar(50) DEFAULT 'proses',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,

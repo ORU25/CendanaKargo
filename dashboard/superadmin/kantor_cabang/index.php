@@ -66,13 +66,8 @@
             $message = "Kantor cabang tidak ditemukan";
             include '../../../components/alert.php';
         }?>
-        <?php if(isset($_GET['error'])){
-            $type = "danger";
-            $message = "Error:".$_GET['error'];
-            include '../../../components/alert.php';
-        }?>
         <h1>Kantor Cabang</h1>
-        <a href="create.php" class="btn btn-success mb-3">Add New Cabang</a>
+        <a href="create" class="btn btn-success mb-3">Add New Cabang</a>
         <table class="table">
             <thead>
                 <tr>
