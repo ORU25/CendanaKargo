@@ -9,11 +9,19 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     
     // Handle update status
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
+            exit;
+        }
         $id_update = (int)($_POST['id'] ?? 0);
         $status_baru = trim((string)($_POST['status'] ?? ''));
         if ($id_update > 0 && $status_baru !== '') {
@@ -226,6 +234,7 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <form method="POST" action="">
+          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
           <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
           <input type="hidden" name="update_status" value="1">
           

@@ -9,6 +9,10 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     $title = "Dashboard - Cendana Kargo";
@@ -33,6 +37,10 @@
 
     # --- Proses update ---
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: update?id=" . intval($_GET['id']) . "&error=failed");
+            exit;
+        }
         $id = intval($_POST['id']);
         $username = trim($_POST['username']);
         $role = $_POST['role'];
@@ -133,6 +141,7 @@
         }?>
         <h1>Update <?= isset($user['username']) ? htmlspecialchars($user['username']) : '' ?></h1>
         <form action="update" method="POST" class="col-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="hidden" name="id" value="<?= $user['id'] ?? '' ?>">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>

@@ -1,7 +1,7 @@
 <?php
     session_start();
     if(!isset($_SESSION['username'])){
-        header("Location: ../../auth/login.php");
+        header("Location: ../../auth/login");
         exit;
     }
 
@@ -268,18 +268,18 @@
                             <tbody>
                                 <?php if($recent_shipments->num_rows > 0): ?>
                                     <?php while($row = $recent_shipments->fetch_assoc()): ?>
-                                        <tr>
-                                            <td class="px-3 fw-bold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                                        <tr class="text-capitalize">
+                                            <td class="px-3 fw-bold "><span class="badge bg-dark"><?= htmlspecialchars($row['no_resi']); ?></span></td>
                                             <td><?= htmlspecialchars($row['nama_barang']); ?></td>
                                             <td><?= htmlspecialchars($row['nama_pengirim']); ?></td>
                                             <td><?= htmlspecialchars($row['nama_penerima']); ?></td>
                                             <td>
-                                                <span class="badge bg-success"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
+                                                <span class="badge bg-primary"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
                                                 →
-                                                <span class="badge bg-warning text-dark"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
+                                                <span class="badge bg-success"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
                                             </td>
                                             <td><?= date('d/m/Y', strtotime($row['tanggal'])); ?></td>
-                                            <td>
+                                            <td class="">
                                                 <?php
                                                 $badgeClass = 'secondary';
                                                 switch(strtolower($row['status'])) {

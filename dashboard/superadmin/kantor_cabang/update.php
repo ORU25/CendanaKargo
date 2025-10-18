@@ -9,6 +9,10 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     $title = "Dashboard - Cendana Kargo";
@@ -26,6 +30,10 @@
     }
 
     if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: update?id=" . intval($_GET['id']) . "&error=failed");
+            exit;
+        }
         $id = intval($_POST['id']);
         $kode_cabang = trim($_POST['kode_cabang']);
         $nama_cabang = trim($_POST['nama_cabang']);
@@ -95,6 +103,7 @@
         }?>
         <h1>Edit Kantor Cabang <?= isset($cabang['nama_cabang']) ? htmlspecialchars($cabang['nama_cabang']) : '' ?></h1>
         <form action="update" method="POST" class="col-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
             <input type="hidden" name="id" value="<?= $id; ?>">
             <div class="mb-3">
                 <label for="kode_cabang" class="form-label">Kode Cabang</label>

@@ -9,6 +9,10 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     $title = "Dashboard - Cendana Kargo";
@@ -135,6 +139,7 @@
                             <div class="modal-footer justify-content-center">
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                     <form action="delete" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
                                         <input type="hidden" name="id" value="<?= $user['id']; ?>">
                                         <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
                                     </form>

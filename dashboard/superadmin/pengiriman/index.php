@@ -149,6 +149,7 @@
                                     <th>Nama Barang</th>
                                     <th>Pengirim</th>
                                     <th>Penerima</th>
+                                    <th>Tujuan</th>
                                     <th class="text-end">Total Tarif</th>
                                     <th>Tanggal</th>
                                     <th>Status</th>
@@ -175,12 +176,13 @@
                                             case 'dibatalkan': $badgeClass = 'danger'; break;
                                         }
                                     ?>
-                                    <tr>
+                                    <tr class="text-capitalize">
                                         <td class="px-4 fw-semibold"><?= (int)$p['id']; ?></td>
                                         <td><span class="badge bg-dark"><?= htmlspecialchars($p['no_resi']); ?></span></td>
                                         <td class="fw-semibold"><?= htmlspecialchars($p['nama_barang']); ?></td>
                                         <td class="small"><?= htmlspecialchars($p['nama_pengirim']); ?></td>
                                         <td class="small"><?= htmlspecialchars($p['nama_penerima']); ?></td>
+                                        <td class="small"><?= htmlspecialchars($p['cabang_penerima']); ?></td>
                                         <td class="text-end fw-semibold">Rp <?= number_format($p['total_tarif'], 0, ',', '.'); ?></td>
                                         <td class="small"><?= date('d/m/Y', strtotime($p['tanggal'])); ?></td>
                                         <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>

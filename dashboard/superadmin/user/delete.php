@@ -13,6 +13,10 @@
     include '../../../config/database.php';
 
     if($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete'])){
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: ./?error=failed");
+            exit;
+        }
         $id = intval($_POST['id']);
 
         // Cegah superadmin menghapus dirinya sendiri

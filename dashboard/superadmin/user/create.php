@@ -9,6 +9,10 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     $title = "Dashboard - Cendana Kargo";
@@ -22,7 +26,10 @@
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: create?error=failed");
+            exit;
+        }
         $username = trim($_POST['username']);
         $password = $_POST['password'];
         $confirm_password = $_POST['confirm_pasword']; 
@@ -103,6 +110,7 @@
         }?>
         <h1>Create New User</h1>
         <form action="create" method="POST" class="col-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
             <div class="mb-3">
                 <label for="username" class="form-label">Username</label>
                 <input type="text" class="form-control" id="username" name="username" required>

@@ -14,8 +14,15 @@
             exit;
         }
     }
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: login.php?error=invalid");
+            exit;
+        }
         $username = $_POST['username'];
         $password = $_POST['password'];
 
@@ -55,6 +62,7 @@
             $message = "Invalid username or password.";
             include '../components/alert.php';
         }?>
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
         <div class="mb-3">
           <label for="username" class="form-label fw-semibold">Username</label>
           <input type="text" class="form-control" id="username" name="username" placeholder="Masukkan username" required>

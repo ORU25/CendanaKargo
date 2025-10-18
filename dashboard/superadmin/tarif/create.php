@@ -9,6 +9,10 @@
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
     $title = "Dashboard - Cendana Kargo";
@@ -22,6 +26,10 @@
     }
     
     if($_SERVER['REQUEST_METHOD'] === 'POST'){
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header("Location: create?error=failed");
+            exit;
+        }
         $asal = trim($_POST['id_cabang_asal']);
         $tujuan = trim($_POST['id_cabang_tujuan']);
         $tarif = trim($_POST['tarif_dasar']);
@@ -95,6 +103,7 @@
         }?>
         <h1>Tambah Tarif</h1>
         <form action="create" method="POST" class="col-5">
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
             <div class="mb-3">
                 <label for="id_cabang_asal" class="form-label">Dari Cabang</label>
                 <select class="form-select" id="id_cabang_asal" name="id_cabang_asal" required>
