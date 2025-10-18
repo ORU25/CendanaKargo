@@ -222,7 +222,6 @@
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <form method="POST" action="">
-          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
           <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
           <input type="hidden" name="update_status" value="1">
           
