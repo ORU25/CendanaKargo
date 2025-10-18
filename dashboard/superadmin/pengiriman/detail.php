@@ -178,9 +178,13 @@
                                 <small class="text-muted d-block mb-1">Nama</small>
                                 <p class="mb-0 fw-semibold"><?= htmlspecialchars($pengiriman['nama_pengirim']); ?></p>
                             </div>
-                            <div>
+                            <div class="mb-3">
                                 <small class="text-muted d-block mb-1">Telepon</small>
                                 <p class="mb-0"><?= htmlspecialchars($pengiriman['telp_pengirim'] ?? '-'); ?></p>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block mb-1">Cabang Asal</small>
+                                <span class="badge bg-primary"><?= htmlspecialchars($pengiriman['cabang_pengirim']); ?></span>
                             </div>
                         </div>
                     </div>
@@ -200,9 +204,13 @@
                                 <small class="text-muted d-block mb-1">Nama</small>
                                 <p class="mb-0 fw-semibold"><?= htmlspecialchars($pengiriman['nama_penerima']); ?></p>
                             </div>
-                            <div>
+                            <div class="mb-3">
                                 <small class="text-muted d-block mb-1">Telepon</small>
                                 <p class="mb-0"><?= htmlspecialchars($pengiriman['telp_penerima'] ?? '-'); ?></p>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block mb-1">Cabang Tujuan</small>
+                                <span class="badge bg-success"><?= htmlspecialchars($pengiriman['cabang_penerima']); ?></span>
                             </div>
                         </div>
                     </div>
