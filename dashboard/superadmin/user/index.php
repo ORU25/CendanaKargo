@@ -86,7 +86,10 @@
         }?>
         
         <h1>User</h1>
-        <a href="create" class="btn btn-success mb-3">Add New User</a>
+        <a href="create" class="btn btn-success mb-3">
+            <i class="fa-solid fa-plus"></i>
+            Add New User
+        </a>
         <table class="table">
             <thead>
                 <tr>
@@ -105,8 +108,12 @@
                     <td><?= htmlspecialchars($user['role']); ?></td>
                     <td><?= htmlspecialchars($user['kode_cabang'] ?? '-'); ?></td>
                     <td>
-                        <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">Edit</a>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">Delete</button>
+                        <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 <!-- Delete Modal -->

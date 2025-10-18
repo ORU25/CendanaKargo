@@ -67,7 +67,10 @@
             include '../../../components/alert.php';
         }?>
         <h1>Kantor Cabang</h1>
-        <a href="create" class="btn btn-success mb-3">Add New Cabang</a>
+        <a href="create" class="btn btn-success mb-3">
+            <i class="fa-solid fa-plus"></i>    
+            Add New Cabang
+        </a>
         <table class="table">
             <thead>
                 <tr>
@@ -88,8 +91,12 @@
                     <td><?= htmlspecialchars($cabang['alamat_cabang']); ?></td>
                     <td><?= htmlspecialchars($cabang['telp_cabang']); ?></td>
                     <td>
-                        <a href="update?id=<?= $cabang['id']; ?>" class="btn btn-sm btn-primary ">Edit</a>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $cabang['id']; ?>" class="btn btn-sm btn-danger">Delete</button>
+                        <a href="update?id=<?= $cabang['id']; ?>" class="btn btn-sm btn-primary ">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $cabang['id']; ?>" class="btn btn-sm btn-danger">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 <!-- Delete Modal -->

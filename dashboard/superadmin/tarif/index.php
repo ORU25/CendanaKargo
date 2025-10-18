@@ -79,7 +79,10 @@
         }?>
 
         <h1>Tarif</h1>
-        <a href="create" class="btn btn-success mb-3">Add New Tarif</a>
+        <a href="create" class="btn btn-success mb-3">
+            <i class="fa-solid fa-plus"></i>    
+            Add New Tarif
+        </a>
         <table class="table">
             <thead>
                 <tr>
@@ -104,8 +107,12 @@
                     <td class="tarif"><?= htmlspecialchars($tarif['tarif_tambahan_perkg']); ?></td>
                     <td><?= htmlspecialchars($tarif['status']); ?></td>
                     <td>
-                        <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary ">Edit</a>
-                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $tarif['id']; ?>" class="btn btn-sm btn-danger">Delete</button>
+                        <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary ">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </a>
+                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $tarif['id']; ?>" class="btn btn-sm btn-danger">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 <!-- Delete Modal -->

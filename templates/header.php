@@ -11,6 +11,7 @@
     }
     ?>
     <link rel="stylesheet" href="<?= BASE_URL; ?>Bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?= BASE_URL; ?>Bootstrap/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL; ?>/assets/favicon.ico">
 </head>
 <body>

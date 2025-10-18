@@ -98,7 +98,7 @@
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
         ");
 
-        $user = $_SESSION['username'];
+        $username = $_SESSION['username'];
         $stmt->bind_param(
             "iiiisssssssssidss",
             $id_user,             // i
@@ -106,8 +106,8 @@
             $tujuan,              // i
             $data_tarif['id'],    // i
             $username,            // s
-            $namaCabangAsal,      // s
-            $namaCabangTujuan,    // s
+            $nama_cabang_asal,      // s
+            $nama_cabang_tujuan,    // s
             $no_resi,             // s
             $nama_pengirim,       // s
             $telp_pengirim,       // s
