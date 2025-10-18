@@ -106,9 +106,7 @@
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
                     <a href="create.php" class="btn btn-success">
-                        <svg width="16" height="16" fill="currentColor" class="me-1">
-                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-                        </svg>
+                        <i class="fa-solid fa-plus"></i>
                         Tambah Pengiriman
                     </a>
                 </div>
@@ -123,18 +121,14 @@
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
-                                <svg width="16" height="16" fill="currentColor" class="me-1">
-                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
-                                </svg>
+                                <i class="fa-solid fa-magnifying-glass"></i>
                                 Cari
                             </button>
                         </div>
                         <?php if ($search): ?>
                         <div class="col-12">
                             <a href="./" class="btn btn-sm btn-outline-secondary">
-                                <svg width="14" height="14" fill="currentColor" class="me-1">
-                                    <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
-                                </svg>
+                                <i class="fa-solid fa-x"></i>
                                 Hapus Pencarian
                             </a>
                         </div>
@@ -165,10 +159,7 @@
                                 <?php if (empty($pengirimans)): ?>
                                     <tr>
                                         <td colspan="9" class="text-center py-5 text-muted">
-                                            <svg width="48" height="48" fill="currentColor" class="mb-3 opacity-50">
-                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                                <path d="M7.002 11a1 1 0 1 1 2 0 1 1 0 0 1-2 0zM7.1 4.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 4.995z"/>
-                                            </svg>
+                                            <i class="fa-solid fa-box"></i>
                                             <p class="mb-0">Tidak ada data pengiriman<?= $search ? ' yang cocok dengan pencarian' : '' ?>.</p>
                                         </td>
                                     </tr>
