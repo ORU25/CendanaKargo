@@ -69,7 +69,7 @@
 ?>
 
 <?php  
-    $page = "kantor_cabang";
+    $page = "tarif";
     include '../../../templates/header.php';
     include '../../../components/navDashboard.php';
     include '../../../components/sidebar_offcanvas.php';
@@ -77,18 +77,7 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-lg-2 d-none d-lg-block bg-light border-end vh-100">
-      <div class="list-group list-group-flush">
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/" class="list-group-item list-group-item-action">Dashboard</a>
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="list-group-item list-group-item-action">Pengiriman</a>
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" class="list-group-item list-group-item-action">Surat Jalan</a>
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" class="list-group-item list-group-item-action fw-bold text-danger">Tarif</a>
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" class="list-group-item list-group-item-action">Kantor Cabang</a>
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" class="list-group-item list-group-item-action">User</a>
-      </div>
-        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger mt-3">Logout</a>
-    </div>
-
+    <?php include '../../../components/sidebar.php'; ?>
     <!-- Konten utama -->
     <div class="col-lg-10">
         <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
