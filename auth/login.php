@@ -35,6 +35,14 @@
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+            if(isset($user['id_cabang'])){
+              $sqlCabang = sprintf("SELECT nama_cabang FROM kantor_cabang WHERE id = %d", $user['id_cabang']);
+              $resultCabang = $conn->query($sqlCabang);
+              if($row = $resultCabang->fetch_assoc()){
+                  $_SESSION['id_cabang'] = $user['id_cabang'];
+                  $_SESSION['cabang'] = $row['nama_cabang'];
+              }
+            }
 
             if ($user['role'] == 'superAdmin') {
                 header("Location: ../dashboard/superadmin/");
