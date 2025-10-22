@@ -1,11 +1,3 @@
-<?php 
-// Tambahkan Font Awesome sekali saja
-if (!defined('FONT_AWESOME_INCLUDED')): 
-    define('FONT_AWESOME_INCLUDED', true);
-    echo '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">';
-endif;
-?>
-
 <?php if(isset($page)): ?>
 <div class="col-lg-2 d-none d-lg-block bg-white border-end vh-100 p-0">
     <div class="list-group list-group-flush custom-sidebar">
