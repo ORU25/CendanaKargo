@@ -1,7 +1,8 @@
 <?php 
-if (!defined('BOOTSTRAP_ICONS_INCLUDED')): 
-    define('BOOTSTRAP_ICONS_INCLUDED', true);
-    echo '<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">';
+// Tambahkan Font Awesome sekali saja
+if (!defined('FONT_AWESOME_INCLUDED')): 
+    define('FONT_AWESOME_INCLUDED', true);
+    echo '<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">';
 endif;
 ?>
 
@@ -10,25 +11,28 @@ endif;
     <div class="list-group list-group-flush custom-sidebar">
         <a href="<?= BASE_URL; ?>dashboard/admin/" 
            class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="bi bi-speedometer2 me-2"></i> Dashboard
+           <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
         </a>
+
         <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" 
            class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="bi bi-truck me-2"></i> Pengiriman
+           <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
         </a>
+
         <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" 
            class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="bi bi-file-earmark-text me-2"></i> Surat Jalan
+           <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
         </a>
+
         <a href="<?= BASE_URL; ?>dashboard/admin/tarif/" 
            class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="bi bi-cash-coin me-2"></i> Tarif
+           <i class="fa-solid fa-money-bill-wave me-2"></i> Tarif
         </a>
     </div>
 
     <div class="text-center mt-3 mb-3">
         <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger w-75 rounded-0">
-            <i class="bi bi-box-arrow-right me-2"></i> Logout
+            <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
         </a>
     </div>
 </div>
@@ -39,6 +43,7 @@ endif;
 .custom-sidebar .list-group-item {
     border: none;
     transition: all 0.2s ease;
+    font-weight: 500;
 }
 
 /* Saat diarahkan (hover) */
