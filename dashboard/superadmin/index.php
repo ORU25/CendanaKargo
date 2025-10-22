@@ -92,7 +92,7 @@
                                     <p class="text-muted mb-1 small">Total Pengiriman</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_pengiriman; ?></h2>
                                 </div>
-                                <div class="p-3 bg-primary bg-opacity-10 rounded">
+                                <div class="p-3 bg-primary bg-opacity-50 rounded">
                                     <i class="fa-solid fa-box"></i>
                                 </div>
                             </div>
@@ -114,7 +114,7 @@
                                     <p class="text-muted mb-1 small">Dalam Proses</p>
                                     <h2 class="mb-0 fw-bold"><?= $dalam_proses; ?></h2>
                                 </div>
-                                <div class="p-3 bg-warning bg-opacity-10 rounded">
+                                <div class="p-3 bg-warning bg-opacity-50 rounded">
                                     <i class="fa-solid fa-hourglass-half"></i>
                                 </div>
                             </div>
@@ -134,7 +134,7 @@
                                     <p class="text-muted mb-1 small">Dalam Pengiriman</p>
                                     <h2 class="mb-0 fw-bold"><?= $dalam_pengiriman; ?></h2>
                                 </div>
-                                <div class="p-3 bg-info bg-opacity-10 rounded">
+                                <div class="p-3 bg-info bg-opacity-50 rounded">
                                     <i class="fa-solid fa-truck-fast"></i>
                                 </div>
                             </div>
@@ -154,7 +154,7 @@
                                     <p class="text-muted mb-1 small">Selesai</p>
                                     <h2 class="mb-0 fw-bold"><?= $selesai; ?></h2>
                                 </div>
-                                <div class="p-3 bg-success bg-opacity-10 rounded">
+                                <div class="p-3 bg-success bg-opacity-50 rounded">
                                     <i class="fa-solid fa-square-check"></i>
                                 </div>
                             </div>
@@ -180,7 +180,7 @@
                                         Kelola Cabang →
                                     </a>
                                 </div>
-                                <div class="p-3 bg-danger bg-opacity-10 rounded">
+                                <div class="p-3 bg-danger bg-opacity-50 rounded">
                                     <i class="fa-solid fa-building"></i>
                                 </div>
                             </div>
@@ -200,7 +200,7 @@
                                         Kelola User →
                                     </a>
                                 </div>
-                                <div class="p-3 bg-secondary bg-opacity-10 rounded">
+                                <div class="p-3 bg-secondary bg-opacity-50 rounded">
                                     <i class="fa-solid fa-user-tie"></i>
                                 </div>
                             </div>
@@ -220,7 +220,7 @@
                                         Kelola Tarif →
                                     </a>
                                 </div>
-                                <div class="p-3 bg-dark bg-opacity-10 rounded">
+                                <div class="p-3 bg-dark bg-opacity-50 rounded">
                                     <i class="fa-solid fa-dollar-sign"></i>
                                 </div>
                             </div>
@@ -258,14 +258,14 @@
                                 <?php if($recent_shipments->num_rows > 0): ?>
                                     <?php while($row = $recent_shipments->fetch_assoc()): ?>
                                         <tr class="text-capitalize">
-                                            <td class="px-3 fw-bold "><span class="badge bg-dark"><?= htmlspecialchars($row['no_resi']); ?></span></td>
+                                            <td class="px-3 fw-bold "><span class="badge bg-dark  bg-opacity-75"><?= htmlspecialchars($row['no_resi']); ?></span></td>
                                             <td><?= htmlspecialchars($row['nama_barang']); ?></td>
                                             <td><?= htmlspecialchars($row['nama_pengirim']); ?></td>
                                             <td><?= htmlspecialchars($row['nama_penerima']); ?></td>
                                             <td>
-                                                <span class="badge bg-primary"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
+                                                <span class="badge bg-primary  bg-opacity-75"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
                                                 →
-                                                <span class="badge bg-success"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
+                                                <span class="badge bg-success  bg-opacity-75"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
                                             </td>
                                             <td><?= date('d/m/Y', strtotime($row['tanggal'])); ?></td>
                                             <td class="">
@@ -279,7 +279,7 @@
                                                     case 'dibatalkan': $badgeClass = 'danger'; break;
                                                 }
                                                 ?>
-                                                <span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                                                <span class="badge text-bg-<?= $badgeClass; ?>  bg-opacity-75"><?= htmlspecialchars($row['status']); ?></span>
                                             </td>
                                             <td class="text-center">
                                                 <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
