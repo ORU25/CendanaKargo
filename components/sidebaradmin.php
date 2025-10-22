@@ -24,11 +24,19 @@ endif;
            <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
         </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/admin/tarif/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-money-bill-wave me-2"></i> Tarif
+        <!-- Perlu Perbaikan -->
+        <a href="<?= BASE_URL; ?>dashboard/admin/barang_masuk/" 
+        class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+        <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
+        </a> 
+
+        <a href="<?= BASE_URL; ?>dashboard/admin/barang_keluar/" 
+        class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_keluar' ? 'active bg-danger text-white border-0' : ''; ?>">
+        <i class="fa-solid fa-boxes-packing me-2"></i> Barang Keluar
         </a>
     </div>
+
+    <!-- perlu perbaikan -->
 
     <div class="text-center mt-3 mb-3">
         <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger w-75 rounded-0">
