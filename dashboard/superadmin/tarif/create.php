@@ -30,6 +30,7 @@
             header("Location: create?error=failed");
             exit;
         }
+
         $asal = trim($_POST['id_cabang_asal']);
         $tujuan = trim($_POST['id_cabang_tujuan']);
         $tarif = trim($_POST['tarif_dasar']);
@@ -78,56 +79,82 @@
 <div class="container-fluid">
   <div class="row">
     <?php include '../../../components/sidebar.php'; ?>
+
     <!-- Konten utama -->
-    <div class="col-lg-10">
+    <div class="col-lg-10 d-flex align-items-start justify-content-start" style="min-height: 90vh;">
+      <div class="card shadow-sm p-4 mt-4 ms-3" style="width: 100%; max-width: 800px;">
+          
+        <h3 class="text-danger fw-bold mb-4">Tambah Tarif</h3>
         <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
             $type = "danger";
             $message = "Gagal menambahkan tarif baru";
             include '../../../components/alert.php';
         }?>
-        <?php if(isset($_GET['error'])&& $_GET['error'] == 'duplicate'){
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'duplicate'){
             $type = "danger";
             $message = "Tarif sudah ada";
             include '../../../components/alert.php';
         }?>
-        <h1>Tambah Tarif</h1>
-        <form action="create" method="POST" class="col-5">
-            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
-            <div class="mb-3">
-                <label for="id_cabang_asal" class="form-label">Dari Cabang</label>
+
+
+        <form action="create" method="POST">
+          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+
+          <div class="row">
+            <!-- Kolom kiri -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_cabang_asal" class="form-label fw-semibold">Dari Cabang</label>
                 <select class="form-select" id="id_cabang_asal" name="id_cabang_asal" required>
-                    <option value="">-- Pilih Cabang Asal --</option>
-                    <?php foreach ($cabangs as $cabang): ?>
-                        <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>
-                    <?php endforeach; ?>
+                  <option value="">-- Pilih Cabang Asal --</option>
+                  <?php foreach ($cabangs as $cabang): ?>
+                    <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>
+                  <?php endforeach; ?>
                 </select>
-            </div>
-            <div class="mb-3">
-                <label for="id_cabang_tujuan" class="form-label">Ke Cabang</label>
-                <select class="form-select" id="id_cabang_tujuan" name="id_cabang_tujuan" required>
-                    <option value="">-- Pilih Cabang Tujuan --</option>
-                    <?php foreach ($cabangs as $cabang): ?>
-                        <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="tarif_dasar" class="form-label">Tarif Dasar</label>
+              </div>
+
+              <div class="mb-3">
+                <label for="tarif_dasar" class="form-label fw-semibold">Tarif Dasar</label>
                 <input type="number" class="form-control" id="tarif_dasar" name="tarif_dasar" required>
+              </div>
             </div>
-            <div class="mb-3">
-                <label for="batas_berat" class="form-label">Batas Berat (kg)</label>
+
+            <!-- Kolom kanan -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="id_cabang_tujuan" class="form-label fw-semibold">Ke Cabang</label>
+                <select class="form-select" id="id_cabang_tujuan" name="id_cabang_tujuan" required>
+                  <option value="">-- Pilih Cabang Tujuan --</option>
+                  <?php foreach ($cabangs as $cabang): ?>
+                    <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="batas_berat" class="form-label fw-semibold">Batas Berat (kg)</label>
                 <input type="number" class="form-control" id="batas_berat" name="batas_berat" required value="10">
+              </div>
             </div>
-            <div class="mb-3">
-                <label for="tarif_tambahan_perkg" class="form-label">Tarif Tambahan per kg</label>
-                <input type="number" class="form-control" id="tarif_tambahan_perkg" name="tarif_tambahan_perkg" required>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Simpan</button>
+          </div>
+
+          <!-- Baris terakhir full width -->
+          <div class="mb-4">
+            <label for="tarif_tambahan_perkg" class="form-label fw-semibold">Tarif Tambahan per kg</label>
+            <input type="number" class="form-control" id="tarif_tambahan_perkg" name="tarif_tambahan_perkg" required>
+          </div>
+
+          <div class="d-flex justify-content-start">
+            <button type="submit" class="btn btn-danger fw-semibold px-4 py-2" style="width: 120px;">Simpan</button>
+          </div>
+
         </form>
+
+      </div>
     </div>
   </div>
 </div>
+
 <?php
     include '../../../templates/footer.php';
 ?>
