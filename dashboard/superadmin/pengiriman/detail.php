@@ -161,7 +161,7 @@
             </div>
 
             <!-- Detail Cards -->
-            <div class="row g-3 text-capitalize">
+            <div class="row g-3 text-capitalize mb-4">
                 <!-- Pengirim -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100">
@@ -213,6 +213,13 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="resi?id=<?= (int)$pengiriman['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
+                    <i class="fa-solid fa-receipt"></i>
+                    Cetak Resi
+                </a>
             </div>
 
         </div>
