@@ -66,14 +66,7 @@
 
 <div class="container-fluid">
   <div class="row">
-    <div class="col-lg-2 d-none d-lg-block bg-light border-end vh-100">
-      <div class="list-group list-group-flush">
-        <a href="<?= BASE_URL; ?>dashboard/admin/" class="list-group-item list-group-item-action">Dashboard</a>
-        <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" class="list-group-item list-group-item-action fw-bold text-danger">Pengiriman</a>
-        <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" class="list-group-item list-group-item-action">Surat Jalan</a>
-      </div>
-        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger mt-3">Logout</a>
-    </div>
+        <?php include '../../../components/sidebaradmin.php'; ?>
 
     <!-- Konten utama -->
     <div class="col-lg-10 bg-light">
