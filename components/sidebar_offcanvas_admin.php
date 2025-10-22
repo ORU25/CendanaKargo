@@ -1,50 +1,43 @@
 <?php if(isset($page)): ?>
 <nav class="d-lg-none bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-    <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#superadminSidebar" aria-controls="superadminSidebar">
+    <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
         <i class="fa-solid fa-bars"></i>
     </button>
     <span class="fw-bold">Menu</span>
 </nav>
 
-<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="superadminSidebar" aria-labelledby="superadminSidebarLabel">
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title fw-bold" id="superadminSidebarLabel">Menu Superadmin</h5>
+        <h5 class="offcanvas-title fw-bold" id="mobileSidebarLabel">Menu Navigasi</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
     <div class="offcanvas-body p-0">
         <div class="list-group list-group-flush custom-sidebar">
-
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/" 
+            <a href="<?= BASE_URL; ?>dashboard/admin/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
             </a>
 
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" 
+            <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
 
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" 
+            <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
             </a>
 
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-tags me-2"></i> Tarif
+            <a href="<?= BASE_URL; ?>dashboard/admin/barang_masuk/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
             </a>
 
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-building me-2"></i> Kantor Cabang
+            <a href="<?= BASE_URL; ?>dashboard/admin/barang_keluar/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_keluar' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-boxes-packing me-2"></i> Barang Keluar
             </a>
-
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-user-gear me-2"></i> User
-            </a>
-
         </div>
 
         <div class="text-center mt-3 mb-3">
@@ -57,7 +50,7 @@
 <?php endif; ?>
 
 <style>
-/* Hover & Active untuk Mobile Sidebar Superadmin */
+/* Hover & Active untuk Mobile Sidebar */
 .custom-sidebar .list-group-item {
     border: none;
     transition: all 0.2s ease;

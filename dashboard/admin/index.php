@@ -66,7 +66,7 @@
     $page = "dashboard";
     include '../../templates/header.php';
     include '../../components/navDashboard.php';
-    include '../../components/sidebar_offcanvas.php';
+    include '../../components/sidebar_offcanvas_admin.php';
 ?>
 <div class="container-fluid">
     <div class="row">
