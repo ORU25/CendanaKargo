@@ -2,7 +2,7 @@
   <div class="container-fluid">
         <div class="d-flex align-items-center">
             
-            <a class="navbar-brand m-0" href="<?= BASE_URL; ?>">CendanaKargo</a>
+            <a class="navbar-brand m-0" href="<?= BASE_URL; ?>">PT Cendana Lintas Kargo</a>
         </div>
     <div class="d-lg-flex">
         <span class="navbar-text text-white me-3 d-none d-lg-block">
