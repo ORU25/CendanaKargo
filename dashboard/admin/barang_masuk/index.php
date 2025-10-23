@@ -14,6 +14,12 @@ include '../../../config/database.php';
 
 $title = "Barang Masuk - Cendana Kargo";
 
+// Pastikan cabang admin terset di session
+$cabang_admin = $_SESSION['cabang'] ?? ''; // misalnya: 'Balikpapan'
+if (empty($cabang_admin)) {
+    die("Cabang admin tidak ditemukan di session. Pastikan diset saat login.");
+}
+
 // Pagination
 $limit = 10;
 $page_num = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
@@ -32,21 +38,24 @@ if ($search !== '') {
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         AND status IN (?, ?)
+        AND cabang_penerima = ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1]);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $total_records = $result->fetch_assoc()['total'];
-    $stmt->close();
+    $stmt->bind_param('sssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin);
 } else {
-    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE status IN (?, ?)");
-    $stmt->bind_param('ss', $status_filter[0], $status_filter[1]);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $total_records = $result->fetch_assoc()['total'];
-    $stmt->close();
+    $stmt = $conn->prepare("
+        SELECT COUNT(*) as total 
+        FROM pengiriman 
+        WHERE status IN (?, ?)
+        AND cabang_penerima = ?
+    ");
+    $stmt->bind_param('sss', $status_filter[0], $status_filter[1], $cabang_admin);
 }
+
+$stmt->execute();
+$result = $stmt->get_result();
+$total_records = $result->fetch_assoc()['total'] ?? 0;
+$stmt->close();
 
 $total_pages = ceil($total_records / $limit);
 
@@ -56,28 +65,27 @@ if ($search !== '') {
         SELECT * FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         AND status IN (?, ?)
+        AND cabang_penerima = ?
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $limit, $offset);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $barang_masuk = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    $stmt->bind_param('sssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
         WHERE status IN (?, ?)
+        AND cabang_penerima = ?
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssii', $status_filter[0], $status_filter[1], $limit, $offset);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $barang_masuk = $result->fetch_all(MYSQLI_ASSOC);
-    $stmt->close();
+    $stmt->bind_param('sssii', $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
 }
+
+$stmt->execute();
+$result = $stmt->get_result();
+$barang_masuk = $result->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
 
 $page = "barang_masuk";
 include '../../../templates/header.php';
@@ -95,7 +103,7 @@ include '../../../components/sidebar_offcanvas.php';
         <!-- Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
           <div>
-            <h1 class="h4 mb-1 fw-bold">Daftar Barang Masuk</h1>
+            <h1 class="h4 mb-1 fw-bold">Daftar Barang Masuk (Cabang <?= htmlspecialchars($cabang_admin); ?>)</h1>
             <p class="text-muted small mb-0">
               Menampilkan <?= count($barang_masuk); ?> dari <?= $total_records; ?> data
               <?php if ($total_pages > 1): ?>
@@ -153,7 +161,7 @@ include '../../../components/sidebar_offcanvas.php';
                   <tr>
                     <td colspan="11" class="text-center py-5 text-muted">
                       <i class="fa-solid fa-box-open fa-lg"></i>
-                      <p class="mb-0">Belum ada barang masuk<?= $search ? ' yang cocok dengan pencarian' : ''; ?>.</p>
+                      <p class="mb-0">Belum ada barang masuk<?= $search ? ' yang cocok dengan pencarian' : ''; ?> di cabang ini.</p>
                     </td>
                   </tr>
                 <?php else: ?>
@@ -176,14 +184,14 @@ include '../../../components/sidebar_offcanvas.php';
                     <td class="small"><?= date('d/m/Y', strtotime($b['tanggal'])); ?></td>
                     <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($b['status']); ?></span></td>
                     <td class="text-center">
-                    <div class="d-flex justify-content-center gap-2">
-                        <a href="detail?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <a href="update?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-danger" title="Edit Data">
-                            <i class="fa-solid fa-pen-to-square"></i>
-                        </a>
-                    </div>
+                      <div class="d-flex justify-content-center gap-2">
+                          <a href="detail?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                              <i class="fa-solid fa-eye"></i>
+                          </a>
+                          <a href="update?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-danger" title="Edit Data">
+                              <i class="fa-solid fa-pen-to-square"></i>
+                          </a>
+                      </div>
                     </td>
                   </tr>
                   <?php endforeach; ?>
