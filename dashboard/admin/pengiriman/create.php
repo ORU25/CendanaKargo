@@ -15,12 +15,10 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// ⬇️ FIXED: path naik 3x karena dari dashboard/admin/pengiriman
 include '../../../config/database.php';
 
 $title = "Tambah Pengiriman - Cendana Kargo";
 
-// Ambil id cabang admin
 $stmt = $conn->prepare("
     SELECT u.id_cabang, k.nama_cabang, k.kode_cabang 
     FROM user u 
@@ -114,7 +112,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
     ");
 
-    // ⚙️ Perbaikan tipe bind_param (17 parameter)
     $stmt->bind_param(
         "iiiisssssssssdids",
         $id_user, $asal, $tujuan, $data_tarif['id'], $username,
@@ -134,7 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $page = "pengiriman";
 
-// ⬇️ FIXED semua path include ke ../../../
 include '../../../templates/header.php';
 include '../../../components/navDashboard.php';
 include '../../../components/sidebar_offcanvas_admin.php';
