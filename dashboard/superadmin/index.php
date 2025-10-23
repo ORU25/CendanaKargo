@@ -119,7 +119,7 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <span class="badge text-bg-warning">Menunggu Proses</span>
+                                <span class="badge text-bg-warning bg-opacity-50">Menunggu Proses</span>
                             </div>
                         </div>
                     </div>
@@ -139,7 +139,7 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <span class="badge text-bg-info">Sedang Dikirim</span>
+                                <span class="badge text-bg-info bg-opacity-50">Sedang Dikirim</span>
                             </div>
                         </div>
                     </div>
@@ -159,7 +159,7 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <span class="badge text-bg-success">Terkirim</span>
+                                <span class="badge text-black text-bg-success bg-opacity-50">Terkirim</span>
                             </div>
                         </div>
                     </div>
