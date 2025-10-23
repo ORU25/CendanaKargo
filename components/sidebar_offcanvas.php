@@ -1,20 +1,13 @@
 <?php if(isset($page)): ?>
-<nav class="d-lg-none bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-    <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#superadminSidebar" aria-controls="superadminSidebar">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-    <span class="fw-bold">Menu</span>
-</nav>
-
-<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="superadminSidebar" aria-labelledby="superadminSidebarLabel">
+<!-- Offcanvas Sidebar Superadmin (pakai tombol navbar utama) -->
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title fw-bold" id="superadminSidebarLabel">Menu Superadmin</h5>
+        <h5 class="offcanvas-title fw-bold" id="sidebarOffcanvasLabel">Menu Superadmin</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
     <div class="offcanvas-body p-0">
         <div class="list-group list-group-flush custom-sidebar">
-
             <a href="<?= BASE_URL; ?>dashboard/superadmin/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
@@ -44,7 +37,6 @@
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-user-gear me-2"></i> User
             </a>
-
         </div>
 
         <div class="text-center mt-3 mb-3">

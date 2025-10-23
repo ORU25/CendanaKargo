@@ -35,7 +35,7 @@
     </div>
 
     <div class="text-center mt-3 mb-3">
-        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger w-75 rounded-0">
+        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger btn-sm w-60 rounded-2 px-3">
             <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
         </a>
     </div>
@@ -64,5 +64,17 @@
 .custom-sidebar .list-group-item:hover i,
 .custom-sidebar .list-group-item.active i {
     color: #fff !important;
+}
+
+.text-center .btn {
+    width: 60%;
+    font-weight: 500;
+    border-width: 1.5px;
+    transition: all 0.2s ease;
+}
+
+.text-center .btn:hover {
+    background-color: #dc3545;
+    color: #fff;
 }
 </style>

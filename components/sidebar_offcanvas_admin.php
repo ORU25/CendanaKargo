@@ -1,14 +1,8 @@
 <?php if(isset($page)): ?>
-<nav class="d-lg-none bg-white border-bottom px-3 py-2 d-flex justify-content-between align-items-center">
-    <button class="btn btn-outline-danger" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
-        <i class="fa-solid fa-bars"></i>
-    </button>
-    <span class="fw-bold">Menu</span>
-</nav>
-
-<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
+<!-- Offcanvas Sidebar (dipanggil dari tombol navbar utama) -->
+<div class="offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sidebarOffcanvas" aria-labelledby="sidebarOffcanvasLabel">
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title fw-bold" id="mobileSidebarLabel">Menu Navigasi</h5>
+        <h5 class="offcanvas-title fw-bold" id="sidebarOffcanvasLabel">Menu Navigasi</h5>
         <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
 
