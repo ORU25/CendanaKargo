@@ -199,9 +199,15 @@ include '../../components/sidebar_offcanvas_admin.php';
                                                 <td><?= htmlspecialchars($row['nama_pengirim']); ?></td>
                                                 <td><?= htmlspecialchars($row['nama_penerima']); ?></td>
                                                 <td>
-                                                    <span class="badge bg-primary bg-opacity-75"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
+                                                    <?php
+                                                    // Tentukan warna badge berdasarkan arah pengiriman
+                                                    $isPengirimanKeluar = ($row['id_cabang_pengirim'] == $id_cabang_admin);
+                                                    $badgeAsalClass = $isPengirimanKeluar ? 'primary' : 'secondary';
+                                                    $badgeTujuanClass = $isPengirimanKeluar ? 'secondary' : 'success';
+                                                    ?>
+                                                    <span class="badge bg-<?= $badgeAsalClass; ?> bg-opacity-75"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
                                                     →
-                                                    <span class="badge bg-success bg-opacity-75"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
+                                                    <span class="badge bg-<?= $badgeTujuanClass; ?> bg-opacity-75"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
                                                 </td>
                                                 <td><?= date('d/m/Y', strtotime($row['tanggal'])); ?></td>
                                                 <td>
