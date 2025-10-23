@@ -34,17 +34,17 @@
 
       <nav>
         <ul class="nav-links">
-          <li><a href="#hero" class="active">Beranda</a></li>
-          <li><a href="#lacakOngkir">Lacak / Ongkir</a></li>
-          <li><a href="#layanan">Layanan Kami</a></li>
-          <li><a href="#kontak">Kontak</a></li>
+          <li><a href="#hero" class="active" id="navBeranda">Beranda</a></li>
+          <li><a href="#lacakOngkir" id="navLacakOngkir">Lacak / Ongkir</a></li>
+          <li><a href="#layanan" id="navLayanan">Layanan Kami</a></li>
+          <li><a href="#kontak" id="navKontak">Kontak</a></li>
         </ul>
       </nav>
 
       <!-- Tombol Bahasa -->
       <div class="lang-switch">
         <button id="lang-id" class="active">🇮🇩</button>
-        <button id="lang-en">🇬🇧</button>
+        <button id="lang-en">EN</button>
       </div>
     </div>
   </header>
@@ -64,20 +64,20 @@
     <div class="container" style="flex-direction:column;align-items:center;">
       <div class="tab-header" style="display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap;justify-content:center;">
         <button class="tab-btn active" data-tab="lacak">
-          <i class="fa-solid fa-truck-fast"></i> Lacak Paket
+          <i class="fa-solid fa-truck-fast"></i> <span id="tabLacak">Lacak Paket</span>
         </button>
         <button class="tab-btn" data-tab="ongkir">
-          <i class="fa-solid fa-calculator"></i> Cek Ongkir
+          <i class="fa-solid fa-calculator"></i> <span id="tabOngkir">Cek Ongkir</span>
         </button>
       </div>
 
       <!-- Form Lacak Paket -->
       <div class="tab-content active" id="tab-lacak">
         <div class="form-card">
-          <h3><i class="fa-solid fa-truck-fast"></i> Lacak Paket</h3>
-          <label for="resi">Nomor Resi</label>
+          <h3><i class="fa-solid fa-truck-fast"></i> <span id="headingLacak">Lacak Paket</span></h3>
+          <label for="resi" id="labelResi">Nomor Resi</label>
           <input type="text" id="resi" placeholder="Masukkan nomor resi Anda..." />
-          <button id="btnLacak"><i class="fa-solid fa-magnifying-glass"></i> Lacak Paket</button>
+          <button id="btnLacak"><i class="fa-solid fa-magnifying-glass"></i> <span id="btnLacakText">Lacak Paket</span></button>
           
           <!-- Alert message -->
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
@@ -85,35 +85,35 @@
           <!-- Result display -->
           <div id="resultLacak" style="display:none; margin-top:30px; background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
             <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
-              <i class="fa-solid fa-circle-check"></i> Informasi Pengiriman
+              <i class="fa-solid fa-circle-check"></i> <span id="infoLacak">Informasi Pengiriman</span>
             </h4>
             <table style="width:100%; border-collapse: collapse;">
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;">No. Resi</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;" id="labelNoResi">No. Resi</td>
                 <td style="padding:12px 0; color:#212529;" id="displayResi">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Nama Pengirim</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPengirim">Nama Pengirim</td>
                 <td style="padding:12px 0; color:#212529;" id="displayPengirim">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Nama Penerima</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPenerima">Nama Penerima</td>
                 <td style="padding:12px 0; color:#212529;" id="displayPenerima">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Asal</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelAsal">Asal</td>
                 <td style="padding:12px 0; color:#212529;" id="displayAsal">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Tujuan</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTujuan">Tujuan</td>
                 <td style="padding:12px 0; color:#212529;" id="displayTujuan">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Total Tarif</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTotalTarif">Total Tarif</td>
                 <td style="padding:12px 0; color:#212529; font-weight:600;" id="displayTarif">-</td>
               </tr>
               <tr>
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Status</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelStatus">Status</td>
                 <td style="padding:12px 0;" id="displayStatus">
                   <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600; text-transform: uppercase;">-</span>
                 </td>
@@ -126,18 +126,18 @@
       <!-- Form Cek Ongkir -->
       <div class="tab-content" id="tab-ongkir">
         <div class="form-card">
-          <h3><i class="fa-solid fa-calculator"></i> Cek Ongkir</h3>
-          <label for="cabangAsal">Cabang Asal</label>
+          <h3><i class="fa-solid fa-calculator"></i> <span id="headingOngkir">Cek Ongkir</span></h3>
+          <label for="cabangAsal" id="labelCabangAsal">Cabang Asal</label>
           <select id="cabangAsal" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:15px;">
             <option value="">-- Pilih Cabang Asal --</option>
           </select>
-          <label for="cabangTujuan">Cabang Tujuan</label>
+          <label for="cabangTujuan" id="labelCabangTujuan">Cabang Tujuan</label>
           <select id="cabangTujuan" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:15px;">
             <option value="">-- Pilih Cabang Tujuan --</option>
           </select>
-          <label for="beratBarang">Berat (Kg)</label>
+          <label for="beratBarang" id="labelBerat">Berat (Kg)</label>
           <input type="number" id="beratBarang" placeholder="Contoh: 2" step="0.1" min="0.1" />
-          <button id="btnHitungOngkir"><i class="fa-solid fa-calculator"></i> Hitung Ongkir</button>
+          <button id="btnHitungOngkir"><i class="fa-solid fa-calculator"></i> <span id="btnHitungText">Hitung Ongkir</span></button>
           
           <!-- Alert message -->
           <div id="alertOngkir" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
@@ -145,35 +145,35 @@
           <!-- Result display -->
           <div id="resultOngkir" style="display:none; margin-top:30px; background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
             <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
-              <i class="fa-solid fa-circle-check"></i> Hasil Perhitungan Ongkir
+              <i class="fa-solid fa-circle-check"></i> <span id="infoOngkir">Hasil Perhitungan Ongkir</span>
             </h4>
             <table style="width:100%; border-collapse: collapse;">
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;">Dari</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;" id="labelDari">Dari</td>
                 <td style="padding:12px 0; color:#212529;" id="displayAsalOngkir">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Ke</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelKe">Ke</td>
                 <td style="padding:12px 0; color:#212529;" id="displayTujuanOngkir">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Berat Barang</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelBeratBarang">Berat Barang</td>
                 <td style="padding:12px 0; color:#212529;" id="displayBeratOngkir">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Tarif Dasar</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTarifDasar">Tarif Dasar</td>
                 <td style="padding:12px 0; color:#212529;" id="displayTarifDasar">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Batas Berat Dasar</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelBatasBerat">Batas Berat Dasar</td>
                 <td style="padding:12px 0; color:#212529;" id="displayBatasBerat">-</td>
               </tr>
               <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;">Tarif Tambahan/Kg</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTarifTambahan">Tarif Tambahan/Kg</td>
                 <td style="padding:12px 0; color:#212529;" id="displayTarifTambahan">-</td>
               </tr>
               <tr>
-                <td style="padding:12px 0; font-weight:600; color:#495057; font-size:16px;">Total Ongkir</td>
+                <td style="padding:12px 0; font-weight:600; color:#495057; font-size:16px;" id="labelTotalOngkir">Total Ongkir</td>
                 <td style="padding:12px 0; color:var(--primary-green); font-weight:700; font-size:20px;" id="displayTotalOngkir">-</td>
               </tr>
             </table>
@@ -341,10 +341,47 @@
     // Bilingual system
     const translations = {
       id: {
+        // Navbar
+        navBeranda: "Beranda",
+        navLacakOngkir: "Lacak / Ongkir",
+        navLayanan: "Layanan Kami",
+        navKontak: "Kontak",
+        // Hero
         heroTitle: "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         heroText: "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
+        // Tab
+        tabLacak: "Lacak Paket",
+        tabOngkir: "Cek Ongkir",
+        // Form Lacak Paket
+        headingLacak: "Lacak Paket",
+        labelResi: "Nomor Resi",
+        btnLacakText: "Lacak Paket",
+        infoLacak: "Informasi Pengiriman",
+        labelNoResi: "No. Resi",
+        labelPengirim: "Nama Pengirim",
+        labelPenerima: "Nama Penerima",
+        labelAsal: "Asal",
+        labelTujuan: "Tujuan",
+        labelTotalTarif: "Total Tarif",
+        labelStatus: "Status",
+        // Form Cek Ongkir
+        headingOngkir: "Cek Ongkir",
+        labelCabangAsal: "Cabang Asal",
+        labelCabangTujuan: "Cabang Tujuan",
+        labelBerat: "Berat (Kg)",
+        btnHitungText: "Hitung Ongkir",
+        infoOngkir: "Hasil Perhitungan Ongkir",
+        labelDari: "Dari",
+        labelKe: "Ke",
+        labelBeratBarang: "Berat Barang",
+        labelTarifDasar: "Tarif Dasar",
+        labelBatasBerat: "Batas Berat Dasar",
+        labelTarifTambahan: "Tarif Tambahan/Kg",
+        labelTotalOngkir: "Total Ongkir",
+        // Why Us
         whyTitle: "Mengapa Memilih Cendana Lintas Kargo?",
         whyText: "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
+        // Layanan
         layananTitle: "Layanan Kami",
         layanan1: "Pengiriman Cepat",
         layanan1desc: "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
@@ -352,14 +389,70 @@
         layanan2desc: "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
         layanan3: "Tarif Terjangkau",
         layanan3desc: "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
+        // CTA
         ctaTitle: "Kirim Barang Sekarang Bersama Kami!",
-        ctaText: "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami."
+        ctaText: "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
+        // Alert Messages - Lacak Resi
+        alertResiKosong: "Nomor resi tidak boleh kosong",
+        alertResiNotFound: "Nomor resi tidak ditemukan",
+        alertResiError: "Terjadi kesalahan saat melacak paket. Silakan coba lagi.",
+        alertSearching: "Mencari...",
+        // Alert Messages - Cek Ongkir
+        alertAsalKosong: "Silakan pilih cabang asal",
+        alertTujuanKosong: "Silakan pilih cabang tujuan",
+        alertCabangSama: "Cabang asal dan tujuan tidak boleh sama",
+        alertBeratKosong: "Berat harus lebih dari 0 kg",
+        alertOngkirError: "Terjadi kesalahan saat menghitung ongkir. Silakan coba lagi.",
+        alertCalculating: "Menghitung...",
+        // Status Tracking
+        statusDalamProses: "Dalam Proses",
+        statusDalamPengiriman: "Dalam Pengiriman",
+        statusSampaiTujuan: "Sampai Tujuan",
+        statusSelesai: "Selesai",
+        statusDibatalkan: "Dibatalkan"
       },
       en: {
+        // Navbar
+        navBeranda: "Home",
+        navLacakOngkir: "Track / Shipping Cost",
+        navLayanan: "Our Services",
+        navKontak: "Contact",
+        // Hero
         heroTitle: "Fast, Safe, and Reliable Shipping Solutions",
         heroText: "We deliver goods across Indonesia with affordable rates and trusted service.",
+        // Tab
+        tabLacak: "Track Package",
+        tabOngkir: "Shipping Cost",
+        // Form Lacak Paket
+        headingLacak: "Track Package",
+        labelResi: "Tracking Number",
+        btnLacakText: "Track Package",
+        infoLacak: "Shipment Information",
+        labelNoResi: "Tracking No.",
+        labelPengirim: "Sender Name",
+        labelPenerima: "Receiver Name",
+        labelAsal: "Origin",
+        labelTujuan: "Destination",
+        labelTotalTarif: "Total Cost",
+        labelStatus: "Status",
+        // Form Cek Ongkir
+        headingOngkir: "Shipping Cost",
+        labelCabangAsal: "Origin Branch",
+        labelCabangTujuan: "Destination Branch",
+        labelBerat: "Weight (Kg)",
+        btnHitungText: "Calculate Cost",
+        infoOngkir: "Shipping Cost Result",
+        labelDari: "From",
+        labelKe: "To",
+        labelBeratBarang: "Package Weight",
+        labelTarifDasar: "Base Rate",
+        labelBatasBerat: "Base Weight Limit",
+        labelTarifTambahan: "Additional Rate/Kg",
+        labelTotalOngkir: "Total Cost",
+        // Why Us
         whyTitle: "Why Choose Cendana Lintas Kargo?",
         whyText: "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        // Layanan
         layananTitle: "Our Services",
         layanan1: "Fast Delivery",
         layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
@@ -367,17 +460,44 @@
         layanan2desc: "Your package safety is our top priority with real-time tracking.",
         layanan3: "Affordable Rates",
         layanan3desc: "Enjoy low-cost delivery without sacrificing quality.",
+        // CTA
         ctaTitle: "Ship With Us Now!",
-        ctaText: "Security, speed, and satisfaction are our top priorities."
+        ctaText: "Security, speed, and satisfaction are our top priorities.",
+        // Alert Messages - Lacak Resi
+        alertResiKosong: "Tracking number cannot be empty",
+        alertResiNotFound: "Tracking number not found",
+        alertResiError: "An error occurred while tracking the package. Please try again.",
+        alertSearching: "Searching...",
+        // Alert Messages - Cek Ongkir
+        alertAsalKosong: "Please select origin branch",
+        alertTujuanKosong: "Please select destination branch",
+        alertCabangSama: "Origin and destination branches cannot be the same",
+        alertBeratKosong: "Weight must be greater than 0 kg",
+        alertOngkirError: "An error occurred while calculating shipping cost. Please try again.",
+        alertCalculating: "Calculating...",
+        // Status Tracking
+        statusDalamProses: "In Process",
+        statusDalamPengiriman: "In Transit",
+        statusSampaiTujuan: "Arrived",
+        statusSelesai: "Completed",
+        statusDibatalkan: "Cancelled"
       }
     };
 
+    // Current language
+    let currentLang = 'id';
+
     function changeLanguage(lang) {
+      currentLang = lang;
       const t = translations[lang];
       for (let key in t) {
         const el = document.getElementById(key);
         if (el) el.textContent = t[key];
       }
+    }
+
+    function getCurrentTranslation(key) {
+      return translations[currentLang][key] || key;
     }
 
     document.getElementById("lang-id").addEventListener("click", () => {
@@ -427,7 +547,28 @@
       document.getElementById('displayTarif').textContent = 'Rp ' + data.total_tarif;
       
       const statusElement = document.getElementById('displayStatus').querySelector('span');
-      statusElement.textContent = data.status;
+      
+      // Translate status based on current language
+      let translatedStatus = data.status;
+      switch(data.status.toLowerCase()) {
+        case 'dalam proses':
+          translatedStatus = getCurrentTranslation('statusDalamProses');
+          break;
+        case 'dalam pengiriman':
+          translatedStatus = getCurrentTranslation('statusDalamPengiriman');
+          break;
+        case 'sampai tujuan':
+          translatedStatus = getCurrentTranslation('statusSampaiTujuan');
+          break;
+        case 'selesai':
+          translatedStatus = getCurrentTranslation('statusSelesai');
+          break;
+        case 'dibatalkan':
+          translatedStatus = getCurrentTranslation('statusDibatalkan');
+          break;
+      }
+      
+      statusElement.textContent = translatedStatus;
       
       // Set status color based on status value using switch case
       let backgroundColor, textColor;
@@ -479,13 +620,13 @@
       resultLacak.style.display = 'none';
       
       if (!noResi) {
-        showAlert('Nomor resi tidak boleh kosong', 'error');
+        showAlert(getCurrentTranslation('alertResiKosong'), 'error');
         return;
       }
       
       // Show loading state
       btnLacak.disabled = true;
-      btnLacak.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+      btnLacak.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + getCurrentTranslation('alertSearching');
       
       // Send AJAX request
       fetch('utils/cekResi.php?no_resi=' + encodeURIComponent(noResi))
@@ -495,16 +636,21 @@
             hideAlert();
             displayResult(data.data);
           } else {
-            showAlert(data.message, 'error');
+            // Translate error message based on error code
+            let errorMessage = data.message;
+            if (data.error_code === 'RESI_NOT_FOUND') {
+              errorMessage = getCurrentTranslation('alertResiNotFound');
+            }
+            showAlert(errorMessage, 'error');
           }
         })
         .catch(error => {
-          showAlert('Terjadi kesalahan saat melacak paket. Silakan coba lagi.', 'error');
+          showAlert(getCurrentTranslation('alertResiError'), 'error');
           console.error('Error:', error);
         })
         .finally(() => {
           btnLacak.disabled = false;
-          btnLacak.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
+          btnLacak.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ' + getCurrentTranslation('btnLacakText');
         });
     });
 
@@ -600,23 +746,28 @@
       
       // Validation
       if (!idAsal) {
-        showAlertOngkir('Silakan pilih cabang asal', 'error');
+        showAlertOngkir(getCurrentTranslation('alertAsalKosong'), 'error');
         return;
       }
       
       if (!idTujuan) {
-        showAlertOngkir('Silakan pilih cabang tujuan', 'error');
+        showAlertOngkir(getCurrentTranslation('alertTujuanKosong'), 'error');
+        return;
+      }
+      
+      if (idAsal === idTujuan) {
+        showAlertOngkir(getCurrentTranslation('alertCabangSama'), 'error');
         return;
       }
       
       if (!berat || parseFloat(berat) <= 0) {
-        showAlertOngkir('Berat harus lebih dari 0 kg', 'error');
+        showAlertOngkir(getCurrentTranslation('alertBeratKosong'), 'error');
         return;
       }
       
       // Show loading state
       btnHitungOngkir.disabled = true;
-      btnHitungOngkir.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghitung...';
+      btnHitungOngkir.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + getCurrentTranslation('alertCalculating');
       
       // Send AJAX request
       const url = `utils/cekOngkir.php?action=calculate&id_cabang_asal=${idAsal}&id_cabang_tujuan=${idTujuan}&berat=${berat}`;
@@ -632,12 +783,12 @@
           }
         })
         .catch(error => {
-          showAlertOngkir('Terjadi kesalahan saat menghitung ongkir. Silakan coba lagi.', 'error');
+          showAlertOngkir(getCurrentTranslation('alertOngkirError'), 'error');
           console.error('Error:', error);
         })
         .finally(() => {
           btnHitungOngkir.disabled = false;
-          btnHitungOngkir.innerHTML = '<i class="fa-solid fa-calculator"></i> Hitung Ongkir';
+          btnHitungOngkir.innerHTML = '<i class="fa-solid fa-calculator"></i> ' + getCurrentTranslation('btnHitungText');
         });
     });
 

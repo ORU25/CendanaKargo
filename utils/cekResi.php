@@ -46,7 +46,8 @@ if ($row = mysqli_fetch_assoc($result)) {
 } else {
     echo json_encode([
         'success' => false,
-        'message' => 'Nomor resi tidak ditemukan'
+        'message' => 'Nomor resi tidak ditemukan',
+        'error_code' => 'RESI_NOT_FOUND'
     ]);
 }
 
