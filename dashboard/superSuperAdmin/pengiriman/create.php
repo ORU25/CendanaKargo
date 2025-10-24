@@ -36,7 +36,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_barang = trim($_POST['nama_barang']);
     $berat = (float) trim($_POST['berat']);
     $jumlah = (int) trim($_POST['jumlah']);
-    $jasa_pengiriman = trim($_POST['jasa_pengiriman']);
+    $pembayaran = trim($_POST['pembayaran']);
+
+    if (!preg_match('/^[0-9]{10,15}$/', $telp_pengirim)) {
+        header("Location: create?error=invalid_phone_pengirim");
+        exit;
+    }
+    if (!preg_match('/^[0-9]{10,15}$/', $telp_penerima)) {
+        header("Location: create?error=invalid_phone_penerima");
+        exit;
+    }
 
     $checkTarif = $conn->prepare("SELECT * FROM tarif_pengiriman WHERE id_cabang_asal = ? AND id_cabang_tujuan = ?");
     $checkTarif->bind_param("ii", $asal, $tujuan);
@@ -90,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO pengiriman 
         (id_user, id_cabang_pengirim, id_cabang_penerima, id_tarif, user, cabang_pengirim, cabang_penerima, 
         no_resi, nama_pengirim, telp_pengirim, nama_penerima, telp_penerima, nama_barang, 
-        berat, jumlah, jasa_pengiriman, tanggal, total_tarif)
+        berat, jumlah, pembayaran, tanggal, total_tarif)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
     ");
 
@@ -100,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id_user, $asal, $tujuan, $data_tarif['id'], $username,
         $nama_cabang_asal, $nama_cabang_tujuan, $no_resi,
         $nama_pengirim, $telp_pengirim, $nama_penerima, $telp_penerima,
-        $nama_barang, $berat, $jumlah, $jasa_pengiriman, $total_tarif
+        $nama_barang, $berat, $jumlah, $pembayaran, $total_tarif
     );
 
     if ($stmt->execute()) {
@@ -137,6 +146,16 @@ include '../../../components/sidebar_offcanvas.php';
             $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
             include '../../../components/alert.php';
         }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
+            $type = "danger";
+            $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
+            $type = "danger";
+            $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
+            include '../../../components/alert.php';
+        }?>
 
 
         <form method="POST" action="create">
@@ -170,7 +189,11 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="telp_pengirim" class="form-label fw-semibold">No Telp Pengirim</label>
-              <input type="text" class="form-control" id="telp_pengirim" name="telp_pengirim" required>
+              <input type="tel" class="form-control" id="telp_pengirim" name="telp_pengirim" 
+                     pattern="[0-9]{10,15}" 
+                     title="Nomor telepon harus 10-15 digit angka (contoh: 081234567890)" 
+                     placeholder="contoh: 081234567890"
+                     required>
             </div>
 
             <div class="col-md-6">
@@ -180,7 +203,11 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="telp_penerima" class="form-label fw-semibold">No Telp Penerima</label>
-              <input type="text" class="form-control" id="telp_penerima" name="telp_penerima" required>
+              <input type="tel" class="form-control" id="telp_penerima" name="telp_penerima" 
+                     pattern="[0-9]{10,15}" 
+                     title="Nomor telepon harus 10-15 digit angka (contoh: 081234567890)" 
+                     placeholder="contoh: 081234567890"
+                     required>
             </div>
 
             <div class="col-md-6">
@@ -199,9 +226,9 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
 
             <div class="col-md-6">
-              <label for="jasa_pengiriman" class="form-label fw-semibold">Jasa Pengiriman</label>
-              <select name="jasa_pengiriman" id="jasa_pengiriman" class="form-select" required>
-                <option value="">-- Pilih Jasa Pengiriman --</option>
+              <label for="pembayaran" class="form-label fw-semibold">Metode Pembayaran</label>
+              <select name="pembayaran" id="pembayaran" class="form-select" required>
+                <option value="">-- Pilih Metode Pembayaran --</option>
                 <option value="Transfer">Transfer</option>
                 <option value="Cash">Cash</option>
                 <option value="Bayar di Tempat">Bayar di Tempat</option>

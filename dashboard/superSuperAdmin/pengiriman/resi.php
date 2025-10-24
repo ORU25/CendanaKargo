@@ -295,7 +295,7 @@ if ($result->num_rows > 0) {
                         <th style="width:44%;">Nama Barang</th>
                         <th style="width:13%;">Berat</th>
                         <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Jasa Pengiriman</th>
+                        <th style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -304,7 +304,7 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['nama_barang']?></td>
                         <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
                         <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['jasa_pengiriman']?></td>
+                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
                         <td></td>
@@ -409,7 +409,7 @@ if ($result->num_rows > 0) {
                         <th style="width:44%;">Nama Barang</th>
                         <th style="width:13%;">Berat</th>
                         <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Jasa Pengiriman</th>
+                        <th style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -418,7 +418,7 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['nama_barang']?></td>
                         <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
                         <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['jasa_pengiriman']?></td>
+                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
                         <td></td>
@@ -523,7 +523,7 @@ if ($result->num_rows > 0) {
                         <th style="width:44%;">Nama Barang</th>
                         <th style="width:13%;">Berat</th>
                         <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Jasa Pengiriman</th>
+                        <th style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -532,7 +532,7 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['nama_barang']?></td>
                         <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
                         <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['jasa_pengiriman']?></td>
+                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
                         <td></td>

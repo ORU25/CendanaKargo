@@ -149,7 +149,7 @@
                             <tbody>
                                 <?php if (empty($pengirimans)): ?>
                                     <tr>
-                                        <td colspan="9" class="text-center py-5 text-muted">
+                                        <td colspan="10" class="text-center py-5 text-muted">
                                             <i class="fa-solid fa-box"></i>
                                             <p class="mb-0">Tidak ada data pengiriman<?= $search ? ' yang cocok dengan pencarian' : '' ?>.</p>
                                         </td>
@@ -159,10 +159,10 @@
                                         // Tentukan warna badge
                                         $badgeClass = 'secondary';
                                         switch(strtolower($p['status'])) {
-                                            case 'dalam proses': $badgeClass = 'warning'; break;
-                                            case 'dalam pengiriman': $badgeClass = 'primary'; break;
+                                            case 'bkd': $badgeClass = 'warning'; break;
+                                            case 'dalam perjalanan': $badgeClass = 'primary'; break;
                                             case 'sampai tujuan': $badgeClass = 'info'; break;
-                                            case 'selesai': $badgeClass = 'success'; break;
+                                            case 'pod': $badgeClass = 'success'; break;
                                             case 'dibatalkan': $badgeClass = 'danger'; break;
                                         }
                                     ?>
@@ -175,7 +175,7 @@
                                         <td class="small"><?= htmlspecialchars($p['cabang_penerima']); ?></td>
                                         <td class="text-end fw-semibold">Rp <?= number_format($p['total_tarif'], 0, ',', '.'); ?></td>
                                         <td class="small"><?= date('d/m/Y', strtotime($p['tanggal'])); ?></td>
-                                        <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
+                                        <td><span class="text-uppercase badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
                                         <td class="text-center">
                                             <a href="detail?id=<?= (int)$p['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
                                                 <i class="fa-solid fa-eye"></i>
