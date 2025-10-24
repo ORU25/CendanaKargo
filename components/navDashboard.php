@@ -1,7 +1,7 @@
 <nav class="navbar navbar-dark bg-danger">
   <div class="container-fluid">
         <div class="d-flex align-items-center">
-            
+            <img src="<?= BASE_URL; ?>assets/clk.png" alt="cendana logo" width="40" height="40" class="me-2">
             <a class="navbar-brand m-0" href="<?= BASE_URL; ?>">PT Cendana Lintas Kargo</a>
         </div>
     <div class="d-lg-flex">
