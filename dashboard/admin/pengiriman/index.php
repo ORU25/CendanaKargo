@@ -82,7 +82,7 @@ $stmt->close();
 
 <div class="container-fluid">
   <div class="row">
-        <?php include '../../../components/sidebaradmin.php'; ?>
+        <?php include '../../../components/sidebar.php'; ?>
 
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">

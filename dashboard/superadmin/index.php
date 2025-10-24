@@ -13,7 +13,7 @@
     include '../../config/database.php';
     
     // Get statistics
-    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman");
+    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman ");
     $stmt->execute();
     $total_pengiriman = $stmt->get_result()->fetch_assoc()['total'];
     $stmt->close();
@@ -31,11 +31,6 @@
     $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE status = 'selesai'");
     $stmt->execute();
     $selesai = $stmt->get_result()->fetch_assoc()['total'];
-    $stmt->close();
-    
-    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM kantor_cabang");
-    $stmt->execute();
-    $total_cabang = $stmt->get_result()->fetch_assoc()['total'];
     $stmt->close();
     
     $stmt = $conn->prepare("SELECT COUNT(*) as total FROM user");
@@ -72,6 +67,7 @@
             <div class="mb-4">
                 <h1 class="h3 mb-1 fw-bold">Dashboard SuperAdmin</h1>
                 <p class="text-muted small mb-0">Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>! Kelola semua data sistem Cendana Kargo</p>
+                <p class="text-muted small fw-semibold">Cabang: <?= htmlspecialchars($_SESSION['cabang']); ?></p>
             </div>
 
             <?php if(isset($_GET['already_logined'])){ ?>
@@ -97,7 +93,7 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="text-decoration-none text-primary small">
+                                <a href="pengiriman/" class="text-decoration-none text-primary small">
                                     Lihat Semua →
                                 </a>
                             </div>
@@ -168,26 +164,6 @@
 
             <!-- Statistics Cards Row 2 -->
             <div class="row g-4 mb-4">
-                <!-- Kantor Cabang -->
-                <div class="col-xl-4 col-md-6">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Kantor Cabang</p>
-                                    <h2 class="mb-0 fw-bold"><?= $total_cabang; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" class="text-decoration-none text-primary small mt-2 d-inline-block">
-                                        Kelola Cabang →
-                                    </a>
-                                </div>
-                                <div class="p-3 bg-danger bg-opacity-50 rounded">
-                                    <i class="fa-solid fa-building"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Total User -->
                 <div class="col-xl-4 col-md-6">
                     <div class="card border-0 shadow-sm h-100">
@@ -196,7 +172,7 @@
                                 <div>
                                     <p class="text-muted mb-1 small">Total User</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_user; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                    <a href="user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
                                         Kelola User →
                                     </a>
                                 </div>
@@ -216,7 +192,7 @@
                                 <div>
                                     <p class="text-muted mb-1 small">Tarif Aktif</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_tarif; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                    <a href="tarif/" class="text-decoration-none text-primary small mt-2 d-inline-block">
                                         Kelola Tarif →
                                     </a>
                                 </div>
@@ -234,7 +210,7 @@
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold">Pengiriman Terbaru</h5>
-                        <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="btn btn-sm btn-outline-primary">
+                        <a href="pengiriman/" class="btn btn-sm btn-outline-primary">
                             Lihat Semua
                         </a>
                     </div>
@@ -282,7 +258,7 @@
                                                 <span class="badge text-bg-<?= $badgeClass; ?>  bg-opacity-75"><?= htmlspecialchars($row['status']); ?></span>
                                             </td>
                                             <td class="text-center">
-                                                <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
+                                                <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
                                             </td>

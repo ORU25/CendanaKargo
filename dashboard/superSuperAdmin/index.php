@@ -97,7 +97,7 @@
                                 </div>
                             </div>
                             <div class="mt-3">
-                                <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="text-decoration-none text-primary small">
+                                <a href="pengiriman/" class="text-decoration-none text-primary small">
                                     Lihat Semua →
                                 </a>
                             </div>
@@ -176,7 +176,7 @@
                                 <div>
                                     <p class="text-muted mb-1 small">Kantor Cabang</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_cabang; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                    <a href="kantor_cabang/" class="text-decoration-none text-primary small mt-2 d-inline-block">
                                         Kelola Cabang →
                                     </a>
                                 </div>
@@ -196,7 +196,7 @@
                                 <div>
                                     <p class="text-muted mb-1 small">Total User</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_user; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                    <a href="user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
                                         Kelola User →
                                     </a>
                                 </div>
@@ -216,7 +216,7 @@
                                 <div>
                                     <p class="text-muted mb-1 small">Tarif Aktif</p>
                                     <h2 class="mb-0 fw-bold"><?= $total_tarif; ?></h2>
-                                    <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                    <a href="tarif/" class="text-decoration-none text-primary small mt-2 d-inline-block">
                                         Kelola Tarif →
                                     </a>
                                 </div>
@@ -234,7 +234,7 @@
                 <div class="card-header bg-white border-0 py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0 fw-bold">Pengiriman Terbaru</h5>
-                        <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" class="btn btn-sm btn-outline-primary">
+                        <a href="pengiriman/" class="btn btn-sm btn-outline-primary">
                             Lihat Semua
                         </a>
                     </div>
@@ -282,7 +282,7 @@
                                                 <span class="badge text-bg-<?= $badgeClass; ?>  bg-opacity-75"><?= htmlspecialchars($row['status']); ?></span>
                                             </td>
                                             <td class="text-center">
-                                                <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
+                                                <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
                                                     <i class="fa-solid fa-eye"></i>
                                                 </a>
                                             </td>

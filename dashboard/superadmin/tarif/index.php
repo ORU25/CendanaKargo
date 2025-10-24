@@ -156,7 +156,10 @@
                                 <?php endforeach; ?>
                                 <?php if (empty($tarifs)): ?>
                                 <tr>
-                                    <td colspan="5" class="text-center">No cabang found.</td>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="fa-solid fa-box"></i>
+                                        <p class="mb-0">Tidak ada data tarif</p>
+                                    </td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>

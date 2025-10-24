@@ -66,7 +66,7 @@
 
 <div class="container-fluid">
   <div class="row">
-        <?php include '../../../components/sidebaradmin.php'; ?>
+        <?php include '../../../components/sidebar.php'; ?>
 
     <!-- Konten utama -->
     <div class="col-lg-10 bg-light">

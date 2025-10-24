@@ -149,7 +149,7 @@
                             <tbody>
                                 <?php if (empty($pengirimans)): ?>
                                     <tr>
-                                        <td colspan="9" class="text-center py-5 text-muted">
+                                        <td colspan="10" class="text-center py-5 text-muted">
                                             <i class="fa-solid fa-box"></i>
                                             <p class="mb-0">Tidak ada data pengiriman<?= $search ? ' yang cocok dengan pencarian' : '' ?>.</p>
                                         </td>

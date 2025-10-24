@@ -138,7 +138,7 @@ include '../../../components/sidebar_offcanvas_admin.php';
 
 <div class="container-fluid">
   <div class="row">
-    <?php include '../../../components/sidebaradmin.php'; ?>
+    <?php include '../../../components/sidebar.php'; ?>
 
     <div class="col-lg-10 py-4 px-5">
       <div class="card shadow-sm p-4" style="max-width: 800px;">

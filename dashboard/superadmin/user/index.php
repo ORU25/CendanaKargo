@@ -20,6 +20,7 @@
     $sql = "SELECT u.id, u.username, u.role, c.kode_cabang 
         FROM user AS u 
         LEFT JOIN kantor_cabang AS c ON u.id_cabang = c.id 
+        WHERE u.role != 'superSuperAdmin'
         ORDER BY u.id ASC";
     $result = $conn->query($sql);
 

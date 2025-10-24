@@ -1,36 +1,75 @@
-<?php if(isset($page)): ?>
+<?php if(isset($page) && $_SESSION['role']): ?>
 <div class="col-lg-2 d-none d-lg-block bg-white border-end vh-100 p-0">
     <div class="list-group list-group-flush custom-sidebar">
+        <?php if($_SESSION['role'] == 'superSuperAdmin'): ?>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/pengiriman/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/surat_jalan/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/tarif/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-tags me-2"></i> Tarif
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/kantor_cabang/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-building me-2"></i> Kantor Cabang
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/user/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-user-gear me-2"></i> User
+            </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
-        </a>
+        <?php elseif($_SESSION['role'] == 'superAdmin'): ?>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/pengiriman/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/surat_jalan/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/tarif/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-tags me-2"></i> Tarif
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/user/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-user-gear me-2"></i> User
+            </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
-        </a>
+        <?php elseif($_SESSION['role'] == 'admin'): ?>
+            <a href="<?= BASE_URL; ?>dashboard/admin/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
+            </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
-        </a>
+            <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
+            </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-tags me-2"></i> Tarif
-        </a>
+            <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
+            </a>
 
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/kantor_cabang/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-building me-2"></i> Kantor Cabang
-        </a>
-
-        <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-user-gear me-2"></i> User
-        </a>
+            <a href="<?= BASE_URL; ?>dashboard/admin/barang_masuk/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
+            </a> 
+        <?php endif; ?>
 
     </div>
 
