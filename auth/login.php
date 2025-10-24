@@ -4,6 +4,10 @@
 
     if (isset($_SESSION['user_id'])) {
         // Kalau role superadmin, arahkan ke dashboard superadmin
+        if ($_SESSION['role'] == 'superSuperAdmin') {
+            header("Location: ../dashboard/superSuperAdmin/?already_logined");
+            exit;
+        }
         if ($_SESSION['role'] == 'superAdmin') {
             header("Location: ../dashboard/superadmin/?already_logined");
             exit;
@@ -44,8 +48,11 @@
               }
             }
 
-            if ($user['role'] == 'superAdmin') {
-                header("Location: ../dashboard/superadmin/");
+            if ($user['role'] == 'superSuperAdmin') {
+                header("Location: ../dashboard/superSuperAdmin/");
+                exit;
+            } elseif ($user['role'] == 'superAdmin') {
+                header("Location: ../dashboard/superAdmin/");
                 exit;
             } elseif ($user['role'] == 'admin') {
                 header("Location: ../dashboard/admin/");
