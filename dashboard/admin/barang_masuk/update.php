@@ -100,8 +100,6 @@ include '../../../components/sidebar_offcanvas.php';
           <div class="mb-4">
             <label for="status" class="form-label fw-semibold">Status</label>
             <select class="form-select" id="status" name="status" required>
-              <option value="diproses" <?= ($pengiriman['status'] == 'diproses') ? 'selected' : '' ?>>Diproses</option>
-              <option value="dikirim" <?= ($pengiriman['status'] == 'dikirim') ? 'selected' : '' ?>>Dikirim</option>
               <option value="selesai" <?= ($pengiriman['status'] == 'selesai') ? 'selected' : '' ?>>Selesai</option>
             </select>
           </div>

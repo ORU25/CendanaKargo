@@ -64,7 +64,7 @@
 ?>
 
 <?php
-    $page = "pengiriman";
+    $page = "barang_masuk";
     include '../../../templates/header.php';
     include '../../../components/navDashboard.php';
     include '../../../components/sidebar_offcanvas.php';
@@ -263,8 +263,6 @@
               <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
               <select class="form-select form-select-lg" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
-                <option value="dalam proses">Dalam Proses</option>
-                <option value="dalam pengiriman">Dalam Pengiriman</option>
                 <option value="sampai tujuan">Sampai Tujuan</option>
                 <option value="selesai">Selesai</option>
                 <option value="dibatalkan">Dibatalkan</option>

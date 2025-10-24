@@ -20,19 +20,12 @@
            class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
            <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
         </a> 
-
-        <!-- perlu perbaikan -->
-        <a href="<?= BASE_URL; ?>dashboard/admin/barang_keluar/" 
-           class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_keluar' ? 'active bg-danger text-white border-0' : ''; ?>">
-           <i class="fa-solid fa-boxes-packing me-2"></i> Barang Keluar
-        </a>
     </div>
 
     <div class="text-center mt-3 mb-3">
         <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger btn-sm rounded-2 w-60 px-3 shadow-sm">
             <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
         </a>
-        <!-- sampe sini -->
     </div>
 </div>
 <?php endif; ?>
