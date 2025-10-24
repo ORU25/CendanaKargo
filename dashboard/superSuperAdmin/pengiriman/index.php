@@ -160,7 +160,7 @@
                                         $badgeClass = 'secondary';
                                         switch(strtolower($p['status'])) {
                                             case 'bkd': $badgeClass = 'warning'; break;
-                                            case 'dalam perjalanan': $badgeClass = 'primary'; break;
+                                            case 'dalam pengiriman': $badgeClass = 'primary'; break;
                                             case 'sampai tujuan': $badgeClass = 'info'; break;
                                             case 'pod': $badgeClass = 'success'; break;
                                             case 'dibatalkan': $badgeClass = 'danger'; break;

@@ -140,7 +140,7 @@
                                     case 'bkd':
                                         $badgeClass = 'warning';
                                         break;
-                                    case 'dalam perjalanan':
+                                    case 'dalam pengiriman':
                                         $badgeClass = 'primary';
                                         break;
                                     case 'sampai tujuan':
@@ -249,7 +249,7 @@
                         case 'bkd':
                             $currentBadgeClass = 'warning';
                             break;
-                        case 'dalam perjalanan':
+                        case 'dalam pengiriman':
                             $currentBadgeClass = 'primary';
                             break;
                         case 'sampai tujuan':
@@ -271,7 +271,7 @@
               <select class="form-select form-select-lg" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
                 <option value="bkd">Booked (BKD)</option>
-                <option value="dalam perjalanan">Dalam Perjalanan</option>
+                <option value="dalam pengiriman">Dalam Pengiriman</option>
                 <option value="sampai tujuan">Sampai Tujuan</option>
                 <option value="pod">Proof of Delivery (POD)</option>
                 <option value="dibatalkan">Dibatalkan</option>

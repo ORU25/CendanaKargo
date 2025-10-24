@@ -50,7 +50,7 @@ CREATE TABLE Pengiriman (
     tanggal DATETIME NOT NULL,
     diskon DECIMAL(10,2) DEFAULT 0,
     total_tarif DECIMAL(10,2) NOT NULL,
-    status ENUM('bkd', 'dalam perjalanan', 'sampai tujuan', 'pod', 'dibatalkan') DEFAULT 'bkd',
+    status ENUM('bkd', 'dalam pengiriman', 'sampai tujuan', 'pod', 'dibatalkan') DEFAULT 'bkd',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
