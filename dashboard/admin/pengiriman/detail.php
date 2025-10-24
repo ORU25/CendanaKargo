@@ -214,7 +214,11 @@
                     </div>
                 </div>
             </div>
-
+                <div class="d-flex justify-content-end mt-4">
+                    <a href="resi.php?id=<?= (int)$pengiriman['id']; ?>" class="btn btn-secondary btn-md" target="_blank">
+                    <i class="fa-solid fa-receipt me-2"></i> Cetak Resi
+                    </a>
+                </div>
         </div>
     </div>
   </div>
