@@ -84,7 +84,7 @@ CREATE TABLE detail_surat_jalan (
 
 CREATE TABLE pengambilan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    id_user INT NOT NULL,
+    id_user INT,
     no_resi VARCHAR(50) NOT NULL,
     nama_pengambil VARCHAR(100) NOT NULL,
     telp_pengambil VARCHAR(20) NOT NULL,
