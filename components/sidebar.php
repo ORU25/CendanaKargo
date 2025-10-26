@@ -1,5 +1,5 @@
 <?php if(isset($page) && $_SESSION['role']): ?>
-<div class="col-lg-2 d-none d-lg-block bg-white border-end vh-100 p-0">
+<div class="col-lg-2 d-none d-lg-block bg-white border-end min-vh-100 p-0">
     <div class="list-group list-group-flush custom-sidebar">
         <?php if($_SESSION['role'] == 'superSuperAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/" 

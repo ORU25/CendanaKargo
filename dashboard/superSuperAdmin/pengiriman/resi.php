@@ -308,7 +308,7 @@ if ($result->num_rows > 0) {
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Total</td>
@@ -423,7 +423,7 @@ if ($result->num_rows > 0) {
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Total</td>
@@ -538,7 +538,7 @@ if ($result->num_rows > 0) {
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
                     <tr class="total-row">
                         <td colspan="4">Total</td>
