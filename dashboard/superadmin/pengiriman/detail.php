@@ -53,7 +53,28 @@
             }
             $stmt->close();
         }
+
+        if($pengiriman['cabang_pengirim'] != $_SESSION['cabang'] && $pengiriman['cabang_penerima'] != $_SESSION['cabang']){
+            header("Location: ./?error=not_found");
+            exit;
+        }
+
+        //ambil data user
+        if ($pengiriman) {
+            $stmt = $conn->prepare('SELECT username FROM user WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $pengiriman['id_user']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    $userData = $result->fetch_assoc();
+                    $pengiriman['user'] = $userData['username'];
+                }
+                $stmt->close();
+            }
+        }
     }
+    
 
     if (!$pengiriman) {
         header("Location: ./?error=not_found");
@@ -96,6 +117,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h4 mb-1 fw-bold">Detail Pengiriman</h1>
+                    <p class="text-muted small mb-0">Dibuat oleh:  <span class="fw-semibold"><?= htmlspecialchars($pengiriman['user']); ?></span></p>
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
@@ -117,17 +139,25 @@
                                     <small class="opacity-75 d-block">Tanggal</small>
                                     <strong><?= date('d/m/Y', strtotime($pengiriman['tanggal'])); ?></strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Berat</small>
                                     <strong><?= number_format($pengiriman['berat'], 1); ?> kg</strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Jumlah</small>
                                     <strong><?= (int)$pengiriman['jumlah']; ?> item</strong>
                                 </div>
+                                <div class="col-6 col-md-2">
+                                    <small class="opacity-75 d-block">Diskon</small>
+                                    <?php if($pengiriman['diskon'] == 0): ?>
+                                        <strong>-</strong>
+                                    <?php else: ?>
+                                        <strong><?= number_format($pengiriman['diskon'], 1); ?>%</strong>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="col-6 col-md-3">
-                                    <small class="opacity-75 d-block">Jasa</small>
-                                    <strong><?= htmlspecialchars($pengiriman['jasa_pengiriman']); ?></strong>
+                                    <small class="opacity-75 d-block">Metode Pembayaran</small>
+                                    <strong><?= htmlspecialchars($pengiriman['pembayaran']); ?></strong>
                                 </div>
                             </div>
                         </div>
@@ -137,7 +167,7 @@
                             <?php
                                 $badgeClass = 'secondary';
                                 switch(strtolower($pengiriman['status'])) {
-                                    case 'dalam proses':
+                                    case 'bkd':
                                         $badgeClass = 'warning';
                                         break;
                                     case 'dalam pengiriman':
@@ -146,7 +176,7 @@
                                     case 'sampai tujuan':
                                         $badgeClass = 'info';
                                         break;
-                                    case 'selesai':
+                                    case 'pod':
                                         $badgeClass = 'success';
                                         break;
                                     case 'dibatalkan':
@@ -154,7 +184,7 @@
                                         break;
                                 }
                             ?>
-                            <span class="px-3 py-2 badge rounded-pill text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
+                            <span class="text-uppercase px-3 py-2 badge rounded-pill text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
                         </div>
                     </div>
                 </div>
@@ -246,7 +276,7 @@
                 <?php
                     $currentBadgeClass = 'secondary';
                     switch(strtolower($pengiriman['status'])) {
-                        case 'dalam proses':
+                        case 'bkd':
                             $currentBadgeClass = 'warning';
                             break;
                         case 'dalam pengiriman':
@@ -255,7 +285,7 @@
                         case 'sampai tujuan':
                             $currentBadgeClass = 'info';
                             break;
-                        case 'selesai':
+                        case 'pod':
                             $currentBadgeClass = 'success';
                             break;
                         case 'dibatalkan':
@@ -263,17 +293,17 @@
                             break;
                     }
                 ?>
-                <span class="badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
+                <span class="text-uppercase badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
               </div>
             </div>
             <div class="mb-3">
               <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
               <select class="form-select form-select-lg" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
-                <option value="dalam proses">Dalam Proses</option>
+                <option value="bkd">Booked (BKD)</option>
                 <option value="dalam pengiriman">Dalam Pengiriman</option>
                 <option value="sampai tujuan">Sampai Tujuan</option>
-                <option value="selesai">Selesai</option>
+                <option value="pod">Proof of Delivery (POD)</option>
                 <option value="dibatalkan">Dibatalkan</option>
               </select>
               <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>

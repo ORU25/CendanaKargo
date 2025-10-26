@@ -14,6 +14,14 @@
     
     $title = "Pengiriman - Cendana Kargo";
     
+    // Ambil id_cabang user dari session
+    $id_cabang_user = $_SESSION['id_cabang'] ?? null;
+    
+    if (!$id_cabang_user) {
+        header("Location: ../../../?error=no_branch");
+        exit;
+    }
+    
     // Pagination settings
     $limit = 10; // Data per halaman
     $page_num = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
@@ -22,34 +30,54 @@
     // Search functionality
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     
-    // Get total records
+    // Get total records (hanya pengiriman dari atau ke cabang user)
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?");
+        $stmt = $conn->prepare("
+            SELECT COUNT(*) as total FROM pengiriman 
+            WHERE (id_cabang_pengirim = ? OR id_cabang_penerima = ?) 
+            AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
+        ");
         $searchParam = "%$search%";
-        $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
+        $stmt->bind_param('iissss', $id_cabang_user, $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
         $stmt->close();
     } else {
-        $result = $conn->query("SELECT COUNT(*) as total FROM pengiriman");
+        $stmt = $conn->prepare("
+            SELECT COUNT(*) as total FROM pengiriman 
+            WHERE id_cabang_pengirim = ? OR id_cabang_penerima = ?
+        ");
+        $stmt->bind_param('ii', $id_cabang_user, $id_cabang_user);
+        $stmt->execute();
+        $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
+        $stmt->close();
     }
     
     $total_pages = ceil($total_records / $limit);
     
-    // Get paginated data
+    // Get paginated data (hanya pengiriman dari atau ke cabang user)
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt = $conn->prepare("
+            SELECT * FROM pengiriman 
+            WHERE (id_cabang_pengirim = ? OR id_cabang_penerima = ?) 
+            AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?) 
+            ORDER BY id DESC LIMIT ? OFFSET ?
+        ");
         $searchParam = "%$search%";
-        $stmt->bind_param('ssssii', $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
+        $stmt->bind_param('iissssii', $id_cabang_user, $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman ORDER BY id DESC LIMIT ? OFFSET ?");
-        $stmt->bind_param('ii', $limit, $offset);
+        $stmt = $conn->prepare("
+            SELECT * FROM pengiriman 
+            WHERE id_cabang_pengirim = ? OR id_cabang_penerima = ? 
+            ORDER BY id DESC LIMIT ? OFFSET ?
+        ");
+        $stmt->bind_param('iiii', $id_cabang_user, $id_cabang_user, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
@@ -159,10 +187,10 @@
                                         // Tentukan warna badge
                                         $badgeClass = 'secondary';
                                         switch(strtolower($p['status'])) {
-                                            case 'dalam proses': $badgeClass = 'warning'; break;
+                                            case 'bkd': $badgeClass = 'warning'; break;
                                             case 'dalam pengiriman': $badgeClass = 'primary'; break;
                                             case 'sampai tujuan': $badgeClass = 'info'; break;
-                                            case 'selesai': $badgeClass = 'success'; break;
+                                            case 'pod': $badgeClass = 'success'; break;
                                             case 'dibatalkan': $badgeClass = 'danger'; break;
                                         }
                                     ?>
@@ -175,7 +203,7 @@
                                         <td class="small"><?= htmlspecialchars($p['cabang_penerima']); ?></td>
                                         <td class="text-end fw-semibold">Rp <?= number_format($p['total_tarif'], 0, ',', '.'); ?></td>
                                         <td class="small"><?= date('d/m/Y', strtotime($p['tanggal'])); ?></td>
-                                        <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
+                                        <td><span class="text-uppercase badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
                                         <td class="text-center">
                                             <a href="detail?id=<?= (int)$p['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
                                                 <i class="fa-solid fa-eye"></i>

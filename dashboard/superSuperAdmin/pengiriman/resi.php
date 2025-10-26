@@ -17,6 +17,9 @@ $sql = "SELECT * FROM pengiriman WHERE id = $id";
 $result = $conn->query($sql);
 if ($result->num_rows > 0) {
     $pengiriman = $result->fetch_assoc();
+}else{
+    header("Location: ./?error=not_found");
+    exit;
 }
 ?>
 
