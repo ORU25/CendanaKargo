@@ -53,7 +53,23 @@
             }
             $stmt->close();
         }
+
+        //ambil data user
+        if ($pengiriman) {
+            $stmt = $conn->prepare('SELECT username FROM user WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $pengiriman['id_user']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    $userData = $result->fetch_assoc();
+                    $pengiriman['user'] = $userData['username'];
+                }
+                $stmt->close();
+            }
+        }
     }
+    
 
     if (!$pengiriman) {
         header("Location: ./?error=not_found");
@@ -96,6 +112,7 @@
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h4 mb-1 fw-bold">Detail Pengiriman</h1>
+                    <p class="text-muted small mb-0">Dibuat oleh:  <span class="fw-semibold"><?= htmlspecialchars($pengiriman['user']); ?></span></p>
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">

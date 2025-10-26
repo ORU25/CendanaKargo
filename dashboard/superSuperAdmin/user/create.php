@@ -133,7 +133,7 @@ include '../../../components/sidebar_offcanvas.php';
 
           <div class="mb-4">
             <label for="cabang" class="form-label fw-semibold">Kantor Cabang</label>
-            <select class="form-select" id="cabang" name="id_cabang">
+            <select class="form-select" id="cabang" name="id_cabang" required>
               <option value="">-- Pilih Cabang --</option>
               <?php if (!empty($cabangs)): ?>
                 <?php foreach ($cabangs as $cabang): ?>

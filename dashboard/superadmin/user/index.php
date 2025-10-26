@@ -20,7 +20,8 @@
     $sql = "SELECT u.id, u.username, u.role, c.kode_cabang 
         FROM user AS u 
         LEFT JOIN kantor_cabang AS c ON u.id_cabang = c.id 
-        WHERE u.role != 'superSuperAdmin'
+        WHERE u.role = 'admin'
+        AND u.id_cabang = " . intval($_SESSION['id_cabang']) . "
         ORDER BY u.id ASC";
     $result = $conn->query($sql);
 
@@ -75,8 +76,8 @@
                 $message = "User berhasil dihapus";
                 include '../../../components/alert.php';
             }?>
-            <?php if(isset($_GET['success']) && $_GET['success'] == 'cannot_delete_self'){
-                $type = "success";
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'cannot_delete_self'){
+                $type = "danger";
                 $message = "Tidak dapat menghapus user sendiri";
                 include '../../../components/alert.php';
             }?>
@@ -119,10 +120,10 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                                        <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary">
                                             <i class="fa-solid fa-pen-to-square"></i>
                                         </a>
-                                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger">
                                             <i class="fa-solid fa-trash"></i>
                                         </button>
                                     </td>
@@ -155,6 +156,14 @@
                                     </div>
                                 </div>
                                 <?php endforeach; ?>
+                                <?php if (empty($users)): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fa-solid fa-box"></i>
+                                            <p class="mb-0">Tidak ada User</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

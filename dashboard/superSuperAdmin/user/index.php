@@ -154,6 +154,14 @@
                                     </div>
                                 </div>
                                 <?php endforeach; ?>
+                                <?php if (empty($users)): ?>
+                                    <tr>
+                                        <td colspan="7" class="text-center py-5 text-muted">
+                                            <i class="fa-solid fa-box"></i>
+                                            <p class="mb-0">Tidak ada User</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>

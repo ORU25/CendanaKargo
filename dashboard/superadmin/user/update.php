@@ -17,15 +17,16 @@ if (empty($_SESSION['csrf_token'])) {
 include '../../../config/database.php';
 $title = "Dashboard - Cendana Kargo";
 
-# --- Ambil data kantor cabang ---
-$sqlCabang = "SELECT * FROM kantor_cabang ORDER BY id ASC";
-$resultCabang = $conn->query($sqlCabang);
-$cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) : [];
-
 # --- Ambil data user berdasarkan ID ---
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $sql = "SELECT * FROM user WHERE id = $id";
+
+    if($id == $_SESSION['user_id']){
+        header("Location: ./?error=not_found");
+        exit;
+    }
+
+    $sql = "SELECT * FROM user WHERE id = $id AND id_cabang = " . intval($_SESSION['id_cabang']) . "";
     $result = $conn->query($sql);
     if ($result->num_rows > 0) {
         $user = $result->fetch_assoc();
@@ -34,6 +35,8 @@ if (isset($_GET['id'])) {
         exit;
     }
 }
+
+
 
 # --- Proses update ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -44,8 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id = intval($_POST['id']);
     $username = trim($_POST['username']);
-    $role = $_POST['role'];
-    $id_cabang = !empty($_POST['id_cabang']) ? $_POST['id_cabang'] : null;
 
     $check_stmt = $conn->prepare("SELECT id FROM user WHERE username = ? AND id != ?");
     $check_stmt->bind_param("si", $username, $id);
@@ -87,8 +88,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $id_cabang_param = $id_cabang ? (int)$id_cabang : null;
 
-    $stmt = $conn->prepare("UPDATE user SET username = ?, password = ?, role = ?, id_cabang = ? WHERE id = ?");
-    $stmt->bind_param("sssii", $username, $password_hash, $role, $id_cabang_param, $id);
+    $stmt = $conn->prepare("UPDATE user SET username = ?, password = ?  WHERE id = ?");
+    $stmt->bind_param("ssi", $username, $password_hash,   $id);
 
     if ($stmt->execute()) {
         header("Location: ./?success=updated");
@@ -141,14 +142,6 @@ include '../../../components/sidebar_offcanvas.php';
                 <input type="text" class="form-control" id="username" name="username"
                         value="<?= isset($user['username']) ? htmlspecialchars($user['username']) : "" ?>" required>
                 </div>
-                <div class="col-md-6">
-                <label for="role" class="form-label fw-semibold">Role</label>
-                <select class="form-select" id="role" name="role" required>
-                    <option value="">Select Role</option>
-                    <option value="admin" <?= ($user['role'] ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
-                    <option value="superAdmin" <?= ($user['role'] ?? '') === 'superAdmin' ? 'selected' : '' ?>>Super Admin</option>
-                </select>
-                </div>
             </div>
 
             <!-- Baris 2: Password & Confirm Password -->
@@ -161,25 +154,6 @@ include '../../../components/sidebar_offcanvas.php';
                 <label for="confirm_pasword" class="form-label fw-semibold">Confirm Password</label>
                 <input type="password" class="form-control" id="confirm_pasword" name="confirm_pasword">
                 </div>
-            </div>
-
-            <!-- Baris 3: Kantor Cabang -->
-            <div class="mb-3">
-                <label for="cabang" class="form-label fw-semibold">Kantor Cabang</label>
-                <select class="form-select" id="cabang" name="id_cabang">
-                <option value="">Tidak ada (Pusat)</option>
-                <?php if (!empty($cabangs)): ?>
-                    <?php foreach ($cabangs as $cabang): ?>
-                        <option 
-                            value="<?= htmlspecialchars($cabang['id']); ?>" 
-                            <?= (!empty($user['id_cabang']) && $user['id_cabang'] == $cabang['id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                        </option>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <option disabled>Tidak ada cabang tersedia</option>
-                <?php endif; ?>
-                </select>
             </div>
 
             <p class="text-danger small">Kosongkan password jika tidak ingin mengganti</p>

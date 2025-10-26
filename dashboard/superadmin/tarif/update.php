@@ -24,7 +24,7 @@ $cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) 
 // Ambil data tarif berdasarkan ID
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $sql = "SELECT * FROM tarif_pengiriman WHERE id = $id";
+    $sql = "SELECT * FROM tarif_pengiriman WHERE id = $id AND id_cabang_asal = " . intval($_SESSION['id_cabang']) . "";
     $result = $conn->query($sql);
     if ($result->num_rows > 0) {
         $tarif = $result->fetch_assoc();
@@ -55,6 +55,12 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $status_safe = mysqli_real_escape_string($conn, $status);
 
     $id = intval($_POST['id']);
+
+    if($asal_safe == $tujuan_safe){
+        header("Location: update?id=$id&error=same_cabang");
+        exit;
+    }
+
     $checkQuery = "SELECT COUNT(*) AS total 
                    FROM tarif_pengiriman 
                    WHERE id_cabang_asal = '$asal_safe' 
@@ -101,6 +107,9 @@ include '../../../components/sidebar_offcanvas.php';
     <!-- Konten utama -->
     <div class="col-lg-10 d-flex align-items-start justify-content-start py-4 px-5">
       <div class="card shadow-sm p-4" style="width: 100%; max-width: 750px;">
+
+        <h3 class="text-danger fw-bold mb-4">Edit Tarif Pengiriman</h3>
+
         <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
             $type = "danger";
             $message = "Gagal memperbarui data tarif";
@@ -112,7 +121,11 @@ include '../../../components/sidebar_offcanvas.php';
             include '../../../components/alert.php';
         }?>
 
-        <h3 class="text-danger fw-bold mb-4">Edit Tarif Pengiriman</h3>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'same_cabang'){
+            $type = "danger";
+            $message = "Cabang asal dan tujuan tidak boleh sama.";
+            include '../../../components/alert.php';
+        }?>
 
         <form action="update" method="POST">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
@@ -122,16 +135,8 @@ include '../../../components/sidebar_offcanvas.php';
           <div class="row mb-3">
             <div class="col-md-6">
               <label for="id_cabang_asal" class="form-label fw-semibold">Dari Cabang</label>
-              <select class="form-select" id="id_cabang_asal" name="id_cabang_asal" required>
-                <option value="">-- Pilih Cabang Asal --</option>
-                <?php foreach ($cabangs as $cabang): ?>
-                  <option 
-                    value="<?= htmlspecialchars($cabang['id']); ?>" 
-                    <?= (!empty($tarif['id_cabang_asal']) && $tarif['id_cabang_asal'] == $cabang['id']) ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
+              <input type="text" class="form-control" value="<?= $_SESSION['cabang'] ?>" readonly>
+              <input type="hidden" name="id_cabang_asal" value="<?= $_SESSION['id_cabang'] ?>">
             </div>
 
             <div class="col-md-6">

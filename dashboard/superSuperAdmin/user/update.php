@@ -25,6 +25,10 @@ $cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) 
 # --- Ambil data user berdasarkan ID ---
 if (isset($_GET['id'])) {
     $id = intval($_GET['id']);
+    if($id == $_SESSION['user_id']){
+        header("Location: ./?error=not_found");
+        exit;
+    }
     $sql = "SELECT * FROM user WHERE id = $id";
     $result = $conn->query($sql);
     if ($result->num_rows > 0) {
@@ -167,7 +171,6 @@ include '../../../components/sidebar_offcanvas.php';
             <div class="mb-3">
                 <label for="cabang" class="form-label fw-semibold">Kantor Cabang</label>
                 <select class="form-select" id="cabang" name="id_cabang">
-                <option value="">Tidak ada (Pusat)</option>
                 <?php if (!empty($cabangs)): ?>
                     <?php foreach ($cabangs as $cabang): ?>
                         <option 

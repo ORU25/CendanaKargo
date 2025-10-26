@@ -42,6 +42,11 @@
         $tarif_safe = mysqli_real_escape_string($conn, $tarif);
         $batas_berat_safe = mysqli_real_escape_string($conn, $batas_berat);
         $tarif_tambahan_perkg_safe = mysqli_real_escape_string($conn, $tarif_tambahan_perkg);
+        
+        if($asal_safe == $tujuan_safe){
+            header("Location: create?error=same_cabang");
+            exit;
+        }
 
         $checkQuery = "SELECT COUNT(*) AS total FROM tarif_pengiriman 
                     WHERE id_cabang_asal = '$asal_safe' 
@@ -95,6 +100,11 @@
             $message = "Tarif sudah ada";
             include '../../../components/alert.php';
         }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'same_cabang'){
+            $type = "danger";
+            $message = "Cabang asal dan tujuan tidak boleh sama.";
+            include '../../../components/alert.php';
+        }?>
 
 
         <form action="create" method="POST">
@@ -104,13 +114,9 @@
             <!-- Kolom kiri -->
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="id_cabang_asal" class="form-label fw-semibold">Dari Cabang</label>
-                <select class="form-select" id="id_cabang_asal" name="id_cabang_asal" required>
-                  <option value="">-- Pilih Cabang Asal --</option>
-                  <?php foreach ($cabangs as $cabang): ?>
-                    <option value="<?= $cabang['id']; ?>"><?= htmlspecialchars($cabang['nama_cabang']); ?></option>
-                  <?php endforeach; ?>
-                </select>
+                <label class="form-label fw-semibold">Dari Cabang</label>
+                <input type="text" class="form-control" value="<?= $_SESSION['cabang'] ?>" readonly>
+                <input type="hidden" name="id_cabang_asal" value="<?= $_SESSION['id_cabang'] ?>">
               </div>
 
               <div class="mb-3">

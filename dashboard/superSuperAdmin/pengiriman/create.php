@@ -149,6 +149,8 @@ include '../../../components/sidebar_offcanvas.php';
 
     <!-- Konten utama -->
     <div class="col-lg-10 py-4 ps-5 row">
+      
+      <!-- Form Create -->
       <div class="card shadow-sm p-4 col-12 col-lg-7">
         <h4 class="fw-bold mb-4 text-danger">Tambah Pengiriman</h4>
 
@@ -269,7 +271,8 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </form>
       </div>
-            <!-- Estimasi Biaya -->
+
+      <!-- Estimasi Biaya -->
       <div class="col-12 col-lg-5 px-0 px-lg-2 mt-4 mt-lg-0">
         <div id="estimasiBiaya" class="card shadow-sm p-4 ">
           <h5 class="fw-bold mb-4 text-danger">Estimasi Biaya</h5>

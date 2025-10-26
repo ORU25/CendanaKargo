@@ -55,6 +55,10 @@ if($_SERVER['REQUEST_METHOD'] === 'POST'){
     $status_safe = mysqli_real_escape_string($conn, $status);
 
     $id = intval($_POST['id']);
+    if($asal_safe == $tujuan_safe){
+        header("Location: update?id=$id&error=same_cabang");
+        exit;
+    }
     $checkQuery = "SELECT COUNT(*) AS total 
                    FROM tarif_pengiriman 
                    WHERE id_cabang_asal = '$asal_safe' 
@@ -101,6 +105,8 @@ include '../../../components/sidebar_offcanvas.php';
     <!-- Konten utama -->
     <div class="col-lg-10 d-flex align-items-start justify-content-start py-4 px-5">
       <div class="card shadow-sm p-4" style="width: 100%; max-width: 750px;">
+
+        <h3 class="text-danger fw-bold mb-4">Edit Tarif Pengiriman</h3>
         <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
             $type = "danger";
             $message = "Gagal memperbarui data tarif";
@@ -112,7 +118,11 @@ include '../../../components/sidebar_offcanvas.php';
             include '../../../components/alert.php';
         }?>
 
-        <h3 class="text-danger fw-bold mb-4">Edit Tarif Pengiriman</h3>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'same_cabang'){
+            $type = "danger";
+            $message = "Cabang asal dan tujuan tidak boleh sama.";
+            include '../../../components/alert.php';
+        }?>
 
         <form action="update" method="POST">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">

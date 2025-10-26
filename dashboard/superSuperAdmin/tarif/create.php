@@ -43,6 +43,11 @@
         $batas_berat_safe = mysqli_real_escape_string($conn, $batas_berat);
         $tarif_tambahan_perkg_safe = mysqli_real_escape_string($conn, $tarif_tambahan_perkg);
 
+        if($asal_safe == $tujuan_safe){
+            header("Location: create?error=same_cabang");
+            exit;
+        }
+
         $checkQuery = "SELECT COUNT(*) AS total FROM tarif_pengiriman 
                     WHERE id_cabang_asal = '$asal_safe' 
                     AND id_cabang_tujuan = '$tujuan_safe'";
@@ -93,6 +98,11 @@
         <?php if(isset($_GET['error']) && $_GET['error'] == 'duplicate'){
             $type = "danger";
             $message = "Tarif sudah ada";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'same_cabang'){
+            $type = "danger";
+            $message = "Cabang asal dan tujuan tidak boleh sama.";
             include '../../../components/alert.php';
         }?>
 

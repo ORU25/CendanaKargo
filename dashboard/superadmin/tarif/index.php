@@ -28,6 +28,7 @@
             FROM tarif_pengiriman tp
             JOIN kantor_cabang ca ON tp.id_cabang_asal = ca.id
             JOIN kantor_cabang ct ON tp.id_cabang_tujuan = ct.id
+            WHERE tp.id_cabang_asal = " . intval($_SESSION['id_cabang']) . "
             order by ca.kode_cabang asc;";
 
     $result = $conn->query($sql);
