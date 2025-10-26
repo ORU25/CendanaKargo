@@ -16,6 +16,29 @@
 
     include '../../../config/database.php';
     
+    // Handle update status
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
+            exit;
+        }
+        $id_update = (int)($_POST['id'] ?? 0);
+        $status_baru = trim((string)($_POST['status'] ?? ''));
+        if ($id_update > 0 && $status_baru !== '') {
+            $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
+            if ($stmt) {
+                $stmt->bind_param('si', $status_baru, $id_update);
+                if ($stmt->execute()) {
+                    header('Location: detail?id=' . $id_update . '&success=updated');
+                    exit;
+                }
+                $stmt->close();
+            }
+        }
+        header('Location: detail?error=update_failed');
+        exit;
+    }
+
     // Ambil data pengiriman
     $pengiriman = null;
     if(isset($_GET['id'])) {
@@ -30,7 +53,28 @@
             }
             $stmt->close();
         }
+
+        if($pengiriman['cabang_pengirim'] != $_SESSION['cabang']){
+            header("Location: ./?error=not_found");
+            exit;
+        }
+
+        //ambil data user
+        if ($pengiriman) {
+            $stmt = $conn->prepare('SELECT username FROM user WHERE id = ? LIMIT 1');
+            if ($stmt) {
+                $stmt->bind_param('i', $pengiriman['id_user']);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                if ($result->num_rows > 0) {
+                    $userData = $result->fetch_assoc();
+                    $pengiriman['user'] = $userData['username'];
+                }
+                $stmt->close();
+            }
+        }
     }
+    
 
     if (!$pengiriman) {
         header("Location: ./?error=not_found");
@@ -49,20 +93,37 @@
 
 <div class="container-fluid">
   <div class="row">
-        <?php include '../../../components/sidebar.php'; ?>
+    <?php include '../../../components/sidebar.php'; ?>
 
     <!-- Konten utama -->
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">
+            <!-- Alerts -->
+            <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'): ?>
+                <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                    <strong>✓ Berhasil!</strong> Status pengiriman berhasil diperbarui.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'update_failed'): ?>
+                <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                    <strong>✗ Gagal!</strong> Tidak dapat memperbarui status pengiriman.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
             <!-- Header -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h4 mb-1 fw-bold">Detail Pengiriman</h1>
-                    <p class="text-muted small mb-0">No. Resi: 
-                        <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span>
-                    </p>
+                    <p class="text-muted small mb-0">Dibuat oleh:  <span class="fw-semibold"><?= htmlspecialchars($pengiriman['user']); ?></span></p>
+                    <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
+                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
+                        Update Status
+                    </button>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>
             </div>
@@ -78,17 +139,25 @@
                                     <small class="opacity-75 d-block">Tanggal</small>
                                     <strong><?= date('d/m/Y', strtotime($pengiriman['tanggal'])); ?></strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Berat</small>
                                     <strong><?= number_format($pengiriman['berat'], 1); ?> kg</strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Jumlah</small>
                                     <strong><?= (int)$pengiriman['jumlah']; ?> item</strong>
                                 </div>
+                                <div class="col-6 col-md-2">
+                                    <small class="opacity-75 d-block">Diskon</small>
+                                    <?php if($pengiriman['diskon'] == 0): ?>
+                                        <strong>-</strong>
+                                    <?php else: ?>
+                                        <strong><?= number_format($pengiriman['diskon'], 1); ?>%</strong>
+                                    <?php endif; ?>
+                                </div>
                                 <div class="col-6 col-md-3">
-                                    <small class="opacity-75 d-block">Jasa</small>
-                                    <strong><?= htmlspecialchars($pengiriman['jasa_pengiriman']); ?></strong>
+                                    <small class="opacity-75 d-block">Metode Pembayaran</small>
+                                    <strong><?= htmlspecialchars($pengiriman['pembayaran']); ?></strong>
                                 </div>
                             </div>
                         </div>
@@ -98,7 +167,7 @@
                             <?php
                                 $badgeClass = 'secondary';
                                 switch(strtolower($pengiriman['status'])) {
-                                    case 'dalam proses':
+                                    case 'bkd':
                                         $badgeClass = 'warning';
                                         break;
                                     case 'dalam pengiriman':
@@ -107,7 +176,7 @@
                                     case 'sampai tujuan':
                                         $badgeClass = 'info';
                                         break;
-                                    case 'selesai':
+                                    case 'pod':
                                         $badgeClass = 'success';
                                         break;
                                     case 'dibatalkan':
@@ -115,16 +184,14 @@
                                         break;
                                 }
                             ?>
-                            <span class="px-3 py-2 badge rounded-pill text-bg-<?= $badgeClass; ?>">
-                                <?= htmlspecialchars($pengiriman['status']); ?>
-                            </span>
+                            <span class="text-uppercase px-3 py-2 badge rounded-pill text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Detail Cards -->
-            <div class="row g-3 text-capitalize">
+            <div class="row g-3 text-capitalize mb-4">
                 <!-- Pengirim -->
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100">
@@ -178,14 +245,76 @@
                 </div>
             </div>
 
-            <!-- Tombol Cetak -->
-            <div class="d-flex justify-content-end mt-4">
-                <a href="resi.php?id=<?= (int)$pengiriman['id']; ?>" 
-                   class="btn btn-secondary btn-md" target="_blank">
-                    <i class="fa-solid fa-receipt me-2"></i> Cetak Resi
+            <div class="d-flex justify-content-end">
+                <a href="resi?id=<?= (int)$pengiriman['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
+                    <i class="fa-solid fa-receipt"></i>
+                    Cetak Resi
                 </a>
             </div>
+
         </div>
+    </div>
+  </div>
+
+  <!-- Modal Update Status -->
+  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <form method="POST" action="">
+          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+          <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
+          <input type="hidden" name="update_status" value="1">
+          
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold" id="updateStatusModalLabel">Update Status</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body px-4 py-3">
+            <div class="mb-3">
+              <label class="form-label small text-muted">Status Saat Ini</label>
+              <div class="p-3 bg-light rounded">
+                <?php
+                    $currentBadgeClass = 'secondary';
+                    switch(strtolower($pengiriman['status'])) {
+                        case 'bkd':
+                            $currentBadgeClass = 'warning';
+                            break;
+                        case 'dalam pengiriman':
+                            $currentBadgeClass = 'primary';
+                            break;
+                        case 'sampai tujuan':
+                            $currentBadgeClass = 'info';
+                            break;
+                        case 'pod':
+                            $currentBadgeClass = 'success';
+                            break;
+                        case 'dibatalkan':
+                            $currentBadgeClass = 'danger';
+                            break;
+                    }
+                ?>
+                <span class="text-uppercase badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
+              <select class="form-select form-select-lg" id="status" name="status" required>
+                <option value="">-- Pilih Status --</option>
+                <option value="bkd">Booked (BKD)</option>
+                <option value="dalam pengiriman">Dalam Pengiriman</option>
+                <option value="sampai tujuan">Sampai Tujuan</option>
+                <option value="pod">Proof of Delivery (POD)</option>
+                <option value="dibatalkan">Dibatalkan</option>
+              </select>
+              <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>
+            </div>
+          </div>
+          <div class="modal-footer border-0 pt-0">
+            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+            <button type="submit" class="btn btn-warning">Simpan</button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 </div>

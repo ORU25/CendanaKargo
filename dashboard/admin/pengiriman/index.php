@@ -169,10 +169,10 @@ $stmt->close();
                                     <?php foreach ($pengirimans as $p): 
                                         $badgeClass = 'secondary';
                                         switch(strtolower($p['status'])) {
-                                            case 'dalam proses': $badgeClass = 'warning'; break;
+                                            case 'bkd': $badgeClass = 'warning'; break;
                                             case 'dalam pengiriman': $badgeClass = 'primary'; break;
                                             case 'sampai tujuan': $badgeClass = 'info'; break;
-                                            case 'selesai': $badgeClass = 'success'; break;
+                                            case 'pod': $badgeClass = 'success'; break;
                                             case 'dibatalkan': $badgeClass = 'danger'; break;
                                         }
                                     ?>
@@ -185,7 +185,7 @@ $stmt->close();
                                         <td class="small"><?= htmlspecialchars($p['cabang_penerima']); ?></td>
                                         <td class="text-end fw-semibold">Rp <?= number_format($p['total_tarif'], 0, ',', '.'); ?></td>
                                         <td class="small"><?= date('d/m/Y', strtotime($p['tanggal'])); ?></td>
-                                        <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
+                                        <td><span class="text-uppercase badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
                                         <td class="text-center">
                                             <a href="detail?id=<?= (int)$p['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
                                                 <i class="fa-solid fa-eye"></i>

@@ -34,11 +34,11 @@
     if ($search !== '') {
         $stmt = $conn->prepare("
             SELECT COUNT(*) as total FROM pengiriman 
-            WHERE (id_cabang_pengirim = ? OR id_cabang_penerima = ?) 
+            WHERE id_cabang_pengirim = ? 
             AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         ");
         $searchParam = "%$search%";
-        $stmt->bind_param('iissss', $id_cabang_user, $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam);
+        $stmt->bind_param('issss', $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
@@ -46,9 +46,9 @@
     } else {
         $stmt = $conn->prepare("
             SELECT COUNT(*) as total FROM pengiriman 
-            WHERE id_cabang_pengirim = ? OR id_cabang_penerima = ?
+            WHERE id_cabang_pengirim = ?
         ");
-        $stmt->bind_param('ii', $id_cabang_user, $id_cabang_user);
+        $stmt->bind_param('i', $id_cabang_user);
         $stmt->execute();
         $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
@@ -61,12 +61,12 @@
     if ($search !== '') {
         $stmt = $conn->prepare("
             SELECT * FROM pengiriman 
-            WHERE (id_cabang_pengirim = ? OR id_cabang_penerima = ?) 
+            WHERE id_cabang_pengirim = ? 
             AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?) 
             ORDER BY id DESC LIMIT ? OFFSET ?
         ");
         $searchParam = "%$search%";
-        $stmt->bind_param('iissssii', $id_cabang_user, $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
+        $stmt->bind_param('issssii', $id_cabang_user, $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
@@ -74,10 +74,10 @@
     } else {
         $stmt = $conn->prepare("
             SELECT * FROM pengiriman 
-            WHERE id_cabang_pengirim = ? OR id_cabang_penerima = ? 
+            WHERE id_cabang_pengirim = ? 
             ORDER BY id DESC LIMIT ? OFFSET ?
         ");
-        $stmt->bind_param('iiii', $id_cabang_user, $id_cabang_user, $limit, $offset);
+        $stmt->bind_param('iii', $id_cabang_user, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $pengirimans = $result->fetch_all(MYSQLI_ASSOC);

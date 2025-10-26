@@ -54,7 +54,7 @@
             $stmt->close();
         }
 
-        if($pengiriman['cabang_pengirim'] != $_SESSION['cabang'] && $pengiriman['cabang_penerima'] != $_SESSION['cabang']){
+        if($pengiriman['cabang_pengirim'] != $_SESSION['cabang']){
             header("Location: ./?error=not_found");
             exit;
         }
