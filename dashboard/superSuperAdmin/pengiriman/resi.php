@@ -177,7 +177,7 @@ if ($result->num_rows > 0) {
         font-size: 7px;
     }
     .item-row td {
-        height: 45px;
+        height: 30px;
         vertical-align: top;
     }
     .total-row td {
@@ -307,10 +307,11 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
-                        <td></td>
-                        <td>Jumlah</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4">Diskon</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4">Total</td>
                         <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>
@@ -351,7 +352,7 @@ if ($result->num_rows > 0) {
             </div>
         </div>
     </div>
-    
+
     <!-- RESI 2 -->
     <div class="resi">
         <div class="header-top">
@@ -421,10 +422,11 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
-                        <td></td>
-                        <td>Jumlah</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4">Diskon</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4">Total</td>
                         <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>
@@ -535,10 +537,11 @@ if ($result->num_rows > 0) {
                         <td class="text-center"><?=$pengiriman['pembayaran']?></td>
                     </tr>
                     <tr class="total-row">
-                        <td></td>
-                        <td>Jumlah</td>
-                        <td></td>
-                        <td></td>
+                        <td colspan="4">Diskon</td>
+                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?>%</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4">Total</td>
                         <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>

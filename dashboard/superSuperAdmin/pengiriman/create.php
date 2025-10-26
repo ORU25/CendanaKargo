@@ -36,7 +36,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_barang = trim($_POST['nama_barang']);
     $berat = (float) trim($_POST['berat']);
     $jumlah = (int) trim($_POST['jumlah']);
+    $diskon = isset($_POST['diskon']) && $_POST['diskon'] !== '' ? (float) trim($_POST['diskon']) : 0;
     $pembayaran = trim($_POST['pembayaran']);
+
+    // Validasi diskon (0-100%)
+    if ($diskon < 0 || $diskon > 100) {
+        header("Location: create?error=invalid_diskon");
+        exit;
+    }
 
     if (!preg_match('/^[0-9]{10,15}$/', $telp_pengirim)) {
         header("Location: create?error=invalid_phone_pengirim");
@@ -62,11 +69,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $batas_berat = (float) $data_tarif['batas_berat_dasar'];
     $tarif_tambahan = (float) $data_tarif['tarif_tambahan_perkg'];
 
+    // Hitung tarif sebelum diskon
     if ($berat <= $batas_berat) {
-        $total_tarif = $tarif_dasar;
+        $tarif_sebelum_diskon = $tarif_dasar;
     } else {
         $lebih = $berat - $batas_berat;
-        $total_tarif = $tarif_dasar + ($lebih * $tarif_tambahan);
+        $tarif_sebelum_diskon = $tarif_dasar + ($lebih * $tarif_tambahan);
+    }
+
+    // Hitung total tarif setelah diskon
+    if ($diskon > 0) {
+        $nominal_diskon = ($tarif_sebelum_diskon * $diskon) / 100;
+        $total_tarif = $tarif_sebelum_diskon - $nominal_diskon;
+    } else {
+        $total_tarif = $tarif_sebelum_diskon;
     }
 
     $getCabang = $conn->prepare("SELECT id, nama_cabang, kode_cabang FROM kantor_cabang WHERE id IN (?, ?)");
@@ -99,17 +115,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO pengiriman 
         (id_user, id_cabang_pengirim, id_cabang_penerima, id_tarif, user, cabang_pengirim, cabang_penerima, 
         no_resi, nama_pengirim, telp_pengirim, nama_penerima, telp_penerima, nama_barang, 
-        berat, jumlah, pembayaran, tanggal, total_tarif)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?)
+        berat, jumlah, pembayaran, tanggal, diskon, total_tarif)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)
     ");
 
     $username = $_SESSION['username'];
     $stmt->bind_param(
-        "iiiisssssssssidss",
+        "iiiisssssssssdisdd",
         $id_user, $asal, $tujuan, $data_tarif['id'], $username,
         $nama_cabang_asal, $nama_cabang_tujuan, $no_resi,
         $nama_pengirim, $telp_pengirim, $nama_penerima, $telp_penerima,
-        $nama_barang, $berat, $jumlah, $pembayaran, $total_tarif
+        $nama_barang, $berat, $jumlah, $pembayaran, $diskon, $total_tarif
     );
 
     if ($stmt->execute()) {
@@ -154,6 +170,11 @@ include '../../../components/sidebar_offcanvas.php';
         <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
             $type = "danger";
             $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
+            include '../../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
+            $type = "danger";
+            $message = "Diskon tidak valid. Harus antara 0-100%.";
             include '../../../components/alert.php';
         }?>
 
@@ -223,6 +244,14 @@ include '../../../components/sidebar_offcanvas.php';
             <div class="col-md-6">
               <label for="jumlah" class="form-label fw-semibold">Jumlah</label>
               <input type="number" class="form-control" id="jumlah" name="jumlah" required>
+            </div>
+
+            <div class="col-md-6">
+              <label for="diskon" class="form-label fw-semibold">Diskon % (opsional)</label>
+              <input type="number" class="form-control" id="diskon" name="diskon" 
+                     min="0" max="100" step="0.01"
+                     placeholder="Masukkan diskon 0-100%">
+              <small class="text-muted">Kosongkan jika tidak ada diskon</small>
             </div>
 
             <div class="col-md-6">

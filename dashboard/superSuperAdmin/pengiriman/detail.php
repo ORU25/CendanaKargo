@@ -117,13 +117,21 @@
                                     <small class="opacity-75 d-block">Tanggal</small>
                                     <strong><?= date('d/m/Y', strtotime($pengiriman['tanggal'])); ?></strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Berat</small>
                                     <strong><?= number_format($pengiriman['berat'], 1); ?> kg</strong>
                                 </div>
-                                <div class="col-6 col-md-3">
+                                <div class="col-6 col-md-2">
                                     <small class="opacity-75 d-block">Jumlah</small>
                                     <strong><?= (int)$pengiriman['jumlah']; ?> item</strong>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <small class="opacity-75 d-block">Diskon</small>
+                                    <?php if($pengiriman['diskon'] == 0): ?>
+                                        <strong>-</strong>
+                                    <?php else: ?>
+                                        <strong><?= number_format($pengiriman['diskon'], 1); ?>%</strong>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="col-6 col-md-3">
                                     <small class="opacity-75 d-block">Metode Pembayaran</small>
