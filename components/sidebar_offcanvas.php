@@ -43,6 +43,10 @@
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
+            <a href="<?= BASE_URL; ?>dashboard/superadmin/barang_masuk/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
+            </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
@@ -72,10 +76,6 @@
             <a href="<?= BASE_URL; ?>dashboard/admin/barang_masuk/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
-            </a>
-            <a href="<?= BASE_URL; ?>dashboard/admin/barang_keluar/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_keluar' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-boxes-packing me-2"></i> Barang Keluar
             </a>
             <?php endif; ?>
         </div>

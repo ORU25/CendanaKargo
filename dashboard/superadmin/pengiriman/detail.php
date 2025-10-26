@@ -121,9 +121,11 @@
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
+                    <?php if($pengiriman['status'] == 'bkd'): ?>
                     <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
                         Update Status
                     </button>
+                    <?php endif; ?>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>
             </div>
@@ -301,9 +303,6 @@
               <select class="form-select form-select-lg" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
                 <option value="bkd">Booked (BKD)</option>
-                <option value="dalam pengiriman">Dalam Pengiriman</option>
-                <option value="sampai tujuan">Sampai Tujuan</option>
-                <option value="pod">Proof of Delivery (POD)</option>
                 <option value="dibatalkan">Dibatalkan</option>
               </select>
               <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>

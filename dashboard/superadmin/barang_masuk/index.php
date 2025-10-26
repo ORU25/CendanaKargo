@@ -5,7 +5,7 @@ if(!isset($_SESSION['username'])){
     exit;
 }
 
-if(isset($_SESSION['role']) && $_SESSION['role'] !== 'admin'){
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
     header("Location: ../../../?error=unauthorized");
     exit;
 }
@@ -14,10 +14,11 @@ include '../../../config/database.php';
 
 $title = "Barang Masuk - Cendana Kargo";
 
-// Pastikan cabang admin terset di session
-$cabang_admin = $_SESSION['cabang'] ?? ''; // misalnya: 'Balikpapan'
-if (empty($cabang_admin)) {
-    die("Cabang admin tidak ditemukan di session. Pastikan diset saat login.");
+$cabang_admin = $_SESSION['cabang'] ?? null;
+
+if (!$cabang_admin) {
+    header("Location: ../../../?error=no_branch_assigned");
+    exit;
 }
 
 // Pagination
@@ -82,6 +83,7 @@ if ($search !== '') {
     $stmt->bind_param('sssii', $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
 }
 
+
 $stmt->execute();
 $result = $stmt->get_result();
 $barang_masuk = $result->fetch_all(MYSQLI_ASSOC);
@@ -112,12 +114,6 @@ include '../../../components/sidebar_offcanvas.php';
             </p>
           </div>
         </div>
-
-       <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'){
-                $type = "success";
-                $message = "Pengiriman berhasil sampai tujuan";
-                include '../../../components/alert.php';
-        }?>
 
         <!-- Search -->
         <div class="card border-0 shadow-sm mb-4">
@@ -188,7 +184,7 @@ include '../../../components/sidebar_offcanvas.php';
                     <td class="small"><?= htmlspecialchars($b['cabang_penerima']); ?></td>
                     <td class="text-end fw-semibold">Rp <?= number_format($b['total_tarif'], 0, ',', '.'); ?></td>
                     <td class="small"><?= date('d/m/Y', strtotime($b['tanggal'])); ?></td>
-                    <td><span class="text-uppercase badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($b['status']); ?></span></td>
+                    <td><span class="badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($b['status']); ?></span></td>
                     <td class="text-center">
                       <div class="d-flex justify-content-center gap-2">
                           <a href="detail?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">

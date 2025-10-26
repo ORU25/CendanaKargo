@@ -16,29 +16,6 @@
 
     include '../../../config/database.php';
     
-    // Handle update status
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-            header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
-            exit;
-        }
-        $id_update = (int)($_POST['id'] ?? 0);
-        $status_baru = trim((string)($_POST['status'] ?? ''));
-        if ($id_update > 0 && $status_baru !== '') {
-            $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
-            if ($stmt) {
-                $stmt->bind_param('si', $status_baru, $id_update);
-                if ($stmt->execute()) {
-                    header('Location: detail?id=' . $id_update . '&success=updated');
-                    exit;
-                }
-                $stmt->close();
-            }
-        }
-        header('Location: detail?error=update_failed');
-        exit;
-    }
-
     // Ambil data pengiriman
     $pengiriman = null;
     if(isset($_GET['id'])) {
@@ -121,9 +98,6 @@
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
-                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        Update Status
-                    </button>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>
             </div>
@@ -253,68 +227,6 @@
             </div>
 
         </div>
-    </div>
-  </div>
-
-  <!-- Modal Update Status -->
-  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg">
-        <form method="POST" action="">
-          <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
-          <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
-          <input type="hidden" name="update_status" value="1">
-          
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title fw-bold" id="updateStatusModalLabel">Update Status</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body px-4 py-3">
-            <div class="mb-3">
-              <label class="form-label small text-muted">Status Saat Ini</label>
-              <div class="p-3 bg-light rounded">
-                <?php
-                    $currentBadgeClass = 'secondary';
-                    switch(strtolower($pengiriman['status'])) {
-                        case 'bkd':
-                            $currentBadgeClass = 'warning';
-                            break;
-                        case 'dalam pengiriman':
-                            $currentBadgeClass = 'primary';
-                            break;
-                        case 'sampai tujuan':
-                            $currentBadgeClass = 'info';
-                            break;
-                        case 'pod':
-                            $currentBadgeClass = 'success';
-                            break;
-                        case 'dibatalkan':
-                            $currentBadgeClass = 'danger';
-                            break;
-                    }
-                ?>
-                <span class="text-uppercase badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
-              </div>
-            </div>
-            <div class="mb-3">
-              <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
-              <select class="form-select form-select-lg" id="status" name="status" required>
-                <option value="">-- Pilih Status --</option>
-                <option value="bkd">Booked (BKD)</option>
-                <option value="dalam pengiriman">Dalam Pengiriman</option>
-                <option value="sampai tujuan">Sampai Tujuan</option>
-                <option value="pod">Proof of Delivery (POD)</option>
-                <option value="dibatalkan">Dibatalkan</option>
-              </select>
-              <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>
-            </div>
-          </div>
-          <div class="modal-footer border-0 pt-0">
-            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-warning">Simpan</button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 </div>
