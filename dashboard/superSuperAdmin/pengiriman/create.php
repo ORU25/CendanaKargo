@@ -129,6 +129,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if ($stmt->execute()) {
+        // Ambil ID pengiriman yang baru dibuat
+        $id_pengiriman_baru = $conn->insert_id;
+        
+        // Insert log status awal (BKD)
+        $status_awal = 'bkd';
+        $keterangan_awal = 'Pengiriman dibuat oleh ' . $username;
+        $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, NULL, ?, ?, ?)');
+        if ($stmt_log) {
+            $stmt_log->bind_param('issi', $id_pengiriman_baru, $status_awal, $keterangan_awal, $id_user);
+            $stmt_log->execute();
+            $stmt_log->close();
+        }
+        
         header("Location: index?success=created&resi=$no_resi");
         exit;
     } else {

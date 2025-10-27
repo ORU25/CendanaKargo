@@ -50,6 +50,27 @@
                 $stmt->close();
             }
         }
+
+            // log perubahan status
+            $logs = [];
+            if ($pengiriman) {
+                $stmt_logs = $conn->prepare('
+                    SELECT l.*, u.username 
+                    FROM log_status_pengiriman l 
+                    LEFT JOIN user u ON l.diubah_oleh = u.id 
+                    WHERE l.id_pengiriman = ? 
+                    ORDER BY l.waktu_perubahan DESC
+                ');
+                if ($stmt_logs) {
+                    $stmt_logs->bind_param('i', $id);
+                    $stmt_logs->execute();
+                    $result_logs = $stmt_logs->get_result();
+                    while ($row = $result_logs->fetch_assoc()) {
+                        $logs[] = $row;
+                    }
+                    $stmt_logs->close();
+                }
+            }
     }
     
 
@@ -217,6 +238,10 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Timeline Log Perubahan Status -->
+                <?php include '../../../components/logStatusPengiriman.php'; ?>
+                
             </div>
 
             <div class="d-flex justify-content-end">
