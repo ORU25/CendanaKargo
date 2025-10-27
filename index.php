@@ -551,7 +551,7 @@
       // Translate status based on current language
       let translatedStatus = data.status;
       switch(data.status.toLowerCase()) {
-        case 'dalam proses':
+        case 'bkd':
           translatedStatus = getCurrentTranslation('statusDalamProses');
           break;
         case 'dalam pengiriman':
@@ -560,7 +560,7 @@
         case 'sampai tujuan':
           translatedStatus = getCurrentTranslation('statusSampaiTujuan');
           break;
-        case 'selesai':
+        case 'pod':
           translatedStatus = getCurrentTranslation('statusSelesai');
           break;
         case 'dibatalkan':
@@ -574,7 +574,7 @@
       let backgroundColor, textColor;
       
       switch(data.status.toLowerCase()) {
-        case 'dalam proses':
+        case 'bkd':
           // warning - kuning
           backgroundColor = '#fff3cd';
           textColor = '#856404';
@@ -589,7 +589,7 @@
           backgroundColor = '#d1ecf1';
           textColor = '#0c5460';
           break;
-        case 'selesai':
+        case 'pod':
           // success - hijau
           backgroundColor = '#d4edda';
           textColor = '#155724';
