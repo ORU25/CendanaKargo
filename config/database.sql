@@ -47,7 +47,7 @@ CREATE TABLE Pengiriman (
     berat DECIMAL(10,2) NOT NULL,
     jumlah INT DEFAULT 1,
     pembayaran ENUM('cash', 'transfer', 'bayar di tempat') NOT NULL,
-    tanggal DATETIME NOT NULL,
+    tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     diskon DECIMAL(10,2) DEFAULT 0,
     total_tarif DECIMAL(10,2) NOT NULL,
     status ENUM('bkd', 'dalam pengiriman', 'sampai tujuan', 'pod', 'dibatalkan') DEFAULT 'bkd',
@@ -66,7 +66,7 @@ CREATE TABLE Surat_jalan (
     user VARCHAR(50) NOT NULL,
     cabang_pengirim VARCHAR(100) NOT NULL,
     cabang_penerima VARCHAR(100) NOT NULL,
-    tanggal DATETIME NOT NULL,
+    tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     driver VARCHAR(100) NOT NULL,
     status ENUM('draft','dalam perjalanan', 'sampai tujuan', 'dibatalkan') DEFAULT 'draft',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
@@ -88,7 +88,7 @@ CREATE TABLE pengambilan (
     no_resi VARCHAR(50) NOT NULL,
     nama_pengambil VARCHAR(100) NOT NULL,
     telp_pengambil VARCHAR(20) NOT NULL,
-    tanggal DATETIME NOT NULL,
+    tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL
 );
 

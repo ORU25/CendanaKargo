@@ -43,8 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Nama dan nomor telepon pengambil wajib diisi.";
     } else {
         $stmt = $conn->prepare("
-            INSERT INTO pengambilan (id_user, no_resi, nama_pengambil, telp_pengambil, tanggal)
-            VALUES (?, ?, ?, ?, NOW())
+            INSERT INTO pengambilan (id_user, no_resi, nama_pengambil, telp_pengambil)
+            VALUES (?, ?, ?, ?)
         ");
         $stmt->bind_param("isss", $id_user, $pengiriman['no_resi'], $nama_pengambil, $telp_pengambil);
         $stmt->execute();

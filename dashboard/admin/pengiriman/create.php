@@ -106,8 +106,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO pengiriman 
         (id_user, id_cabang_pengirim, id_cabang_penerima, id_tarif, user, cabang_pengirim, cabang_penerima, 
         no_resi, nama_pengirim, telp_pengirim, nama_penerima, telp_penerima, nama_barang, 
-        berat, jumlah, pembayaran, tanggal, diskon, total_tarif)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), ?, ?)
+        berat, jumlah, pembayaran, diskon, total_tarif)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $username = $_SESSION['username'];
