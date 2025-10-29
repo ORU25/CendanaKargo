@@ -12,7 +12,6 @@
 
     include '../../config/database.php';
     
-    // Get statistics
     $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman ");
     $stmt->execute();
     $total_pengiriman = $stmt->get_result()->fetch_assoc()['total'];

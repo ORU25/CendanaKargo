@@ -36,10 +36,14 @@
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superadmin/barang_masuk/" 
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/barang_masuk/" 
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
-            </a> 
+            </a>
+            <a href="<?= BASE_URL; ?>dashboard/superAdmin/pengambilan_barang/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-people-carry-box me-2"></i> Pengambilan Barang
+            </a>
             <a href="<?= BASE_URL; ?>dashboard/superAdmin/surat_jalan/" 
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
