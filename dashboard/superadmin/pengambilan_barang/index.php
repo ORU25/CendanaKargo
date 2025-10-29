@@ -5,20 +5,14 @@ if(!isset($_SESSION['username'])){
     exit;
 }
 
-if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'super_admin'){
     header("Location: ../../../?error=unauthorized");
     exit;
 }
 
 include '../../../config/database.php';
 
-$title = "Pengambilan Barang - Cendana Kargo";
-
-$cabang_admin = $_SESSION['cabang'] ?? null;
-if (!$cabang_admin) {
-    header("Location: ../../../?error=no_branch_assigned");
-    exit;
-}
+$title = "Pengambilan Barang - Cendana Kargo (Super Admin)";
 
 $limit = 10;
 $page_num = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
@@ -26,26 +20,24 @@ $offset = ($page_num - 1) * $limit;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
-$status_filter = ["sampai tujuan"];
+$status_filter = ["sampai tujuan", "pod"];
 
 if ($search !== '') {
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as total 
+        SELECT COUNT(*) AS total 
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status = ?
-        AND cabang_penerima = ?
+        AND status IN (?, ?)
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $cabang_admin);
+    $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1]);
 } else {
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as total 
+        SELECT COUNT(*) AS total 
         FROM pengiriman 
-        WHERE status = ?
-        AND cabang_penerima = ?
+        WHERE status IN (?, ?)
     ");
-    $stmt->bind_param('ss', $status_filter[0], $cabang_admin);
+    $stmt->bind_param('ss', $status_filter[0], $status_filter[1]);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -58,22 +50,19 @@ if ($search !== '') {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status = ?
-        AND cabang_penerima = ?
-        ORDER BY id DESC 
+        AND status IN (?, ?)
+        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC
         LIMIT ? OFFSET ?
     ");
-    $searchParam = "%$search%";
-    $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $cabang_admin, $limit, $offset);
+    $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
-        WHERE status = ?
-        AND cabang_penerima = ?
-        ORDER BY id DESC 
+        WHERE status IN (?, ?)
+        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssii', $status_filter[0], $cabang_admin, $limit, $offset);
+    $stmt->bind_param('ssii', $status_filter[0], $status_filter[1], $limit, $offset);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -87,26 +76,25 @@ include '../../../components/sidebar_offcanvas.php';
 ?>
 
 <div class="container-fluid">
-  <div class="row">
+    <div class="row">
     <?php include '../../../components/sidebar.php'; ?>
 
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">
 
-        <!-- Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
             <div>
-            <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Cabang <?= htmlspecialchars($cabang_admin); ?>)</h1>
+            <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Semua Cabang)</h1>
             <p class="text-muted small mb-0">
               Menampilkan <?= count($pengambilan_barang); ?> dari <?= $total_records; ?> data
-              <?php if ($total_pages > 1): ?>
-                  (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
-              <?php endif; ?>
+                <?php if ($total_pages > 1): ?>
+                (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
+                <?php endif; ?>
             </p>
             </div>
         </div>
 
-        <!-- Search -->
+        <!-- Pencarian -->
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-body p-3">
             <form method="GET" action="" class="row g-2 align-items-center">
@@ -120,7 +108,7 @@ include '../../../components/sidebar_offcanvas.php';
                 </div>
                 <?php if ($search): ?>
                 <div class="col-12">
-                <a href="./" class="btn btn-sm btn-outline-secondary">
+                <a href="./" class="btn btn-sm btn-outline-secondary mt-2">
                     <i class="fa-solid fa-x"></i> Hapus Pencarian
                 </a>
                 </div>
@@ -129,14 +117,14 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
         </div>
 
-        <!-- Table -->
+        <!-- Tabel data -->
         <div class="card border-0 shadow-sm">
             <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                    <th class="px-4" style="width:70px;">ID</th>
+                    <th class="px-4">ID</th>
                     <th>No Resi</th>
                     <th>Nama Barang</th>
                     <th>Pengirim</th>
@@ -153,8 +141,8 @@ include '../../../components/sidebar_offcanvas.php';
                 <?php if (empty($pengambilan_barang)): ?>
                     <tr>
                     <td colspan="11" class="text-center py-5 text-muted">
-                        <i class="fa-solid fa-box-archive fa-lg"></i>
-                        <p class="mb-0">Belum ada barang yang siap diambil<?= $search ? ' yang cocok dengan pencarian' : ''; ?> di cabang ini.</p>
+                        <i class="fa-solid fa-boxes-packing fa-lg"></i>
+                        <p class="mb-0">Belum ada data pengambilan barang<?= $search ? ' yang cocok dengan pencarian' : ''; ?>.</p>
                     </td>
                     </tr>
                 <?php else: ?>
@@ -169,13 +157,25 @@ include '../../../components/sidebar_offcanvas.php';
                     <td class="small"><?= htmlspecialchars($b['cabang_penerima']); ?></td>
                     <td class="text-end fw-semibold">Rp <?= number_format($b['total_tarif'], 0, ',', '.'); ?></td>
                     <td class="small"><?= date('d/m/Y', strtotime($b['tanggal'])); ?></td>
-                    <td><span class="badge text-bg-info"><?= htmlspecialchars($b['status']); ?></span></td>
+                    <td>
+                        <span class="badge text-bg-<?= $b['status'] === 'pod' ? 'success' : 'info'; ?>">
+                            <?= htmlspecialchars($b['status']); ?>
+                        </span>
+                    </td>
                     <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                            <a href="detail?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
-                                <i class="fa-solid fa-eye"></i>
-                            </a>
-                        </div>
+                        <?php if ($b['status'] === 'pod'): ?>
+                        <a href="detail_pod.php?id=<?= (int)$b['id']; ?>" 
+                            class="btn btn-sm btn-outline-primary" 
+                            title="Lihat Bukti POD (Proof of Delivery)">
+                            <i class="fa-solid fa-file-circle-check"></i>
+                        </a>
+                        <?php else: ?>
+                        <a href="detail?id=<?= (int)$b['id']; ?>" 
+                            class="btn btn-sm btn-outline-success" 
+                            title="Lihat Detail">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                        <?php endif; ?>
                     </td>
                     </tr>
                     <?php endforeach; ?>
@@ -186,37 +186,33 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
         </div>
 
+        <!-- Pagination -->
         <?php if ($total_pages > 1): ?>
         <div class="d-flex justify-content-between align-items-center mt-4">
             <div class="text-muted small">
             Menampilkan <?= $offset + 1; ?> - <?= min($offset + $limit, $total_records); ?> dari <?= $total_records; ?> data
             </div>
-            <nav aria-label="Navigasi halaman">
+            <nav>
             <ul class="pagination pagination-sm mb-0">
                 <li class="page-item <?= $page_num <= 1 ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&laquo;</a>
                 </li>
-            <?php
-            $range = 2;
-            for ($i = 1; $i <= $total_pages; $i++) {
-                if ($i == 1 || $i == $total_pages || ($i >= $page_num - $range && $i <= $page_num + $range)) {
+                <?php
+                for ($i = 1; $i <= $total_pages; $i++) {
                     echo '<li class="page-item '.($i == $page_num ? 'active' : '').'"><a class="page-link" href="?page='.$i.($search ? '&search='.urlencode($search) : '').'">'.$i.'</a></li>';
-                } elseif ($i == $page_num - $range - 1 || $i == $page_num + $range + 1) {
-                    echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
                 }
-            }
-            ?>
+                ?>
             <li class="page-item <?= $page_num >= $total_pages ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&raquo;</a>
             </li>
             </ul>
-        </nav>
+            </nav>
         </div>
         <?php endif; ?>
 
         </div>
     </div>
-</div>
+    </div>
 </div>
 
 <?php include '../../../templates/footer.php'; ?>

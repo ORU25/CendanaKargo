@@ -18,21 +18,45 @@ include '../../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
+        header('Location: detail?id=' . intval($_GET['id']) . '&error=invalid_csrf');
         exit;
     }
 
     $id_update = (int)($_POST['id'] ?? 0);
-    if ($id_update > 0) {
-        $status_baru = 'selesai';
-        $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
-        $stmt->bind_param('si', $status_baru, $id_update);
+    $nama_pengambil = trim($_POST['nama_pengambil'] ?? '');
+    $telp_pengambil = trim($_POST['telp_pengambil'] ?? '');
+    $id_user = $_SESSION['id'] ?? null;
+
+    if ($id_update > 0 && $nama_pengambil !== '' && $telp_pengambil !== '') {
+        $stmt = $conn->prepare("SELECT no_resi FROM pengiriman WHERE id = ?");
+        $stmt->bind_param("i", $id_update);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $data_pengiriman = $result->fetch_assoc();
+        $stmt->close();
+
+        if (!$data_pengiriman) {
+            header("Location: detail?error=not_found");
+            exit;
+        }
+
+        $no_resi = $data_pengiriman['no_resi'];
+        $status_baru = 'pod';
+
+        $stmt = $conn->prepare("INSERT INTO pengambilan (id_user, no_resi, nama_pengambil, telp_pengambil) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("isss", $id_user, $no_resi, $nama_pengambil, $telp_pengambil);
+        $stmt->execute();
+        $stmt->close();
+
+        $stmt = $conn->prepare("UPDATE pengiriman SET status = ? WHERE id = ?");
+        $stmt->bind_param("si", $status_baru, $id_update);
         if ($stmt->execute()) {
-            header('Location: index?success=completed');
+            header("Location: index?success=pod_updated");
             exit;
         }
         $stmt->close();
     }
+
     header('Location: detail?error=update_failed');
     exit;
 }
@@ -71,11 +95,13 @@ include '../../../components/sidebar_offcanvas.php';
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
                     <h1 class="h4 fw-bold mb-1">Detail Pengambilan Barang</h1>
-                    <p class="text-muted small mb-0">No Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
+                    <p class="text-muted small mb-0">No Resi: 
+                        <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span>
+                    </p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
                     <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        Tandai Selesai
+                        Tandai Selesai (POD)
                     </button>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>
@@ -92,6 +118,7 @@ include '../../../components/sidebar_offcanvas.php';
                 </div>
             </div>
 
+            <!-- Modal konfirmasi update status + input nama & telp -->
             <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
               <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content border-0 shadow">
@@ -104,13 +131,28 @@ include '../../../components/sidebar_offcanvas.php';
                       <h5 class="modal-title fw-bold">Konfirmasi Pengambilan</h5>
                       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
+
                     <div class="modal-body">
-                      <p>Apakah barang dengan resi <strong><?= htmlspecialchars($pengiriman['no_resi']); ?></strong> sudah diambil oleh penerima?</p>
-                      <p class="small text-muted mb-0">Status akan diubah menjadi <strong>"selesai"</strong>.</p>
+                      <p>Isi data berikut untuk konfirmasi pengambilan barang:</p>
+
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Nama Pengambil <span class="text-danger">*</span></label>
+                        <input type="text" name="nama_pengambil" class="form-control" required>
+                      </div>
+
+                      <div class="mb-3">
+                        <label class="form-label fw-semibold">Nomor Telepon <span class="text-danger">*</span></label>
+                        <input type="text" name="telp_pengambil" class="form-control" required pattern="[0-9+ ]+">
+                      </div>
+
+                      <p class="small text-muted mb-0">
+                        Setelah disimpan, status akan diubah menjadi <strong>"POD (Proof of Delivery)"</strong>.
+                      </p>
                     </div>
+
                     <div class="modal-footer border-0 pt-0">
                       <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                      <button type="submit" class="btn btn-success">Ya, Tandai Selesai</button>
+                      <button type="submit" class="btn btn-success">Simpan & Tandai POD</button>
                     </div>
                   </form>
                 </div>

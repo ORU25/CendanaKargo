@@ -24,26 +24,26 @@ $page_num = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] >
 $offset = ($page_num - 1) * $limit;
 
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
-$status_filter = ["sampai tujuan"];
+$status_filter = ["sampai tujuan", "pod"];
 
 if ($search !== '') {
     $stmt = $conn->prepare("
         SELECT COUNT(*) as total 
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status = ?
+        AND status IN (?, ?)
         AND cabang_penerima = ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $cabang_admin);
+    $stmt->bind_param('sssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin);
 } else {
     $stmt = $conn->prepare("
         SELECT COUNT(*) as total 
         FROM pengiriman 
-        WHERE status = ?
+        WHERE status IN (?, ?)
         AND cabang_penerima = ?
     ");
-    $stmt->bind_param('ss', $status_filter[0], $cabang_admin);
+    $stmt->bind_param('sss', $status_filter[0], $status_filter[1], $cabang_admin);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -56,21 +56,21 @@ if ($search !== '') {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status = ?
+        AND status IN (?, ?)
         AND cabang_penerima = ?
-        ORDER BY id DESC 
+        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $cabang_admin, $limit, $offset);
+    $stmt->bind_param('sssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
-        WHERE status = ?
+        WHERE status IN (?, ?)
         AND cabang_penerima = ?
-        ORDER BY id DESC 
+        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssii', $status_filter[0], $cabang_admin, $limit, $offset);
+    $stmt->bind_param('sssii', $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -88,7 +88,6 @@ include '../../../components/sidebar_offcanvas.php';
     <?php include '../../../components/sidebar.php'; ?>
     <div class="col-lg-10 bg-light">
       <div class="container-fluid p-4">
-        <!-- Header -->
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
           <div>
             <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Cabang <?= htmlspecialchars($cabang_admin); ?>)</h1>
@@ -101,6 +100,7 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
+        <!-- form pencarian tetap -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-3">
             <form method="GET" action="" class="row g-2 align-items-center">
@@ -123,6 +123,7 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
+        <!-- tabel utama -->
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0">
             <div class="table-responsive">
@@ -162,11 +163,25 @@ include '../../../components/sidebar_offcanvas.php';
                     <td class="small"><?= htmlspecialchars($b['cabang_penerima']); ?></td>
                     <td class="text-end fw-semibold">Rp <?= number_format($b['total_tarif'], 0, ',', '.'); ?></td>
                     <td class="small"><?= date('d/m/Y', strtotime($b['tanggal'])); ?></td>
-                    <td><span class="badge text-bg-info"><?= htmlspecialchars($b['status']); ?></span></td>
+                    <td>
+                        <span class="badge text-bg-<?= $b['status'] === 'pod' ? 'success' : 'info'; ?>">
+                            <?= htmlspecialchars($b['status']); ?>
+                        </span>
+                    </td>
                     <td class="text-center">
-                      <a href="detail?id=<?= (int)$b['id']; ?>" class="btn btn-sm btn-outline-success" title="Lihat Detail">
-                        <i class="fa-solid fa-eye"></i>
-                      </a>
+                      <?php if ($b['status'] === 'pod'): ?>
+                        <a href="detail_pod.php?id=<?= (int)$b['id']; ?>" 
+                          class="btn btn-sm btn-outline-primary" 
+                          title="Lihat Bukti POD (Proof of Delivery)">
+                          <i class="fa-solid fa-file-circle-check"></i>
+                        </a>
+                      <?php else: ?>
+                        <a href="detail?id=<?= (int)$b['id']; ?>" 
+                          class="btn btn-sm btn-outline-success" 
+                          title="Lihat Detail">
+                          <i class="fa-solid fa-eye"></i>
+                        </a>
+                      <?php endif; ?>
                     </td>
                   </tr>
                   <?php endforeach; ?>
@@ -177,6 +192,7 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
+        <!-- Pagination tetap -->
         <?php if ($total_pages > 1): ?>
         <div class="d-flex justify-content-between align-items-center mt-4">
           <div class="text-muted small">
