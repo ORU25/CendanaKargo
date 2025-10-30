@@ -1,7 +1,7 @@
 <?php
     session_start();
     // 1. Otorisasi dan Otentikasi
-    if(!isset($_SESSION['username'])){
+    if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
         header("Location: ../../auth/login");
         exit;
     }

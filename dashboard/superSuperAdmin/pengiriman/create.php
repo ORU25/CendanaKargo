@@ -1,6 +1,6 @@
 <?php
 session_start();
-if(!isset($_SESSION['username'])){
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
@@ -109,7 +109,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $urutan = $rUrut['total'] + 1;
     $no_resi = "{$kode_cabang_asal}{$urutan}";
 
-    $id_user = $_SESSION['id'] ?? 1;
+    $id_user = $_SESSION['user_id'];
 
     $stmt = $conn->prepare("
         INSERT INTO pengiriman 
