@@ -20,7 +20,9 @@
     $sql = "SELECT 
                 tp.id,
                 ca.kode_cabang AS dari_cabang,
+                ca.nama_cabang AS nama_dari_cabang,
                 ct.kode_cabang AS ke_cabang,
+                ct.nama_cabang AS nama_ke_cabang,
                 tp.tarif_dasar,
                 tp.batas_berat_dasar,
                 tp.tarif_tambahan_perkg,
@@ -109,22 +111,31 @@
                                         <span class="badge bg-dark">
                                             <?= htmlspecialchars($tarif['dari_cabang']); ?>
                                         </span>
+                                        <small class="d-block text-muted mt-1"><?= htmlspecialchars($tarif['nama_dari_cabang']); ?></small>
                                     </td>
                                     <td>                                        
                                         <span class="badge bg-secondary">
                                             <?= htmlspecialchars($tarif['ke_cabang']); ?>
-                                        </span></td>
-                                    <td class="tarif"><?= htmlspecialchars($tarif['tarif_dasar']); ?></td>
-                                    <td><?= htmlspecialchars($tarif['batas_berat_dasar']); ?></td>
+                                        </span>
+                                        <small class="d-block text-muted mt-1"><?= htmlspecialchars($tarif['nama_ke_cabang']); ?></small>
+                                    </td>
+                                    <td class="tarif fw-semibold"><?= htmlspecialchars($tarif['tarif_dasar']); ?></td>
+                                    <td><?= htmlspecialchars($tarif['batas_berat_dasar']); ?> kg</td>
                                     <td class="tarif"><?= htmlspecialchars($tarif['tarif_tambahan_perkg']); ?></td>
-                                    <td><?= htmlspecialchars($tarif['status']); ?></td>
                                     <td>
-                                        <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary ">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $tarif['id']; ?>" class="btn btn-sm btn-danger">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
+                                        <span class="badge text-bg-<?= $tarif['status'] == 'aktif' ? 'success' : 'secondary'; ?>">
+                                            <?= htmlspecialchars($tarif['status']); ?>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex gap-1 justify-content-center">
+                                            <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary" title="Edit">
+                                                <i class="fa-solid fa-pen-to-square"></i>
+                                            </a>
+                                            <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $tarif['id']; ?>" class="btn btn-sm btn-danger" title="Hapus">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <!-- Delete Modal -->
