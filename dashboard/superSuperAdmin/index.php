@@ -181,7 +181,8 @@
                 SUM(CASE WHEN sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS total_manifests,
                 SUM(CASE WHEN sj.status = 'draft' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_draft,
                 SUM(CASE WHEN sj.status = 'dalam perjalanan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_dalam_perjalanan,
-                SUM(CASE WHEN sj.status = 'sampai tujuan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_sampai_tujuan
+                SUM(CASE WHEN sj.status = 'sampai tujuan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_sampai_tujuan,
+                SUM(CASE WHEN sj.status = 'dibatalkan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_dibatalkan
             FROM
                 kantor_cabang kc
             LEFT JOIN
@@ -202,6 +203,7 @@
                 'count_dibuat' => $row['count_draft'],
                 'count_berangkat' => $row['count_dalam_perjalanan'],
                 'count_sampai_tujuan' => $row['count_sampai_tujuan'],
+                'count_dibatalkan' => $row['count_dibatalkan'],
             ];
         }
         $stmt->close();
@@ -257,18 +259,6 @@
     $selesai          = $selesai_filtered; 
     $total_pendapatan = $total_revenue_filtered; 
 
-
-    // 4. Get recent shipments (Filtered by date)
-    $where_clause_recent = ($filter === 'today') 
-                       ? "WHERE DATE(tanggal) = CURDATE()" 
-                       : "WHERE DATE_FORMAT(tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-
-    $stmt = $conn->prepare("SELECT * FROM Pengiriman $where_clause_recent ORDER BY id DESC LIMIT 5");
-    $stmt->execute();
-    $recent_shipments = $stmt->get_result();
-    $stmt->close();
-
-
     // Mengambil daftar semua cabang untuk perulangan tabel
     $stmt = $conn->prepare("SELECT nama_cabang FROM Kantor_cabang ORDER BY nama_cabang ASC");
     $stmt->execute();
@@ -305,24 +295,26 @@
                         <div class="px-3 py-2 rounded-3 d-inline-block" 
                             style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
                             <span class="fw-normal text-secondary" style="font-size: 0.9rem;">
-                                Data Agregat untuk periode: 
+                                Data untuk periode: 
                                 <strong class="text-dark"><?= $selected_date_display; ?></strong>
                             </span>
                         </div>
                     </div>
 
                     <!-- Filter Tombol -->
-                    <div class="btn-group" role="group" aria-label="Filter data">
-                        <span class="badge text-bg-secondary me-2 align-self-center">Periode Data:</span>
-                        <a href="?filter=month" 
-                        class="btn btn-sm <?= $filter === 'month' ? 'btn-primary' : 'btn-outline-primary'; ?>">
-                        Bulan Ini
-                        </a>
-                        <a href="?filter=today" 
-                        class="btn btn-sm <?= $filter === 'today' ? 'btn-primary' : 'btn-outline-primary'; ?>">
-                        Hari Ini
-                        </a>
-                    </div>
+                     <div>
+                         <span class="badge text-bg-secondary me-2 align-self-center">Periode Data:</span>
+                         <div class="btn-group" role="group" aria-label="Filter data">
+                             <a href="?filter=month" 
+                             class="btn btn-sm <?= $filter === 'month' ? 'btn-primary' : 'btn-outline-primary'; ?>">
+                             Bulan Ini
+                             </a>
+                             <a href="?filter=today" 
+                             class="btn btn-sm <?= $filter === 'today' ? 'btn-primary' : 'btn-outline-primary'; ?>">
+                             Hari Ini
+                             </a>
+                         </div>
+                     </div>
                 </div>
 
                 <?php if(isset($_GET['already_logined'])){ ?>
@@ -383,49 +375,48 @@
 
                 <!-- Statistics Cards Row 3 (Original, All Time) -->
                 <div class="row g-4 mb-4">
-                    
-                <!-- Kantor Cabang -->
-                <div class="col-xl-4 col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Total Kantor Cabang</p>
-                                    <h2 class="mb-0 fw-bold"><?= $total_cabang; ?></h2>
-                                    <a href="kantor_cabang/" class="text-decoration-none text-primary small mt-2 d-inline-block">
-                                        Kelola Cabang →
-                                    </a>
-                                </div>
-                                <div class="p-3 bg-success bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center" style="min-width:60px; min-height:60px;">
-                                    <i class="fa-solid fa-building text-success fs-4"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Total User -->
-                <div class="col-xl-4 col-md-6 mb-4">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <p class="text-muted mb-1 small">Total User</p>
-                                    <h2 class="mb-0 fw-bold"><?= $total_user; ?></h2>
-                                    <a href="user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
-                                        Kelola User →
-                                    </a>
-                                </div>
-                                <div class="p-3 bg-primary bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center" style="min-width:60px; min-height:60px;">
-                                    <i class="fa-solid fa-user-tie text-primary fs-4"></i>
+                    <!-- Kantor Cabang -->
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Total Kantor Cabang</p>
+                                        <h2 class="mb-0 fw-bold"><?= $total_cabang; ?></h2>
+                                        <a href="kantor_cabang/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                            Kelola Cabang →
+                                        </a>
+                                    </div>
+                                    <div class="p-3 bg-success bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center" style="min-width:60px; min-height:60px;">
+                                        <i class="fa-solid fa-building text-success fs-4"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Total Tarif -->
-                <div class="col-xl-4 col-md-6 mb-4">
+                    <!-- Total User -->
+                    <div class="col-xl-4 col-md-6 mb-4">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <p class="text-muted mb-1 small">Total User</p>
+                                        <h2 class="mb-0 fw-bold"><?= $total_user; ?></h2>
+                                        <a href="user/" class="text-decoration-none text-primary small mt-2 d-inline-block">
+                                            Kelola User →
+                                        </a>
+                                    </div>
+                                    <div class="p-3 bg-primary bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center" style="min-width:60px; min-height:60px;">
+                                        <i class="fa-solid fa-user-tie text-primary fs-4"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Total Tarif -->
+                    <div class="col-xl-4 col-md-6 mb-4">
                     <div class="card border-0 shadow-sm h-100">
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
@@ -449,43 +440,37 @@
                 <!-- ======================================================= -->
 
                 <!-- 1. Revenue Report per Branch -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="fw-bold">Laporan Pendapatan per Cabang 
-                        </h5>
-
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">Laporan Pendapatan per Cabang </h5>
+                        <p class="small text-muted mb-0">Total Pendapatan: <?= format_rupiah($total_pendapatan); ?></p>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-striped table-hover align-middle mb-0 small">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>No.</th>
+                                        <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
                                         <th>Total Pendapatan</th>
-                                        <th>Cash</th>
-                                        <th>Transfer</th>
-                                        <th>Bayar di Tempat</th>
-                                        <th>Dibatalkan</th>
+                                        <th class="text-center">Tunai (Cash/COD)</th>
+                                        <th class="text-center">Transfer</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (!empty($laporan_cabang)) { 
-                                        $no = 1;
-                                        foreach ($laporan_cabang as $row) { ?>
-                                            <tr>
-                                                <td><?= $no++; ?></td>
-                                                <td><?= htmlspecialchars($row['nama_cabang']); ?></td>
-                                                <td><?= format_rupiah($row['total_pendapatan']); ?></td>
-                                                <td><?= format_rupiah($row['cash']); ?></td>
-                                                <td><?= format_rupiah($row['transfer']); ?></td>
-                                                <td><?= format_rupiah($row['bayar_ditempat']); ?></td>
-                                                <td><?= format_rupiah($row['dibatalkan']); ?></td>
-                                            </tr>
-                                        <?php } 
-                                    } else { ?>
+                                    <?php 
+                                    $no = 1; 
+                                    foreach ($all_branches as $branch_name): 
+                                        $data = $revenue_data[$branch_name] ?? ['total_revenue' => 0, 'tunai_revenue' => 0, 'transfer_revenue' => 0];
+                                    ?>
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">Tidak ada data</td>
+                                            <td class="px-3"><?= $no++; ?></td>
+                                            <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
+                                            <td class="fw-bold text-success"><?= format_rupiah($data['total_revenue']); ?></td>
+                                            <td class="text-center text-primary"><?= format_rupiah($data['tunai_revenue']); ?></td>
+                                            <td class="text-center text-info"><?= format_rupiah($data['transfer_revenue']); ?></td>
                                         </tr>
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -493,51 +478,44 @@
                 </div>
 
                 <!-- 2. Shipment Count Report per Branch -->
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="fw-bold">Laporan Jumlah Pengiriman per Cabang</h5>
-
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">Laporan Jumlah Pengiriman per Cabang </h5>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-striped table-hover align-middle mb-0 small">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>No.</th>
+                                        <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
-                                        <th>BKD</th>
-                                        <th>Dalam Perjalanan</th>
-                                        <th>Sampai Tujuan</th>
-                                        <th>POD</th>
-                                        <th>Dibatalkan</th>
+                                        <th class="text-center">Total Pengiriman</th>
+                                        <th class="text-center">BKD</th>
+                                        <th class="text-center">Dalam Pengiriman</th>
+                                        <th class="text-center">POD</th>
+                                        <th class="text-center">Dibatalkan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php if (!empty($all_branches)) { 
-                                        $no = 1;
-                                        foreach ($all_branches as $branch_name): 
-                                            $data = $shipment_data[$branch_name] ?? [
-                                                'total_shipments' => 0, 
-                                                'count_proses' => 0, 
-                                                'count_pengiriman' => 0, 
-                                                'count_selesai' => 0, 
-                                                'count_dibatalkan' => 0
-                                            ];
+                                    <?php 
+                                    $no = 1; 
+                                    foreach ($all_branches as $branch_name): 
+                                        $data = $shipment_data[$branch_name] ?? [
+                                            'total_shipments' => 0, 'count_proses' => 0, 
+                                            'count_pengiriman' => 0, 'count_selesai' => 0, 
+                                            'count_dibatalkan' => 0
+                                        ];
                                     ?>
                                         <tr>
-                                            <td><?= $no++; ?></td>
-                                            <td><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="fw-bold text-primary"><?= $data['total_shipments']; ?></td>
-                                            <td class="text-warning"><?= $data['count_proses']; ?></td>
-                                            <td class="text-info"><?= $data['count_pengiriman']; ?></td>
-                                            <td class="text-success"><?= $data['count_selesai']; ?></td>
-                                            <td class="text-danger"><?= $data['count_dibatalkan']; ?></td>
+                                            <td class="px-3"><?= $no++; ?></td>
+                                            <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
+                                            <td class="fw-bold text-primary text-center"><?= $data['total_shipments']; ?></td>
+                                            <td class="text-center text-warning"><?= $data['count_proses']; ?></td>
+                                            <td class="text-center text-info"><?= $data['count_pengiriman']; ?></td>
+                                            <td class="text-center text-success"><?= $data['count_selesai']; ?></td>
+                                            <td class="text-center text-danger"><?= $data['count_dibatalkan']; ?></td>
                                         </tr>
-                                    <?php 
-                                        endforeach; 
-                                    } else { ?>
-                                        <tr>
-                                            <td colspan="7" class="text-center text-muted bg-light py-3">Tidak ada data</td>
-                                        </tr>
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -546,135 +524,53 @@
 
                 <!-- 3. Manifest/Surat Jalan Report per Branch -->
                 <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <h5 class="fw-bold">Laporan Surat Jalan (Manifest) per Cabang</h5>
-                        <p class="small text-muted mb-3">Status Surat Jalan: Draft, Dalam Perjalanan, Sampai Tujuan.</p>
-
+                    <div class="card-header bg-white border-0 py-3">
+                        <h5 class="mb-0 fw-bold">Laporan Surat Jalan  per Cabang </h5>
+                        <p class="small text-muted mb-0">Status Surat Jalan: Draft, Dalam Perjalanan, Sampai Tujuan.</p>
+                    </div>
+                    <div class="card-body p-0">
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle">
+                            <table class="table table-striped table-hover align-middle mb-0 small">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>No.</th>
+                                        <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
-                                        <th>Total Surat Jalan</th>
-                                        <th>Draft</th>
-                                        <th>Dalam Perjalanan</th>
-                                        <th>Sampai Tujuan</th>
-                                        <th>Dibatalkan</th>
+                                        <th class="text-center">Total SJ</th>
+                                        <th class="text-center">Draft</th>
+                                        <th class="text-center">Dalam Perjalanan</th>
+                                        <th class="text-center">Sampai Tujuan</th>
+                                        <th class="text-center">Dibatalkan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
-                                    if (!empty($all_branches)) { 
-                                        $no = 1; 
-                                        foreach ($all_branches as $branch_name): 
-                                            $data = $manifest_data[$branch_name] ?? [
-                                                'total_manifests' => 0, 
-                                                'count_dibuat' => 0, 
-                                                'count_berangkat' => 0, 
-                                                'count_sampai_tujuan' => 0
-                                            ];
+                                    $no = 1; 
+                                    foreach ($all_branches as $branch_name): 
+                                        $data = $manifest_data[$branch_name] ?? [
+                                            'total_manifests' => 0, 'count_dibuat' => 0, 
+                                            'count_berangkat' => 0, 'count_sampai_tujuan' => 0,
+                                            'count_dibatalkan' => 0
+                                        ];
                                     ?>
                                         <tr>
-                                            <td><?= $no++; ?></td>
-                                            <td><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="fw-bold text-primary"><?= $data['total_manifests']; ?></td>
-                                            <td class="text-secondary"><?= $data['count_dibuat']; ?></td>
-                                            <td class="text-info"><?= $data['count_berangkat']; ?></td>
-                                            <td class="text-success"><?= $data['count_sampai_tujuan']; ?></td>
+                                            <td class="px-3"><?= $no++; ?></td>
+                                            <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
+                                            <td class="fw-bold text-primary text-center"><?= $data['total_manifests']; ?></td>
+                                            <td class="text-center text-secondary"><?= $data['count_dibuat']; ?></td>
+                                            <td class="text-center text-info"><?= $data['count_berangkat']; ?></td>
+                                            <td class="text-center text-success"><?= $data['count_sampai_tujuan']; ?></td>
+                                            <td class="text-center text-danger"><?= $data['count_dibatalkan']; ?></td>
                                         </tr>
-                                    <?php 
-                                        endforeach; 
-                                    } else { ?>
-                                        <tr>
-                                            <td colspan="6" class="text-center text-muted bg-light py-3">Tidak ada data</td>
-                                        </tr>
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
-
-
-                <!-- Recent Shipments (Filtered by date) -->
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h5 class="fw-bold mb-0">Pengiriman Terbaru</h5>
-                            <a href="pengiriman/" class="btn btn-sm btn-outline-primary">
-                                Lihat Semua
-                            </a>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>No. Resi</th>
-                                        <th>Nama Barang</th>
-                                        <th>Pengirim</th>
-                                        <th>Penerima</th>
-                                        <th>Rute</th>
-                                        <th>Tanggal</th>
-                                        <th>Status</th>
-                                        <th class="text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if($recent_shipments->num_rows > 0): ?>
-                                        <?php while($row = $recent_shipments->fetch_assoc()): ?>
-                                            <tr class="text-capitalize">
-                                                <td class="fw-bold">
-                                                    <span class="badge bg-dark bg-opacity-75">
-                                                        <?= htmlspecialchars($row['no_resi']); ?>
-                                                    </span>
-                                                </td>
-                                                <td><?= htmlspecialchars($row['nama_barang']); ?></td>
-                                                <td><?= htmlspecialchars($row['nama_pengirim']); ?></td>
-                                                <td><?= htmlspecialchars($row['nama_penerima']); ?></td>
-                                                <td>
-                                                    <span class="badge bg-primary bg-opacity-75"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
-                                                    →
-                                                    <span class="badge bg-success bg-opacity-75"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
-                                                </td>
-                                                <td><?= date('d/m/Y', strtotime($row['tanggal'])); ?></td>
-                                                <td>
-                                                    <?php
-                                                    $badgeClass = match(strtolower($row['status'])) {
-                                                        'bkd' => 'warning',
-                                                        'dalam pengiriman' => 'primary',
-                                                        'sampai tujuan' => 'info',
-                                                        'pod' => 'success',
-                                                        'dibatalkan' => 'danger',
-                                                        default => 'secondary'
-                                                    };
-                                                    ?>
-                                                    <span class="badge text-bg-<?= $badgeClass; ?> bg-opacity-75">
-                                                        <?= htmlspecialchars($row['status']); ?>
-                                                    </span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" 
-                                                    class="btn btn-sm btn-info text-white">
-                                                        <i class="fa-solid fa-eye"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="8" class="text-center text-muted bg-light py-3">
-                                                <i class="fa-solid fa-box mb-1"></i><br>
-                                                Tidak ada data pengiriman
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
     include '../../templates/footer.php';
