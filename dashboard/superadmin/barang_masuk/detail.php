@@ -24,11 +24,43 @@
         }
         $id_update = (int)($_POST['id'] ?? 0);
         $status_baru = trim((string)($_POST['status'] ?? ''));
+        $keterangan = trim((string)($_POST['keterangan'] ?? ''));
+        $id_user_update = (int)$_SESSION['user_id'];
+        
         if ($id_update > 0 && $status_baru !== '') {
+            // Ambil status lama sebelum update
+            $stmt_old = $conn->prepare('SELECT status FROM pengiriman WHERE id = ?');
+            $status_lama = '';
+            if ($stmt_old) {
+                $stmt_old->bind_param('i', $id_update);
+                $stmt_old->execute();
+                $result_old = $stmt_old->get_result();
+                if ($result_old->num_rows > 0) {
+                    $row_old = $result_old->fetch_assoc();
+                    $status_lama = $row_old['status'];
+                }
+                $stmt_old->close();
+            }
+            
+            // Cek apakah status baru sama dengan status lama
+            if ($status_lama === $status_baru) {
+                header('Location: detail.php?id=' . $id_update . '&error=same_status');
+                exit;
+            }
+            
+            // Update status pengiriman
             $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
             if ($stmt) {
                 $stmt->bind_param('si', $status_baru, $id_update);
                 if ($stmt->execute()) {
+                    // Masukkan ke log_status_pengiriman
+                    $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, ?, ?, ?, ?)');
+                    if ($stmt_log) {
+                        $stmt_log->bind_param('isssi', $id_update, $status_lama, $status_baru, $keterangan, $id_user_update);
+                        $stmt_log->execute();
+                        $stmt_log->close();
+                    }
+                    
                     header('Location: index?success=updated');
                     exit;
                 }
@@ -107,6 +139,13 @@
             <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'): ?>
                 <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
                     <strong>✓ Berhasil!</strong> Status pengiriman berhasil diperbarui.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+            
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'same_status'): ?>
+                <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert">
+                    <strong>⚠ Perhatian!</strong> Status baru sama dengan status saat ini. Tidak ada perubahan yang dilakukan.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
@@ -292,6 +331,10 @@
                 <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
                 <input type="text" name="status" value="sampai tujuan" readonly class="form-control">
                 <small class="form-text text-muted">Validasi apakah barang sudah sampai tujuan</small>
+            </div>
+            <div class="mb-3">
+                <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
+                <textarea class="form-control" name="keterangan" id="keterangan" rows="3" placeholder="Tambahkan catatan jika diperlukan (opsional)"></textarea>
             </div>
           </div>
           <div class="modal-footer border-0 pt-0">
