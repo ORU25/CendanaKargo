@@ -308,13 +308,30 @@
             }
             ?>
 
+                        <!-- Data Pengambilan Barang -->
+            <?php
+            $pengambilanData = null;
+            $stmt_pengambilan = $conn->prepare("
+                SELECT nama_pengambil, telp_pengambil, tanggal
+                FROM pengambilan
+                WHERE no_resi = ?
+                ORDER BY tanggal DESC
+                LIMIT 1
+            ");
+            if ($stmt_pengambilan) {
+                $stmt_pengambilan->bind_param('s', $pengiriman['no_resi']);
+                $stmt_pengambilan->execute();
+                $result_pengambilan = $stmt_pengambilan->get_result();
+                if ($result_pengambilan->num_rows > 0) {
+                    $pengambilanData = $result_pengambilan->fetch_assoc();
+                }
+                $stmt_pengambilan->close();
+            }
+            ?>
+
             <div class="row g-3 mb-4 text-capitalize d-flex align-items-stretch">
                 <!-- Kiri: Log Status Pengiriman -->
-                <div class="col-md-6 d-flex">
-                    <div class="card border-0 shadow-sm h-100 flex-fill">
-                        <?php include '../../../components/logStatusPengiriman.php'; ?>
-                    </div>
-                </div>
+                <?php include '../../../components/logStatusPengiriman.php'; ?>
 
                 <!-- Kanan: Data Pengambilan Barang -->
                 <div class="col-md-6 d-flex">
@@ -340,7 +357,7 @@
                                 <p class="mb-0"><?= date('d/m/Y H:i', strtotime($pengambilanData['tanggal'])); ?></p>
                             </div>
                             <?php else: ?>
-                                <div class="text-center text-muted">
+                                <div class="text-muted d-flex flex-column align-items-center justify-content-center pt-4">
                                     <i class="fa-solid fa-circle-info mb-2 d-block"></i>
                                     <p class="mb-0">Belum ada data pengambilan barang.</p>
                                 </div>
