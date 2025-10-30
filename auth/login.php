@@ -3,13 +3,14 @@
     include '../config/database.php';
 
     if (isset($_SESSION['user_id'])) {
-        // Kalau role superadmin, arahkan ke dashboard superadmin
+        // Kalau role superSuperAdmin
         if ($_SESSION['role'] == 'superSuperAdmin') {
             header("Location: ../dashboard/superSuperAdmin/?already_logined");
             exit;
         }
-        if ($_SESSION['role'] == 'superAdmin') {
-            header("Location: ../dashboard/superadmin/?already_logined");
+        // Kalau role superAdmin
+        elseif ($_SESSION['role'] == 'superAdmin') {
+            header("Location: ../dashboard/superAdmin/?already_logined");
             exit;
         }
         // Kalau role admin
@@ -18,6 +19,7 @@
             exit;
         }
     }
+    
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
@@ -39,13 +41,14 @@
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['username'] = $user['username'];
             $_SESSION['role'] = $user['role'];
+            
             if(isset($user['id_cabang'])){
-              $sqlCabang = sprintf("SELECT nama_cabang FROM kantor_cabang WHERE id = %d", $user['id_cabang']);
-              $resultCabang = $conn->query($sqlCabang);
-              if($row = $resultCabang->fetch_assoc()){
-                  $_SESSION['id_cabang'] = $user['id_cabang'];
-                  $_SESSION['cabang'] = $row['nama_cabang'];
-              }
+                $sqlCabang = sprintf("SELECT nama_cabang FROM kantor_cabang WHERE id = %d", $user['id_cabang']);
+                $resultCabang = $conn->query($sqlCabang);
+                if($row = $resultCabang->fetch_assoc()){
+                    $_SESSION['id_cabang'] = $user['id_cabang'];
+                    $_SESSION['cabang'] = $row['nama_cabang'];
+                }
             }
 
             if ($user['role'] == 'superSuperAdmin') {
