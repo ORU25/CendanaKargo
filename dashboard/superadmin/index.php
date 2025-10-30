@@ -168,110 +168,122 @@ include '../../components/sidebar_offcanvas.php';
         </div>
                 <!-- TABEL PENDAPATAN -->
         <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white fw-bold">Pendapatan per Admin</div>
-          <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th class="text-end">Cash</th>
-                  <th class="text-end">Transfer</th>
-                  <th class="text-end">Bayar di Tempat</th>
-                  <th class="text-end">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if($pendapatan_admin->num_rows > 0): ?>
-                  <?php while($row = $pendapatan_admin->fetch_assoc()): ?>
-                    <tr>
-                      <td><?= $row['id']; ?></td>
-                      <td><?= htmlspecialchars($row['username']); ?></td>
-                      <td class="text-end">Rp <?= number_format($row['cash'], 0, ',', '.'); ?></td>
-                      <td class="text-end">Rp <?= number_format($row['transfer'], 0, ',', '.'); ?></td>
-                      <td class="text-end">Rp <?= number_format($row['cod'], 0, ',', '.'); ?></td>
-                      <td class="text-end"><strong>Rp <?= number_format($row['total'], 0, ',', '.'); ?></strong></td>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
-                  <tr><td colspan="6" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
-                <?php endif; ?>
-              </tbody>
-            </table>
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold">Pendapatan per Admin</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="px-3">ID</th>
+                    <th>Username</th>
+                    <th class="text-end">Cash</th>
+                    <th class="text-end">Transfer</th>
+                    <th class="text-end">Bayar di Tempat</th>
+                    <th class="text-end">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if($pendapatan_admin->num_rows > 0): ?>
+                    <?php while($row = $pendapatan_admin->fetch_assoc()): ?>
+                      <tr>
+                        <td class="px-3"><?= $row['id']; ?></td>
+                        <td class="fw-bold"><?= htmlspecialchars($row['username']); ?></td>
+                        <td class="text-end text-primary">Rp <?= number_format($row['cash'], 0, ',', '.'); ?></td>
+                        <td class="text-end text-info">Rp <?= number_format($row['transfer'], 0, ',', '.'); ?></td>
+                        <td class="text-end text-warning">Rp <?= number_format($row['cod'], 0, ',', '.'); ?></td>
+                        <td class="text-end fw-bold text-success">Rp <?= number_format($row['total'], 0, ',', '.'); ?></td>
+                      </tr>
+                    <?php endwhile; ?>
+                  <?php else: ?>
+                    <tr><td colspan="6" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- TABEL PENGIRIMAN -->
         <div class="card border-0 shadow-sm mb-4">
-          <div class="card-header bg-white fw-bold">Pengiriman per Admin</div>
-          <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th class="text-center">BKD</th>
-                  <th class="text-center">Dalam Perjalanan</th>
-                  <th class="text-center">Sampai Tujuan</th>
-                  <th class="text-center">POD</th>
-                  <th class="text-center">Dibatalkan</th>
-                  <th class="text-center">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if($pengiriman_admin->num_rows > 0): ?>
-                  <?php while($row = $pengiriman_admin->fetch_assoc()): ?>
-                    <tr>
-                      <td><?= $row['id']; ?></td>
-                      <td><?= htmlspecialchars($row['username']); ?></td>
-                      <td class="text-center"><?= $row['bkd']; ?></td>
-                      <td class="text-center"><?= $row['perjalanan']; ?></td>
-                      <td class="text-center"><?= $row['sampai']; ?></td>
-                      <td class="text-center"><?= $row['pod']; ?></td>
-                      <td class="text-center"><?= $row['batal']; ?></td>
-                      <td class="text-center"><strong><?= $row['total']; ?></strong></td>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
-                  <tr><td colspan="8" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
-                <?php endif; ?>
-              </tbody>
-            </table>
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold">Pengiriman per Admin</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="px-3">ID</th>
+                    <th>Username</th>
+                    <th class="text-center">BKD</th>
+                    <th class="text-center">Dalam Perjalanan</th>
+                    <th class="text-center">Sampai Tujuan</th>
+                    <th class="text-center">POD</th>
+                    <th class="text-center">Dibatalkan</th>
+                    <th class="text-center">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if($pengiriman_admin->num_rows > 0): ?>
+                    <?php while($row = $pengiriman_admin->fetch_assoc()): ?>
+                      <tr>
+                        <td class="px-3"><?= $row['id']; ?></td>
+                        <td class="fw-bold"><?= htmlspecialchars($row['username']); ?></td>
+                        <td class="text-center text-warning"><?= $row['bkd']; ?></td>
+                        <td class="text-center text-info"><?= $row['perjalanan']; ?></td>
+                        <td class="text-center text-primary"><?= $row['sampai']; ?></td>
+                        <td class="text-center text-success"><?= $row['pod']; ?></td>
+                        <td class="text-center text-danger"><?= $row['batal']; ?></td>
+                        <td class="text-center fw-bold text-primary"><?= $row['total']; ?></td>
+                      </tr>
+                    <?php endwhile; ?>
+                  <?php else: ?>
+                    <tr><td colspan="8" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
         <!-- TABEL SURAT JALAN -->
         <div class="card border-0 shadow-sm mb-5">
-          <div class="card-header bg-white fw-bold">Surat Jalan per Admin</div>
-          <div class="table-responsive">
-            <table class="table table-hover mb-0 align-middle">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Username</th>
-                  <th class="text-center">Dalam Perjalanan</th>
-                  <th class="text-center">Sampai Tujuan</th>
-                  <th class="text-center">Dibatalkan</th>
-                  <th class="text-center">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if($surat_jalan_admin->num_rows > 0): ?>
-                  <?php while($row = $surat_jalan_admin->fetch_assoc()): ?>
-                    <tr>
-                      <td><?= $row['id']; ?></td>
-                      <td><?= htmlspecialchars($row['username']); ?></td>
-                      <td class="text-center"><?= $row['perjalanan']; ?></td>
-                      <td class="text-center"><?= $row['sampai']; ?></td>
-                      <td class="text-center"><?= $row['batal']; ?></td>
-                      <td class="text-center"><strong><?= $row['total']; ?></strong></td>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
-                  <tr><td colspan="6" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
-                <?php endif; ?>
-              </tbody>
-            </table>
+          <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold">Surat Jalan per Admin</h5>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                  <tr>
+                    <th class="px-3">ID</th>
+                    <th>Username</th>
+                    <th class="text-center">Dalam Perjalanan</th>
+                    <th class="text-center">Sampai Tujuan</th>
+                    <th class="text-center">Dibatalkan</th>
+                    <th class="text-center">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php if($surat_jalan_admin->num_rows > 0): ?>
+                    <?php while($row = $surat_jalan_admin->fetch_assoc()): ?>
+                      <tr>
+                        <td class="px-3"><?= $row['id']; ?></td>
+                        <td class="fw-bold"><?= htmlspecialchars($row['username']); ?></td>
+                        <td class="text-center text-info"><?= $row['perjalanan']; ?></td>
+                        <td class="text-center text-success"><?= $row['sampai']; ?></td>
+                        <td class="text-center text-danger"><?= $row['batal']; ?></td>
+                        <td class="text-center fw-bold text-primary"><?= $row['total']; ?></td>
+                      </tr>
+                    <?php endwhile; ?>
+                  <?php else: ?>
+                    <tr><td colspan="6" class="text-muted py-3 text-center">Belum ada data <?= $filter === 'hari' ? 'hari ini' : 'bulan ini'; ?>.</td></tr>
+                  <?php endif; ?>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
