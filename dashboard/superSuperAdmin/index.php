@@ -60,8 +60,7 @@
         $count = 0;
         
         if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $count = isset($row['total']) ? (int)$row['total'] : 0;
+            $count = $result->fetch_assoc()['total'];
         }
         
         $stmt->close();
@@ -85,8 +84,7 @@
         $revenue = 0;
         
         if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            $revenue = isset($row['total_revenue']) ? (float)$row['total_revenue'] : 0;
+            $revenue = $result->fetch_assoc()['total_tarif'] ?? 0;
         }
         
         $stmt->close();
@@ -97,8 +95,7 @@
      * Helper function untuk format mata uang Rupiah
      */
     function format_rupiah($number) {
-        $number = $number ?? 0;
-        return 'Rp ' . number_format((float)$number, 0, ',', '.');
+        return 'Rp ' . number_format($number, 0, ',', '.');
     }
 
     // =======================================================
@@ -108,10 +105,8 @@
 
     /**
      * Mengambil data pendapatan per cabang berdasarkan filter tanggal.
-     * Mengembalikan array indexed by nama_cabang dengan fields:
-     * total_revenue, cash_revenue, transfer_revenue, bayar_ditempat_revenue, dibatalkan_revenue
      */
-    function get_branch_revenue_data($conn, $date_condition) {
+    function get_branch_revenue_data($conn, $date_condition) { // Hapus $date_param
         $data = [];
         // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
         $sql = "
@@ -120,8 +115,7 @@
                 SUM(CASE WHEN p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS total_revenue,
                 SUM(CASE WHEN p.pembayaran = 'cash' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cash_revenue,
                 SUM(CASE WHEN p.pembayaran = 'transfer' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-                SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS bayar_ditempat_revenue,
-                SUM(CASE WHEN LOWER(COALESCE(p.status,'')) = 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS dibatalkan_revenue
+                SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
             FROM
                 kantor_cabang kc
             LEFT JOIN
@@ -136,14 +130,7 @@
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
-            $data[$row['nama_cabang']] = [
-                'nama_cabang' => $row['nama_cabang'],
-                'total_revenue' => (float)($row['total_revenue'] ?? 0),
-                'cash_revenue' => (float)($row['cash_revenue'] ?? 0),
-                'transfer_revenue' => (float)($row['transfer_revenue'] ?? 0),
-                'bayar_ditempat_revenue' => (float)($row['bayar_ditempat_revenue'] ?? 0),
-                'dibatalkan_revenue' => (float)($row['dibatalkan_revenue'] ?? 0)
-            ];
+            $data[$row['nama_cabang']] = $row;
         }
         $stmt->close();
         return $data;
@@ -152,17 +139,17 @@
     /**
      * Mengambil data jumlah pengiriman per cabang berdasarkan filter tanggal.
      */
-    function get_branch_shipment_data($conn, $date_condition) {
+    function get_branch_shipment_data($conn, $date_condition) { // Hapus $date_param
         $data = [];
         // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
         $sql = "
             SELECT
                 kc.nama_cabang,
                 SUM(CASE WHEN p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS total_shipments,
-                SUM(CASE WHEN LOWER(COALESCE(p.status,'')) = 'bkd' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_proses,
-                SUM(CASE WHEN LOWER(COALESCE(p.status,'')) = 'dalam pengiriman' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_pengiriman,
-                SUM(CASE WHEN (LOWER(COALESCE(p.status,'')) = 'sampai tujuan' OR LOWER(COALESCE(p.status,'')) = 'pod') AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_selesai,
-                SUM(CASE WHEN LOWER(COALESCE(p.status,'')) = 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_dibatalkan
+                SUM(CASE WHEN p.status = 'bkd' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_proses,
+                SUM(CASE WHEN p.status = 'dalam pengiriman' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_pengiriman,
+                SUM(CASE WHEN (p.status = 'sampai tujuan' OR p.status = 'pod') AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_selesai,
+                SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_dibatalkan
             FROM
                 kantor_cabang kc
             LEFT JOIN
@@ -177,14 +164,7 @@
         $stmt->execute();
         $result = $stmt->get_result();
         while ($row = $result->fetch_assoc()) {
-            $data[$row['nama_cabang']] = [
-                'nama_cabang' => $row['nama_cabang'],
-                'total_shipments' => (int)($row['total_shipments'] ?? 0),
-                'count_proses' => (int)($row['count_proses'] ?? 0),
-                'count_pengiriman' => (int)($row['count_pengiriman'] ?? 0),
-                'count_selesai' => (int)($row['count_selesai'] ?? 0),
-                'count_dibatalkan' => (int)($row['count_dibatalkan'] ?? 0)
-            ];
+            $data[$row['nama_cabang']] = $row;
         }
         $stmt->close();
         return $data;
@@ -192,11 +172,10 @@
 
     /**
      * Mengambil data surat jalan per cabang berdasarkan filter tanggal.
-     * Memastikan status 'Dibatalkan' juga terhitung, serta toleran terhadap variasi case/spelling.
      */
-    function get_branch_manifest_data($conn, $date_condition_sj) {
+    function get_branch_manifest_data($conn, $date_condition_sj) { // Hapus $date_param
         $data = [];
-
+        // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
         $sql = "
             SELECT
                 kc.nama_cabang,
@@ -248,21 +227,6 @@
     $revenue_data = get_branch_revenue_data($conn, $date_condition);
     $shipment_data = get_branch_shipment_data($conn, $date_condition);
     $manifest_data = get_branch_manifest_data($conn, $date_condition_sj);
-
-    // Build laporan_cabang (dipakai di tabel Laporan Pendapatan per Cabang)
-    $laporan_cabang = [];
-    if (!empty($revenue_data)) {
-        foreach ($revenue_data as $rc) {
-            $laporan_cabang[] = [
-                'nama_cabang' => $rc['nama_cabang'],
-                'total_pendapatan' => $rc['total_revenue'],
-                'cash' => $rc['cash_revenue'],
-                'transfer' => $rc['transfer_revenue'],
-                'bayar_ditempat' => $rc['bayar_ditempat_revenue'],
-                'dibatalkan' => $rc['dibatalkan_revenue']
-            ];
-        }
-    }
 
     // 3. Aggregate Filtered Counts for Top Cards
     $total_pengiriman_filtered = 0;
@@ -470,6 +434,7 @@
                             </div>
                         </div>
                     </div>
+                    </div>
                 </div>
 
                 <!-- ======================================================= -->
@@ -479,8 +444,7 @@
                 <!-- 1. Revenue Report per Branch -->
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white border-0 py-3">
-                        <h5 class="mb-0 fw-bold">Laporan Pendapatan per Cabang </h5>
-                        <p class="small text-muted mb-0">Total Pendapatan: <?= format_rupiah($total_pendapatan); ?></p>
+                        <h5 class="mb-0 fw-bold">Laporan Pendapatan per Cabang</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
@@ -489,23 +453,28 @@
                                     <tr>
                                         <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
-                                        <th>Total Pendapatan</th>
-                                        <th class="text-center">Tunai (Cash/COD)</th>
-                                        <th class="text-center">Transfer</th>
+                                        <th class="text-end">Total</th>
+                                        <th class="text-end">Cash</th>
+                                        <th class="text-end">Transfer</th>
+                                        <th class="text-end">Bayar di Tempat</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php 
                                     $no = 1; 
                                     foreach ($all_branches as $branch_name): 
-                                        $data = $revenue_data[$branch_name] ?? ['total_revenue' => 0, 'tunai_revenue' => 0, 'transfer_revenue' => 0];
+                                        $data = $revenue_data[$branch_name] ?? [
+                                            'total_revenue' => 0, 'cash_revenue' => 0, 
+                                            'transfer_revenue' => 0, 'cod_revenue' => 0
+                                        ];
                                     ?>
                                         <tr>
                                             <td class="px-3"><?= $no++; ?></td>
                                             <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="fw-bold text-success"><?= format_rupiah($data['total_revenue']); ?></td>
-                                            <td class="text-center text-primary"><?= format_rupiah($data['tunai_revenue']); ?></td>
-                                            <td class="text-center text-info"><?= format_rupiah($data['transfer_revenue']); ?></td>
+                                            <td class="text-end fw-bold text-success"><?= format_rupiah($data['total_revenue']); ?></td>
+                                            <td class="text-end text-primary"><?= format_rupiah($data['cash_revenue']); ?></td>
+                                            <td class="text-end text-info"><?= format_rupiah($data['transfer_revenue']); ?></td>
+                                            <td class="text-end text-warning"><?= format_rupiah($data['cod_revenue']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -563,7 +532,6 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-bold">Laporan Surat Jalan  per Cabang </h5>
-                        <p class="small text-muted mb-0">Status Surat Jalan: Draft, Dalam Perjalanan, Sampai Tujuan.</p>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">

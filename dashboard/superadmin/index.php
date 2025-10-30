@@ -216,7 +216,6 @@ include '../../components/sidebar_offcanvas.php';
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white border-0 py-3">
             <h5 class="mb-0 fw-bold">Pendapatan per Admin</h5>
-            <p class="small text-muted mb-0">Total Pendapatan: <?= format_rupiah($total_pendapatan); ?></p>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
