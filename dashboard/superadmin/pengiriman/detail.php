@@ -287,8 +287,74 @@
                 </div>
             </div>
 
-            <!-- Timeline Log Perubahan Status -->
-            <?php include '../../../components/logStatusPengiriman.php'; ?>
+            <div class="row g-3 mb-4 text-capitalize d-flex align-items-stretch">
+                <!-- Kiri: Log Status Pengiriman -->
+                <div class="col-md-6 d-flex">
+                    <div class="card border-0 shadow-sm h-100 flex-fill">
+                        <?php include '../../../components/logStatusPengiriman.php'; ?>
+                    </div>
+                </div>
+
+                <!-- Kanan: Data Pengambilan Barang -->
+                <div class="col-md-6 d-flex">
+                    <div class="card border-0 shadow-sm h-100 flex-fill">
+                        <?php
+                        // Ambil data pengambilan barang
+                        $pengambilanData = null;
+                        $stmt_pengambilan = $conn->prepare("
+                            SELECT p.nama_pengambil, p.telp_pengambil, p.tanggal, u.username AS petugas
+                            FROM pengambilan p
+                            LEFT JOIN user u ON p.id_user = u.id
+                            WHERE p.no_resi = ?
+                            ORDER BY p.tanggal DESC
+                            LIMIT 1
+                        ");
+                        if ($stmt_pengambilan) {
+                            $stmt_pengambilan->bind_param('s', $pengiriman['no_resi']);
+                            $stmt_pengambilan->execute();
+                            $result_pengambilan = $stmt_pengambilan->get_result();
+                            if ($result_pengambilan->num_rows > 0) {
+                                $pengambilanData = $result_pengambilan->fetch_assoc();
+                            }
+                            $stmt_pengambilan->close();
+                        }
+                        ?>
+
+                        <div class="card-body p-4">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-info bg-opacity-10 rounded p-2 me-3">
+                                    <i class="fa-solid fa-box-open"></i>
+                                </div>
+                                <h6 class="mb-0 fw-semibold">Data Pengambilan Barang</h6>
+                            </div>
+                            <?php if ($pengambilanData): ?>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Nama Pengambil</small>
+                                    <p class="mb-0 fw-semibold"><?= htmlspecialchars($pengambilanData['nama_pengambil']); ?></p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Nomor Telepon</small>
+                                    <p class="mb-0"><?= htmlspecialchars($pengambilanData['telp_pengambil'] ?? '-'); ?></p>
+                                </div>
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Dikonfirmasi Oleh (Petugas/Admin)</small>
+                                    <p class="mb-0"><?= htmlspecialchars($pengambilanData['petugas'] ?? '-'); ?></p>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block mb-1">Tanggal Pengambilan</small>
+                                    <p class="mb-0"><?= date('d/m/Y H:i', strtotime($pengambilanData['tanggal'])); ?></p>
+                                </div>
+                            <?php else: ?>
+                                <div class="text-center text-muted">
+                                    <i class="fa-solid fa-circle-info mb-2 d-block"></i>
+                                    <p class="mb-0">Belum ada data pengambilan barang.</p>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div class="d-flex justify-content-end">
                 <a href="resi?id=<?= (int)$pengiriman['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
