@@ -1,6 +1,6 @@
 <?php
 session_start();
-if(!isset($_SESSION['username'])){
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $urutan = $rUrut['total'] + 1;
     $no_resi = "{$kode_cabang_asal}{$urutan}";
 
-    $id_user = $_SESSION['id'] ?? 1;
+    $id_user = $_SESSION['user_id'];
     $username = $_SESSION['username'];
 
     $stmt = $conn->prepare("
@@ -224,11 +224,6 @@ include '../../../components/sidebar_offcanvas.php';
                      pattern="[0-9]{10,15}"
                      title="Nomor telepon harus 10-15 digit angka (contoh: 081234567890)"
                      placeholder="contoh: 081234567890" required>
-            </div>
-
-            <div class="col-md-6">
-              <label for="telp_penerima" class="form-label fw-semibold">No Telp Penerima</label>
-              <input type="text" class="form-control" id="telp_penerima" name="telp_penerima" required>
             </div>
 
             <div class="col-md-6">
