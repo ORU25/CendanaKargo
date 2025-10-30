@@ -37,9 +37,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $berat = (float) trim($_POST['berat']);
     $jumlah = (int) trim($_POST['jumlah']);
     $diskon = isset($_POST['diskon']) && $_POST['diskon'] !== '' ? (float) trim($_POST['diskon']) : 0;
-    $pembayaran = trim($_POST['jasa_pengiriman']); // Form masih pakai jasa_pengiriman tapi database pakai pembayaran
+    $pembayaran = trim($_POST['jasa_pengiriman']); // field masih "jasa_pengiriman"
 
-    // Validasi diskon (0-100%)
+    // Validasi nomor telepon pengirim dan penerima
+    if (!preg_match('/^[0-9]{10,15}$/', $telp_pengirim)) {
+        header("Location: create?error=invalid_phone_pengirim");
+        exit;
+    }
+    if (!preg_match('/^[0-9]{10,15}$/', $telp_penerima)) {
+        header("Location: create?error=invalid_phone_penerima");
+        exit;
+    }
+
+    // Validasi diskon
     if ($diskon < 0 || $diskon > 100) {
         header("Location: create?error=invalid_diskon");
         exit;
@@ -101,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $no_resi = "{$kode_cabang_asal}{$urutan}";
 
     $id_user = $_SESSION['id'] ?? 1;
+    $username = $_SESSION['username'];
 
     $stmt = $conn->prepare("
         INSERT INTO pengiriman 
@@ -110,7 +121,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
-    $username = $_SESSION['username'];
     $stmt->bind_param(
         "iiiisssssssssdisdd",
         $id_user, $asal, $tujuan, $data_tarif['id'], $username,
@@ -120,19 +130,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     );
 
     if ($stmt->execute()) {
-        // Ambil ID pengiriman yang baru dibuat
         $id_pengiriman_baru = $conn->insert_id;
-        
-        // Insert log status awal (BKD)
         $status_awal = 'bkd';
         $keterangan_awal = 'Pengiriman dibuat oleh ' . $username;
+
         $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, NULL, ?, ?, ?)');
         if ($stmt_log) {
             $stmt_log->bind_param('issi', $id_pengiriman_baru, $status_awal, $keterangan_awal, $id_user);
             $stmt_log->execute();
             $stmt_log->close();
         }
-        
+
         header("Location: index?success=created&resi=$no_resi");
         exit;
     } else {
@@ -151,38 +159,32 @@ include '../../../components/sidebar_offcanvas.php';
   <div class="row">
     <?php include '../../../components/sidebar.php'; ?>
 
-    <!-- Konten utama -->
     <div class="col-lg-10 py-4 px-5 row">
-      <!-- Form create -->
       <div class="card shadow-sm p-4 col-lg-7">
         <h4 class="fw-bold mb-4 text-danger">Tambah Pengiriman</h4>
 
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
-            $type = "danger";
-            $message = "Gagal menambahkan pengiriman baru";
+        <?php
+        if(isset($_GET['error']) && $_GET['error'] == 'failed'){
+            $type = "danger"; $message = "Gagal menambahkan pengiriman baru";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
-            $type = "danger";
-            $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
+            $type = "danger"; $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
-            $type = "danger";
-            $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
+            $type = "danger"; $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
-            $type = "danger";
-            $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
+            $type = "danger"; $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
-            $type = "danger";
-            $message = "Diskon tidak valid. Harus antara 0-100%.";
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
+            $type = "danger"; $message = "Diskon tidak valid. Harus antara 0-100%.";
             include '../../../components/alert.php';
-        }?>
-
+        }
+        ?>
 
         <form method="POST" action="create">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
@@ -190,8 +192,8 @@ include '../../../components/sidebar_offcanvas.php';
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold" for="asal">Cabang Asal</label>
-              <input type="text" class="form-control" value="<?=$_SESSION['cabang']?>" readonly>
-              <input id="asal" type="hidden" name="id_cabang_asal" value="<?=$_SESSION['id_cabang']?>">
+              <input type="text" class="form-control" value="<?= $_SESSION['cabang']; ?>" readonly>
+              <input id="asal" type="hidden" name="id_cabang_asal" value="<?= $_SESSION['id_cabang']; ?>">
             </div>
 
             <div class="col-md-6">
@@ -211,7 +213,10 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="telp_pengirim" class="form-label fw-semibold">No Telp Pengirim</label>
-              <input type="text" class="form-control" id="telp_pengirim" name="telp_pengirim" required>
+              <input type="tel" class="form-control" id="telp_pengirim" name="telp_pengirim"
+                     pattern="[0-9]{10,15}"
+                     title="Nomor telepon harus 10-15 digit angka (contoh: 081234567890)"
+                     placeholder="contoh: 081234567890" required>
             </div>
 
             <div class="col-md-6">
@@ -221,7 +226,10 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="telp_penerima" class="form-label fw-semibold">No Telp Penerima</label>
-              <input type="text" class="form-control" id="telp_penerima" name="telp_penerima" required>
+              <input type="tel" class="form-control" id="telp_penerima" name="telp_penerima"
+                     pattern="[0-9]{10,15}"
+                     title="Nomor telepon harus 10-15 digit angka (contoh: 081234567890)"
+                     placeholder="contoh: 081234567890" required>
             </div>
 
             <div class="col-md-6">
