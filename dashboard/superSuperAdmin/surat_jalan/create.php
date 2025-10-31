@@ -1,29 +1,20 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
 
-$user_role = $_SESSION['role'] ?? '';
-$user_id = $_SESSION['user_id'] ?? null;
-$username = $_SESSION['username'] ?? '';
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+    header("Location: ../../../?error=unauthorized");
+    exit;
+}
+
+$user_role = $_SESSION['role'];
 $user_cabang_id = $_SESSION['id_cabang'] ?? null;
-
-if (!in_array($user_role, ['superSuperAdmin', 'superAdmin', 'admin'])) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
-
-if ($user_role === 'superSuperAdmin' && $user_cabang_id !== null) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
-if ($user_role !== 'superSuperAdmin' && ($user_cabang_id === null || $user_cabang_id == 0)) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
+$user_id = $_SESSION['user_id'] ?? null;
+$username = $_SESSION['username'];
 
 include '../../../config/database.php';
 
@@ -104,9 +95,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', NOW())";
             $stmt_detail->execute();
         }
 
+        // Insert log status surat jalan
+        $sql_log = "INSERT INTO log_surat_jalan (id_surat_jalan, id_user, status_lama, status_baru, keterangan, username) 
+                    VALUES (?, ?, NULL, 'draft', 'Surat jalan dibuat', ?)";
+        $stmt_log = $conn->prepare($sql_log);
+        $stmt_log->bind_param("iis", $id_surat_jalan_baru, $user_id, $username);
+        $stmt_log->execute();
+
         mysqli_commit($conn);
         unset($_SESSION['csrf_token']);
-        header("Location: index.php?success=sj_created");
+        header("Location: index.php?success=created");
         exit;
 
     } catch (Exception $e) {
@@ -179,8 +177,12 @@ WHERE
 p.id_cabang_penerima = ?
 AND p.id_cabang_pengirim = ?
 AND p.status = 'bkd' 
-AND p.id NOT IN (
-    SELECT id_pengiriman FROM detail_surat_jalan
+AND         
+    p.id NOT IN (
+    SELECT dsj.id_pengiriman 
+    FROM detail_surat_jalan dsj
+    JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id
+    WHERE sj.status != 'dibatalkan'
 )
 ORDER BY p.tanggal DESC";
 
@@ -264,7 +266,7 @@ $max_selection = 15;
                                                 <th class="px-3 py-3">Asal</th>
                                                 <th class="px-3 py-3">Tujuan</th>
                                                 <th class="px-3 py-3">Tanggal</th>
-                                                <th class="px-3 py-3 text-center">Status</th>
+                                                <th class="px-3 py-3">Berat</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -277,9 +279,7 @@ $max_selection = 15;
                                                     <td class="px-3 py-3"><?= htmlspecialchars($p['kode_cabang_asal'] ?? 'N/A'); ?></td>
                                                     <td class="px-3 py-3"><?= htmlspecialchars($cabang_tujuan_nama); ?></td>
                                                     <td class="px-3 py-3"><?= htmlspecialchars(date('Y-m-d', strtotime($p['tanggal']))); ?></td>
-                                                    <td class="px-3 py-3 text-center">
-                                                        <span class="badge bg-success text-white" style="padding: 6px 12px; font-size: 11px;">BKD</span>
-                                                    </td>
+                                                    <td class="px-3 py-3"><?= htmlspecialchars($p['berat']); ?> Kg</td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>
@@ -307,11 +307,6 @@ $max_selection = 15;
             <div class="modal-body p-4">
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold small mb-2">Nomor Surat Jalan</label>
-                    <p class="mb-0 text-primary fw-semibold fs-5"><i class="fa-solid fa-check-circle me-2"></i>Akan dibuat otomatis</p>
-                </div>
-
-                <div class="mb-4">
                     <label class="form-label fw-semibold small mb-2">Nama Driver</label>
                     <input type="text" class="form-control border-2" id="inputDriver" placeholder="Masukkan nama driver" required>
                 </div>
@@ -324,7 +319,7 @@ $max_selection = 15;
             <div class="modal-footer border-top p-4">
                 <button type="button" class="btn btn-outline-secondary fw-semibold" data-bs-dismiss="modal">Batal</button>
                 <button type="button" class="btn btn-success fw-semibold" id="btnSubmitSurat">
-                    <i class="fa-solid fa-save me-2"></i>Simpan
+                    <i class="fa-solid fa-save me-2"></i>Buat
                 </button>
             </div>
         </div>

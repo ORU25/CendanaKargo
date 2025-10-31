@@ -1,18 +1,19 @@
 <?php
 session_start();
-if (!isset($_SESSION['username'])) {
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
 
-$user_role = $_SESSION['role'] ?? '';
-$user_id = $_SESSION['user_id'] ?? null;
-$user_cabang_id = $_SESSION['id_cabang'] ?? null;
-
-if (!in_array($user_role, ['superSuperAdmin', 'superAdmin', 'admin'])) {
-    header("Location: ../../../?error=unauthorized_global");
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+    header("Location: ../../../?error=unauthorized");
     exit;
 }
+
+$user_role = $_SESSION['role'];
+$user_cabang_id = $_SESSION['id_cabang'] ?? null;
+$user_id = $_SESSION['user_id'];
+
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -42,23 +43,30 @@ $title = "Surat Jalan - Cendana Kargo";
         
         <div class="col-lg-10 col-12 p-4">
             <div class="container-fluid">
+
+                <?php if(isset($_GET['success']) && $_GET['success'] == 'created' ){
+                    $type = "success";
+                    $message = "Surat jalan berhasil ditambahkan";
+                    include '../../../components/alert.php';
+                }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
+                    $type = "danger";
+                    $message = "Surat jalan tidak ditemukan";
+                    include '../../../components/alert.php';
+                }?>
                 
-                <div class="mb-4">
-                    <h5 class="fw-bold mb-2">Surat Jalan</h5>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div></div>
+
+                <!-- Header -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h4 mb-1 fw-bold">Daftar Surat Jalan</h1>
+                    </div>
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
                         <button type="button" class="btn btn-success fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#modalPilihCabang">
                             <i class="fa-solid fa-plus me-2"></i>Tambah Surat Jalan
                         </button>
                     </div>
-                </div>
-
-                <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa-solid fa-check-circle me-2"></i>Surat Jalan berhasil dibuat!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
+                </div> 
 
                 <div class="card border-0 rounded-3 shadow-sm">
                     <div class="card-body p-0">
@@ -72,8 +80,8 @@ $title = "Surat Jalan - Cendana Kargo";
                                         <th class="px-3 py-3">Tujuan</th>
                                         <th class="px-3 py-3">Driver</th>
                                         <th class="px-3 py-3">Tanggal</th>
-                                        <th class="px-3 py-3 text-center">Status</th>
-                                        <th class="px-3 py-3 text-center" style="width: 60px;">Aksi</th>
+                                        <th class="px-3 py-3 ">Status</th>
+                                        <th class="px-3 py-3 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -86,35 +94,31 @@ $title = "Surat Jalan - Cendana Kargo";
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['cabang_penerima']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['driver']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars(date('Y-m-d', strtotime($sj['tanggal']))); ?></td>
-                                                <td class="px-3 py-3 text-center">
+                                                <td class="px-3 py-3">
                                                     <?php
                                                     $status = $sj['status'];
                                                     $status_badge = 'secondary';
                                                     $status_text = $status;
                                                     if ($status == 'draft') {
-                                                        $status_badge = 'warning';
-                                                        $status_text = 'Draft';
+                                                        $status_badge = 'secondary';
                                                     }
-                                                    if ($status == 'dalam pengiriman') {
+                                                    if ($status == 'dalam perjalanan') {
                                                         $status_badge = 'primary';
-                                                        $status_text = 'Dikirim';
                                                     }
                                                     if ($status == 'sampai tujuan') {
-                                                        $status_badge = 'success';
-                                                        $status_text = 'Terima';
+                                                        $status_badge = 'info';
                                                     }
                                                     if ($status == 'dibatalkan') {
                                                         $status_badge = 'danger';
-                                                        $status_text = 'Batal';
                                                     }
                                                     ?>
-                                                    <span class="badge bg-<?= $status_badge; ?> text-white" style="padding: 6px 12px; font-size: 12px;">
-                                                        <?= htmlspecialchars($status_text); ?>
+                                                    <span class="badge bg-<?= $status_badge; ?>  text-capitalize" >
+                                                        <?= htmlspecialchars($status); ?>
                                                     </span>
                                                 </td>
                                                 <td class="px-3 py-3 text-center">
-                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-link text-primary text-decoration-none p-0" title="Lihat Detail" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
-                                                        <i class="fa-solid fa-eye fs-5"></i>
+                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail" >
+                                                        <i class="fa-solid fa-eye "></i>
                                                     </a>
                                                 </td>
                                             </tr>
