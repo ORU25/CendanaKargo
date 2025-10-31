@@ -63,6 +63,33 @@ function format_rupiah($angka) {
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }
 
+// === Hitung jumlah pengiriman berdasarkan status (per cabang admin) ===
+$status_counts = [
+    'bkd' => 0,
+    'dalam pengiriman' => 0,
+    'sampai tujuan' => 0,
+    'pod' => 0,
+    'dibatalkan' => 0
+];
+
+$stmt = $conn->prepare("
+    SELECT status, COUNT(*) AS jumlah
+    FROM pengiriman
+    WHERE id_cabang_pengirim = ? 
+    GROUP BY status
+");
+$stmt->bind_param('i', $id_cabang_admin);
+$stmt->execute();
+$result_status = $stmt->get_result();
+while ($row = $result_status->fetch_assoc()) {
+    $key = strtolower($row['status']);
+    if (isset($status_counts[$key])) {
+        $status_counts[$key] = $row['jumlah'];
+    }
+}
+$stmt->close();
+
+
 // === Ambil pengiriman keluar (8 terakhir) ===
 $stmt = $conn->prepare("
     SELECT * FROM pengiriman 
@@ -169,6 +196,76 @@ include '../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
+        <!-- Kartu Status Pengiriman -->
+        <h5 class="fw-bold mb-3 mt-4">Status Pengiriman</h5>
+        <div class="row g-4 mb-4">
+
+        <!-- BKD -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                <p class="text-dark mb-1 small fw-bold">BKD</p>
+                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['bkd']; ?></h4>
+                </div>
+                <i class="fa-solid fa-box-open text-dark opacity-50 fs-3"></i>
+            </div>
+            </div>
+        </div>
+
+        <!-- Dalam Pengiriman -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                <p class="text-dark mb-1 small fw-bold">Dalam Pengiriman</p>
+                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dalam pengiriman']; ?></h4>
+                </div>
+                <i class="fa-solid fa-truck-moving text-dark opacity-50 fs-3"></i>
+            </div>
+            </div>
+        </div>
+
+        <!-- Sampai Tujuan -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                <p class="text-dark mb-1 small fw-bold">Sampai Tujuan</p>
+                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['sampai tujuan']; ?></h4>
+                </div>
+                <i class="fa-solid fa-location-dot text-dark opacity-50 fs-3"></i>
+            </div>
+            </div>
+        </div>
+
+        <!-- POD -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                <p class="text-dark mb-1 small fw-bold">POD</p>
+                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['pod']; ?></h4>
+                </div>
+                <i class="fa-solid fa-file-circle-check text-dark opacity-50 fs-3"></i>
+            </div>
+            </div>
+        </div>
+
+        <!-- Dibatalkan -->
+        <div class="col-xl-2 col-md-4 col-sm-6">
+            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                <p class="text-dark mb-1 small fw-bold">Dibatalkan</p>
+                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dibatalkan']; ?></h4>
+                </div>
+                <i class="fa-solid fa-circle-xmark text-dark opacity-50 fs-3"></i>
+            </div>
+            </div>
+        </div>
+
+        </div>
         <!-- Dua Card Tabel -->
         <div class="row g-4 mb-5">
 
@@ -226,69 +323,70 @@ include '../../components/sidebar_offcanvas.php';
             </div>
           </div>
 
-          <!-- Pengiriman Masuk -->
-          <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold text-success mb-0">Pengiriman Masuk</h5>
-                <a href="pengiriman/?tipe=masuk" class="btn btn-sm btn-outline-success">Lihat Semua</a>
-              </div>
-              <div class="card-body p-0">
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0 small">
-                    <thead class="table-light">
-                      <tr>
-                        <th class="px-3">No. Resi</th>
-                        <th>Asal</th>
-                        <th>Status</th>
-                        <th class="text-center">Detail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <?php if ($pengiriman_masuk->num_rows > 0): ?>
-                        <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
-                          <tr>
-                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                            <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
-                            <td>
-                              <?php
-                                $status = strtolower($row['status']);
-                                $statusClass = match($status) {
-                                  'bkd' => 'warning',
-                                  'dalam pengiriman' => 'info',
-                                  'sampai tujuan' => 'success',
-                                  'pod' => 'primary',
-                                  'dibatalkan' => 'danger',
-                                  default => 'secondary'
-                                };
-
-                                // Tentukan URL tujuan detail
-                                if ($status === 'dalam pengiriman') {
-                                    $detailUrl = "barang_masuk/detail.php?id=" . $row['id'];
-                                } elseif (in_array($status, ['sampai tujuan', 'pod'])) {
-                                    $detailUrl = "pengambilan_barang/detail.php?id=" . $row['id'];
-                                } else {
-                                    $detailUrl = "pengiriman/detail.php?id=" . $row['id'];
-                                }
-                              ?>
-                              <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
-                            </td>
-                            <td class="text-center">
-                              <a href="<?= $detailUrl; ?>" class="btn btn-sm btn-outline-success">
-                                <i class="fa-solid fa-eye"></i>
-                              </a>
-                            </td>
-                          </tr>
-                        <?php endwhile; ?>
-                      <?php else: ?>
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman masuk.</td></tr>
-                      <?php endif; ?>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+        <!-- Pengiriman Masuk -->
+        <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-success mb-0">Pengiriman Masuk</h5>
+            <!-- Ubah tautan ke folder barang_masuk -->
+            <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
             </div>
-          </div>
+            <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 small">
+                <thead class="table-light">
+                    <tr>
+                    <th class="px-3">No. Resi</th>
+                    <th>Asal</th>
+                    <th>Status</th>
+                    <th class="text-center">Detail</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($pengiriman_masuk->num_rows > 0): ?>
+                    <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                        <tr>
+                        <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                        <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
+                        <td>
+                            <?php
+                            $status = strtolower($row['status']);
+                            $statusClass = match($status) {
+                                'bkd' => 'warning',
+                                'dalam pengiriman' => 'info',
+                                'sampai tujuan' => 'success',
+                                'pod' => 'primary',
+                                'dibatalkan' => 'danger',
+                                default => 'secondary'
+                            };
+
+                            // Tentukan URL tujuan detail
+                            if ($status === 'dalam pengiriman') {
+                                $detailUrl = "barang_masuk/detail.php?id=" . $row['id'];
+                            } elseif (in_array($status, ['sampai tujuan', 'pod'])) {
+                                $detailUrl = "pengambilan_barang/detail.php?id=" . $row['id'];
+                            } else {
+                                $detailUrl = "pengiriman/detail.php?id=" . $row['id'];
+                            }
+                            ?>
+                            <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                        </td>
+                        <td class="text-center">
+                            <a href="<?= $detailUrl; ?>" class="btn btn-sm btn-outline-success">
+                            <i class="fa-solid fa-eye"></i>
+                            </a>
+                        </td>
+                        </tr>
+                    <?php endwhile; ?>
+                    <?php else: ?>
+                    <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman masuk.</td></tr>
+                    <?php endif; ?>
+                </tbody>
+                </table>
+            </div>
+            </div>
+        </div>
+        </div>
 
         </div><!-- end row -->
       </div>
