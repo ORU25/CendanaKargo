@@ -163,19 +163,11 @@ include '../../../components/sidebar_offcanvas.php';
                         </span>
                     </td>
                     <td class="text-center">
-                        <?php if ($b['status'] === 'pod'): ?>
-                        <a href="detail_pod.php?id=<?= (int)$b['id']; ?>" 
-                            class="btn btn-sm btn-outline-primary" 
-                            title="Lihat Bukti POD (Proof of Delivery)">
-                            <i class="fa-solid fa-file-circle-check"></i>
+                        <a href="detail.php?id=<?= (int)$b['id']; ?>" 
+                        class="btn btn-sm btn-outline-primary" 
+                        title="Lihat Detail Pengambilan Barang">
+                            <i class="fa-solid fa-eye text-primary"></i>
                         </a>
-                        <?php else: ?>
-                        <a href="detail?id=<?= (int)$b['id']; ?>" 
-                            class="btn btn-sm btn-outline-success" 
-                            title="Lihat Detail">
-                            <i class="fa-solid fa-eye"></i>
-                        </a>
-                        <?php endif; ?>
                     </td>
                     </tr>
                     <?php endforeach; ?>

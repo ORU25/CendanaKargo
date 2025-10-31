@@ -1,6 +1,6 @@
 <?php
 session_start();
-if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
+if(!isset($_SESSION['username']) || !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
@@ -88,6 +88,7 @@ include '../../../components/sidebar_offcanvas.php';
     <?php include '../../../components/sidebar.php'; ?>
     <div class="col-lg-10 bg-light">
       <div class="container-fluid p-4">
+
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
           <div>
             <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Cabang <?= htmlspecialchars($cabang_admin); ?>)</h1>
@@ -100,7 +101,7 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
-        <!-- form pencarian tetap -->
+        <!-- form pencarian -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-body p-3">
             <form method="GET" action="" class="row g-2 align-items-center">
@@ -169,19 +170,11 @@ include '../../../components/sidebar_offcanvas.php';
                         </span>
                     </td>
                     <td class="text-center">
-                      <?php if ($b['status'] === 'pod'): ?>
-                        <a href="detail_pod.php?id=<?= (int)$b['id']; ?>" 
-                          class="btn btn-sm btn-outline-primary" 
-                          title="Lihat Bukti POD (Proof of Delivery)">
-                          <i class="fa-solid fa-file-circle-check"></i>
-                        </a>
-                      <?php else: ?>
-                        <a href="detail?id=<?= (int)$b['id']; ?>" 
-                          class="btn btn-sm btn-outline-success" 
-                          title="Lihat Detail">
-                          <i class="fa-solid fa-eye"></i>
-                        </a>
-                      <?php endif; ?>
+                      <a href="detail.php?id=<?= (int)$b['id']; ?>" 
+                        class="btn btn-sm btn-outline-primary" 
+                        title="Lihat Detail Pengambilan Barang">
+                        <i class="fa-solid fa-eye text-primary"></i>
+                      </a>
                     </td>
                   </tr>
                   <?php endforeach; ?>
@@ -192,7 +185,7 @@ include '../../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
-        <!-- Pagination tetap -->
+        <!-- pagination -->
         <?php if ($total_pages > 1): ?>
         <div class="d-flex justify-content-between align-items-center mt-4">
           <div class="text-muted small">
@@ -203,11 +196,11 @@ include '../../../components/sidebar_offcanvas.php';
               <li class="page-item <?= $page_num <= 1 ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&laquo;</a>
               </li>
-              <?php
-              for ($i = 1; $i <= $total_pages; $i++) {
-                  echo '<li class="page-item '.($i == $page_num ? 'active' : '').'"><a class="page-link" href="?page='.$i.($search ? '&search='.urlencode($search) : '').'">'.$i.'</a></li>';
-              }
-              ?>
+              <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                <li class="page-item <?= $i == $page_num ? 'active' : ''; ?>">
+                  <a class="page-link" href="?page=<?= $i; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $i; ?></a>
+                </li>
+              <?php endfor; ?>
               <li class="page-item <?= $page_num >= $total_pages ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&raquo;</a>
               </li>
