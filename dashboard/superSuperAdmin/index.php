@@ -289,7 +289,7 @@
                     <div>
                         <h1 class="h3 mb-1 fw-bold">Dashboard SuperSuperAdmin</h1>
                         <p class="text-muted small mb-2">
-                            Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>! Kelola semua data sistem Cendana Kargo
+                            Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>!
                         </p>
 
                         <!-- Data Agregat Info Box (Tanpa Icon, Warna & Font Serasi) -->
