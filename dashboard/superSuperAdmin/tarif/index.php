@@ -244,9 +244,9 @@
                                             <?= htmlspecialchars($tarif['status']); ?>
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex gap-1 justify-content-center">
-                                            <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary" title="Edit">
+                                    <td class="">
+                                        <div class="d-flex align-items-center justify-content-center gap-2">
+                                            <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
                                             <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $tarif['id']; ?>" class="btn btn-sm btn-danger" title="Hapus">
