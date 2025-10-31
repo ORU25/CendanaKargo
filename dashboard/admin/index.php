@@ -90,22 +90,25 @@ while ($row = $result_status->fetch_assoc()) {
 $stmt->close();
 
 
-// === Ambil pengiriman keluar (8 terakhir) ===
+// === Ambil pengiriman keluar (8 terbaru) ===
 $stmt = $conn->prepare("
     SELECT * FROM pengiriman 
     WHERE id_cabang_pengirim = ? 
-    ORDER BY id DESC LIMIT 8
+    ORDER BY tanggal DESC, id DESC 
+    LIMIT 8
 ");
 $stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
 $pengiriman_keluar = $stmt->get_result();
 $stmt->close();
 
-// === Ambil pengiriman masuk (8 terakhir) ===
+// === Ambil pengiriman masuk (8 terbaru, hanya status 'dalam pengiriman') ===
 $stmt = $conn->prepare("
     SELECT * FROM pengiriman 
     WHERE id_cabang_penerima = ? 
-    ORDER BY id DESC LIMIT 8
+    AND LOWER(status) = 'dalam pengiriman'
+    ORDER BY tanggal DESC, id DESC 
+    LIMIT 8
 ");
 $stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
@@ -323,70 +326,54 @@ include '../../components/sidebar_offcanvas.php';
             </div>
           </div>
 
-        <!-- Pengiriman Masuk -->
-        <div class="col-lg-6">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold text-success mb-0">Pengiriman Masuk</h5>
-            <!-- Ubah tautan ke folder barang_masuk -->
-            <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
-            </div>
-            <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 small">
-                <thead class="table-light">
-                    <tr>
-                    <th class="px-3">No. Resi</th>
-                    <th>Asal</th>
-                    <th>Status</th>
-                    <th class="text-center">Detail</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($pengiriman_masuk->num_rows > 0): ?>
-                    <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
-                        <tr>
-                        <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                        <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
-                        <td>
-                            <?php
-                            $status = strtolower($row['status']);
-                            $statusClass = match($status) {
-                                'bkd' => 'warning',
-                                'dalam pengiriman' => 'info',
-                                'sampai tujuan' => 'success',
-                                'pod' => 'primary',
-                                'dibatalkan' => 'danger',
-                                default => 'secondary'
-                            };
+<!-- Pengiriman Masuk -->
+<div class="col-lg-6">
+  <div class="card border-0 shadow-sm h-100">
+    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+      <h5 class="fw-bold text-success mb-0">Pengiriman Masuk (Dalam Pengiriman)</h5>
+      <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+          <thead class="table-light">
+            <tr>
+              <th class="px-3">No. Resi</th>
+              <th>Asal</th>
+              <th>Status</th>
+              <th class="text-center">Detail</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php if ($pengiriman_masuk->num_rows > 0): ?>
+              <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                <tr>
+                  <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                  <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
+                  <td>
+                    <span class="badge text-bg-primary"><?= htmlspecialchars($row['status']); ?></span>
+                  </td>
+                  <td class="text-center">
+                    <a href="barang_masuk/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-success">
+                      <i class="fa-solid fa-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              <?php endwhile; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="4" class="text-center py-4 text-muted">
+                  Belum ada pengiriman masuk yang sedang dalam perjalanan.
+                </td>
+              </tr>
+            <?php endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
-                            // Tentukan URL tujuan detail
-                            if ($status === 'dalam pengiriman') {
-                                $detailUrl = "barang_masuk/detail.php?id=" . $row['id'];
-                            } elseif (in_array($status, ['sampai tujuan', 'pod'])) {
-                                $detailUrl = "pengambilan_barang/detail.php?id=" . $row['id'];
-                            } else {
-                                $detailUrl = "pengiriman/detail.php?id=" . $row['id'];
-                            }
-                            ?>
-                            <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
-                        </td>
-                        <td class="text-center">
-                            <a href="<?= $detailUrl; ?>" class="btn btn-sm btn-outline-success">
-                            <i class="fa-solid fa-eye"></i>
-                            </a>
-                        </td>
-                        </tr>
-                    <?php endwhile; ?>
-                    <?php else: ?>
-                    <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman masuk.</td></tr>
-                    <?php endif; ?>
-                </tbody>
-                </table>
-            </div>
-            </div>
-        </div>
-        </div>
 
         </div><!-- end row -->
       </div>
