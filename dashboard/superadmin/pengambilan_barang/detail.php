@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $id_update = (int)($_POST['id'] ?? 0);
     $nama_pengambil = trim($_POST['nama_pengambil'] ?? '');
     $telp_pengambil = trim($_POST['telp_pengambil'] ?? '');
-    $id_user = $_SESSION['id'] ?? null;
+    $id_user = $_SESSION['user_id'];
 
     // Validasi input
     if ($nama_pengambil === '') {
