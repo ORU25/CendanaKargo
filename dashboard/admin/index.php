@@ -1,252 +1,299 @@
 <?php
 session_start();
-if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
     header("Location: ../../auth/login");
     exit;
 }
 
-if(isset($_SESSION['role']) && $_SESSION['role'] !== 'admin'){
+if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin') {
     header("Location: ../../?error=unauthorized");
     exit;
 }
 
 include '../../config/database.php';
 
-// Ambil id cabang admin
-$stmt = $conn->prepare("SELECT id_cabang FROM user WHERE id = ?");
+// === Ambil ID & cabang admin login ===
+$stmt = $conn->prepare("
+    SELECT kc.id, kc.nama_cabang 
+    FROM User u 
+    JOIN Kantor_cabang kc ON u.id_cabang = kc.id 
+    WHERE u.id = ?
+");
 $stmt->bind_param('i', $_SESSION['user_id']);
 $stmt->execute();
-$rowCab = $stmt->get_result()->fetch_assoc();
-$stmt->close();
-$id_cabang_admin = $rowCab ? (int)$rowCab['id_cabang'] : 0;
-
-// === Statistik Pengiriman Keluar (dari cabang admin) ===
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_pengirim = ?");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$total_keluar = (int)$stmt->get_result()->fetch_assoc()['total'];
+$cabang_row = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_pengirim = ? AND status = 'dalam proses'");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$keluar_dalam_proses = (int)$stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
+$id_cabang_admin = $cabang_row['id'] ?? 0;
+$nama_cabang_admin = $cabang_row['nama_cabang'] ?? 'Tidak diketahui';
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_pengirim = ? AND status = 'dalam pengiriman'");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$keluar_dalam_pengiriman = (int)$stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
+// === Filter waktu ===
+$current_month = date('m');
+$current_year  = date('Y');
+$current_date  = date('Y-m-d');
 
-// === Statistik Pengiriman Masuk (menuju cabang admin) ===
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_penerima = ?");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$total_masuk = (int)$stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'bulan';
+$where_clause = ($filter === 'hari')
+    ? "DATE(tanggal) = '$current_date'"
+    : "MONTH(tanggal) = '$current_month' AND YEAR(tanggal) = '$current_year'";
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_penerima = ? AND status = 'sampai tujuan'");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$masuk_sampai_tujuan = (int)$stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
+$selected_date_display = ($filter === 'hari') ? " (" . date('d F Y') . ")" : " " . date('F Y');
 
-$stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_penerima = ? AND status = 'selesai'");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$masuk_selesai = (int)$stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
+// === Hitung total pengiriman, surat jalan, dan pendapatan (berdasarkan filter) ===
+$total_pengiriman = $conn->query("
+    SELECT COUNT(*) AS total 
+    FROM pengiriman 
+    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
+")->fetch_assoc()['total'] ?? 0;
 
+$total_surat_jalan = $conn->query("
+    SELECT COUNT(*) AS total 
+    FROM surat_jalan 
+    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
+")->fetch_assoc()['total'] ?? 0;
+
+$total_pendapatan = $conn->query("
+    SELECT SUM(total_tarif) AS total 
+    FROM pengiriman 
+    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
+")->fetch_assoc()['total'] ?? 0;
+
+// Helper format rupiah
+function format_rupiah($angka) {
+    return 'Rp ' . number_format($angka, 0, ',', '.');
+}
+
+// === Ambil pengiriman keluar (8 terakhir) ===
 $stmt = $conn->prepare("
     SELECT * FROM pengiriman 
-    WHERE id_cabang_pengirim = ? OR id_cabang_penerima = ? 
-    ORDER BY id DESC LIMIT 5
+    WHERE id_cabang_pengirim = ? 
+    ORDER BY id DESC LIMIT 8
 ");
-$stmt->bind_param('ii', $id_cabang_admin, $id_cabang_admin);
+$stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
-$recent_shipments = $stmt->get_result();
+$pengiriman_keluar = $stmt->get_result();
+$stmt->close();
+
+// === Ambil pengiriman masuk (8 terakhir) ===
+$stmt = $conn->prepare("
+    SELECT * FROM pengiriman 
+    WHERE id_cabang_penerima = ? 
+    ORDER BY id DESC LIMIT 8
+");
+$stmt->bind_param('i', $id_cabang_admin);
+$stmt->execute();
+$pengiriman_masuk = $stmt->get_result();
 $stmt->close();
 
 $title = "Dashboard - Cendana Kargo";
-$page = "dashboard";
+$page  = "dashboard";
+
 include '../../templates/header.php';
 include '../../components/navDashboard.php';
 include '../../components/sidebar_offcanvas.php';
 ?>
+
 <div class="container-fluid">
-    <div class="row">
-        <?php include '../../components/sidebar.php'; ?>
+  <div class="row">
+    <?php include '../../components/sidebar.php'; ?>
 
-        <div class="col-lg-10 bg-light">
-            <div class="container-fluid p-4">
-                
-                <!-- Header -->
-                <div class="mb-4">
-                    <h1 class="h3 mb-1 fw-bold">Dashboard Admin</h1>
-                    <p class="text-muted small mb-0">Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>!</p>
-                    <p class="text-muted small fw-semibold">Cabang: <?= htmlspecialchars($_SESSION['cabang']); ?></p>
-                </div>
+    <main class="col-lg-10 bg-light">
+      <div class="container-fluid p-4">
 
-                <?php if(isset($_GET['already_logined'])){ ?>
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        <strong>Info!</strong> Anda sudah login sebelumnya.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php } ?>
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold mb-1">Dashboard Admin</h1>
+            <p class="text-muted small mb-1">
+              Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>!
+            </p>
+            <p class="text-muted small fw-semibold mb-2">
+              Cabang: <?= htmlspecialchars($nama_cabang_admin); ?>
+            </p>
 
-                <!-- Statistik per Status -->
-                <div class="row g-4 mb-4">
-                    <!-- Dalam Proses -->
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="text-muted mb-1 small">Dalam Proses</p>
-                                        <h2 class="mb-0 fw-bold"><?= $keluar_dalam_proses; ?></h2>
-                                    </div>
-                                    <div class="p-3 bg-warning bg-opacity-50 rounded">
-                                        <i class="fa-solid fa-hourglass-half"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dalam Pengiriman -->
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="text-muted mb-1 small">Dalam Pengiriman</p>
-                                        <h2 class="mb-0 fw-bold"><?= $keluar_dalam_pengiriman; ?></h2>
-                                    </div>
-                                    <div class="p-3 bg-info bg-opacity-50 rounded">
-                                        <i class="fa-solid fa-truck-fast"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Pengiriman Datang -->
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="text-muted mb-1 small">Pengiriman Datang</p>
-                                        <h2 class="mb-0 fw-bold"><?= $masuk_sampai_tujuan; ?></h2>
-                                    </div>
-                                    <div class="p-3 bg-primary bg-opacity-50 rounded">
-                                        <i class="fa-solid fa-location-dot"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Selesai -->
-                    <div class="col-xl-3 col-md-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <p class="text-muted mb-1 small">Selesai</p>
-                                        <h2 class="mb-0 fw-bold"><?= $masuk_selesai; ?></h2>
-                                    </div>
-                                    <div class="p-3 bg-success bg-opacity-50 rounded">
-                                        <i class="fa-solid fa-square-check"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 fw-bold">Pengiriman Terbaru</h5>
-                            <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" class="btn btn-sm btn-outline-primary">
-                                Lihat Semua
-                            </a>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="px-3">No. Resi</th>
-                                        <th>Nama Barang</th>
-                                        <th>Pengirim</th>
-                                        <th>Penerima</th>
-                                        <th>Rute</th>
-                                        <th>Tanggal</th>
-                                        <th>Status</th>
-                                        <th class="text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php if($recent_shipments->num_rows > 0): ?>
-                                        <?php while($row = $recent_shipments->fetch_assoc()): ?>
-                                            <tr class="text-capitalize">
-                                                <td class="px-3 fw-bold"><span class="badge bg-dark bg-opacity-75"><?= htmlspecialchars($row['no_resi']); ?></span></td>
-                                                <td><?= htmlspecialchars($row['nama_barang']); ?></td>
-                                                <td><?= htmlspecialchars($row['nama_pengirim']); ?></td>
-                                                <td><?= htmlspecialchars($row['nama_penerima']); ?></td>
-                                                <td>
-                                                    <?php
-                                                    // Tentukan warna badge berdasarkan arah pengiriman
-                                                    $isPengirimanKeluar = ($row['id_cabang_pengirim'] == $id_cabang_admin);
-                                                    $badgeAsalClass = $isPengirimanKeluar ? 'primary' : 'secondary';
-                                                    $badgeTujuanClass = $isPengirimanKeluar ? 'secondary' : 'success';
-                                                    ?>
-                                                    <span class="badge bg-<?= $badgeAsalClass; ?> bg-opacity-75"><?= htmlspecialchars($row['cabang_pengirim']); ?></span>
-                                                    →
-                                                    <span class="badge bg-<?= $badgeTujuanClass; ?> bg-opacity-75"><?= htmlspecialchars($row['cabang_penerima']); ?></span>
-                                                </td>
-                                                <td><?= date('d/m/Y', strtotime($row['tanggal'])); ?></td>
-                                                <td>
-                                                    <?php
-                                                    $badgeClass = 'secondary';
-                                                    switch(strtolower($row['status'])) {
-                                                        case 'dalam proses': $badgeClass = 'warning'; break;
-                                                        case 'dalam pengiriman': $badgeClass = 'primary'; break;
-                                                        case 'sampai tujuan': $badgeClass = 'info'; break;
-                                                        case 'selesai': $badgeClass = 'success'; break;
-                                                        case 'dibatalkan': $badgeClass = 'danger'; break;
-                                                    }
-                                                    ?>
-                                                    <span class="badge text-bg-<?= $badgeClass; ?> bg-opacity-75"><?= htmlspecialchars($row['status']); ?></span>
-                                                </td>
-                                                <td class="text-center">
-                                                    <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-info text-white">
-                                                        <i class="fa-solid fa-eye"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endwhile; ?>
-                                    <?php else: ?>
-                                        <tr>
-                                            <td colspan="8" class="text-center py-5 text-muted">
-                                                <i class="fa-solid fa-box"></i>
-                                                <p class="mb-0">Belum ada data pengiriman untuk cabang ini.</p>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
+            <div class="px-3 py-2 rounded-3 d-inline-block" 
+                style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
+                <span class="fw-normal text-secondary" style="font-size: 0.9rem;">
+                    Data untuk periode: 
+                    <strong class="text-dark"><?= $selected_date_display; ?></strong>
+                </span>
             </div>
+          </div>
+
+          <!-- Filter -->
+          <div>
+            <span class="badge text-bg-secondary me-2">Periode Data:</span>
+            <div class="btn-group" role="group">
+              <a href="?filter=bulan" class="btn btn-sm <?= $filter === 'bulan' ? 'btn-primary' : 'btn-outline-primary'; ?>">Bulan Ini</a>
+              <a href="?filter=hari" class="btn btn-sm <?= $filter === 'hari' ? 'btn-primary' : 'btn-outline-primary'; ?>">Hari Ini</a>
+            </div>
+          </div>
         </div>
-    </div>
+
+        <!-- Kartu Statistik -->
+        <div class="row g-4 mb-4">
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+              <div class="card-body">
+                <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h4 class="fw-bold text-success mb-0"><?= format_rupiah($total_pendapatan); ?></h4>
+                  <i class="fa-solid fa-money-bill-wave text-success opacity-50 fs-4"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
+              <div class="card-body">
+                <p class="text-primary mb-1 small fw-bold">TOTAL PENGIRIMAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h4 class="fw-bold text-primary mb-0"><?= $total_pengiriman; ?> Kiriman</h4>
+                  <i class="fa-solid fa-truck text-primary opacity-50 fs-4"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-25">
+              <div class="card-body">
+                <p class="text-secondary mb-1 small fw-bold">TOTAL SURAT JALAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <h4 class="fw-bold text-secondary mb-0"><?= $total_surat_jalan; ?></h4>
+                  <i class="fa-solid fa-file-invoice text-secondary opacity-50 fs-4"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dua Card Tabel -->
+        <div class="row g-4 mb-5">
+
+          <!-- Pengiriman Keluar -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-primary mb-0">Pengiriman Keluar</h5>
+                <a href="pengiriman/?tipe=keluar" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="px-3">No. Resi</th>
+                        <th>Tujuan</th>
+                        <th>Status</th>
+                        <th class="text-center">Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if ($pengiriman_keluar->num_rows > 0): ?>
+                        <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
+                          <tr>
+                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                            <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
+                            <td>
+                              <?php
+                                $statusClass = match(strtolower($row['status'])) {
+                                  'bkd' => 'warning',
+                                  'dalam pengiriman' => 'info',
+                                  'sampai tujuan' => 'success',
+                                  'pod' => 'primary',
+                                  'dibatalkan' => 'danger',
+                                  default => 'secondary'
+                                };
+                              ?>
+                              <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                            </td>
+                            <td class="text-center">
+                              <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-info">
+                                <i class="fa-solid fa-eye"></i>
+                              </a>
+                            </td>
+                          </tr>
+                        <?php endwhile; ?>
+                      <?php else: ?>
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pengiriman Masuk -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-success mb-0">Pengiriman Masuk</h5>
+                <a href="pengiriman/?tipe=masuk" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="px-3">No. Resi</th>
+                        <th>Asal</th>
+                        <th>Status</th>
+                        <th class="text-center">Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if ($pengiriman_masuk->num_rows > 0): ?>
+                        <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                          <tr>
+                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                            <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
+                            <td>
+                              <?php
+                                $status = strtolower($row['status']);
+                                $statusClass = match($status) {
+                                  'bkd' => 'warning',
+                                  'dalam pengiriman' => 'info',
+                                  'sampai tujuan' => 'success',
+                                  'pod' => 'primary',
+                                  'dibatalkan' => 'danger',
+                                  default => 'secondary'
+                                };
+
+                                // Tentukan URL tujuan detail
+                                if ($status === 'dalam pengiriman') {
+                                    $detailUrl = "barang_masuk/detail.php?id=" . $row['id'];
+                                } elseif (in_array($status, ['sampai tujuan', 'pod'])) {
+                                    $detailUrl = "pengambilan_barang/detail.php?id=" . $row['id'];
+                                } else {
+                                    $detailUrl = "pengiriman/detail.php?id=" . $row['id'];
+                                }
+                              ?>
+                              <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                            </td>
+                            <td class="text-center">
+                              <a href="<?= $detailUrl; ?>" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-eye"></i>
+                              </a>
+                            </td>
+                          </tr>
+                        <?php endwhile; ?>
+                      <?php else: ?>
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman masuk.</td></tr>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- end row -->
+      </div>
+    </main>
+  </div>
 </div>
 
 <?php include '../../templates/footer.php'; ?>
