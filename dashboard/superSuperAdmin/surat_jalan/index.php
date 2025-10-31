@@ -91,7 +91,11 @@ $title = "Surat Jalan - Cendana Kargo";
                                                     $status = $sj['status'];
                                                     $status_badge = 'secondary';
                                                     $status_text = $status;
-                                                    if ($status == 'dalam perjalanan') {
+                                                    if ($status == 'draft') {
+                                                        $status_badge = 'warning';
+                                                        $status_text = 'Draft';
+                                                    }
+                                                    if ($status == 'dalam pengiriman') {
                                                         $status_badge = 'primary';
                                                         $status_text = 'Dikirim';
                                                     }

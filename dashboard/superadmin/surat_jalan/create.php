@@ -11,16 +11,12 @@ $user_id = $_SESSION['user_id'] ?? null;
 $username = $_SESSION['username'] ?? '';
 $user_cabang_id = $_SESSION['id_cabang'] ?? null;
 
-if (!in_array($user_role, ['superSuperAdmin', 'superAdmin', 'admin'])) {
+if (!in_array($user_role, ['superAdmin', 'admin'])) {
     header("Location: ../../../?error=unauthorized_global");
     exit;
 }
 
-if ($user_role === 'superSuperAdmin' && $user_cabang_id !== null) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
-if ($user_role !== 'superSuperAdmin' && ($user_cabang_id === null || $user_cabang_id == 0)) {
+if ($user_cabang_id === null || $user_cabang_id == 0) {
     header("Location: ../../../?error=unauthorized_global");
     exit;
 }
@@ -35,7 +31,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         die('CSRF token validation failed.');
     }
 
-    $no_surat_jalan = trim($_POST['no_surat_jalan']);
     $driver = trim($_POST['driver']);
     $id_cabang_pengirim = intval($_POST['id_cabang_pengirim']);
     $id_cabang_penerima = intval($_POST['id_cabang_penerima']);
@@ -45,17 +40,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tujuan_kode_get = trim($_POST['tujuan_cabang_kode']);
     $pengiriman_ids = $_POST['pengiriman_ids'] ?? [];
 
-    if (empty($no_surat_jalan) || empty($driver) || empty($pengiriman_ids) || empty($id_cabang_pengirim) || empty($id_cabang_penerima)) {
-        header("Location: create.php?asal=$asal_kode_get&tujuan=$tujuan_kode_get&error=" . urlencode("Data formulir tidak lengkap."));
+    if (empty($driver) || empty($pengiriman_ids) || empty($id_cabang_pengirim) || empty($id_cabang_penerima)) {
+        header("Location: create.php?tujuan=$tujuan_kode_get&error=" . urlencode("Data formulir tidak lengkap."));
         exit;
     }
 
     mysqli_begin_transaction($conn);
 
     try {
+        // Generate nomor surat jalan otomatis dengan format: ASAL+TUJUAN+URUTAN
+        $sql_last_sj = "SELECT no_surat_jalan FROM Surat_jalan 
+                        WHERE id_cabang_pengirim = ? AND id_cabang_penerima = ? 
+                        ORDER BY id DESC LIMIT 1";
+        $stmt_last_sj = $conn->prepare($sql_last_sj);
+        $stmt_last_sj->bind_param("ii", $id_cabang_pengirim, $id_cabang_penerima);
+        $stmt_last_sj->execute();
+        $result_last_sj = $stmt_last_sj->get_result();
+        $last_sj = $result_last_sj->fetch_assoc();
+
+        $no_surat_jalan = '';
+        $prefix = $asal_kode_get . $tujuan_kode_get;
+        
+        if ($last_sj) {
+            $last_no = intval(substr($last_sj['no_surat_jalan'], strlen($prefix)));
+            $no_surat_jalan = $prefix . ($last_no + 1);
+        } else {
+            $no_surat_jalan = $prefix . '1';
+        }
+
         $sql_insert_sj = "INSERT INTO Surat_jalan 
 (id_user, id_cabang_pengirim, id_cabang_penerima, no_surat_jalan, user, cabang_pengirim, cabang_penerima, driver, status, tanggal) 
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dalam perjalanan', NOW())";
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', NOW())";
 
         $stmt_sj = $conn->prepare($sql_insert_sj);
         $stmt_sj->bind_param(
@@ -73,19 +88,15 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dalam perjalanan', NOW())";
         $id_surat_jalan_baru = mysqli_insert_id($conn);
 
         if ($id_surat_jalan_baru == 0) {
-            throw new Exception("Gagal membuat surat jalan. Cek No. Surat Jalan duplikat.");
+            throw new Exception("Gagal membuat surat jalan.");
         }
 
         $sql_insert_detail = "INSERT INTO detail_surat_jalan (id_surat_jalan, id_pengiriman) VALUES (?, ?)";
         $stmt_detail = $conn->prepare($sql_insert_detail);
-        $sql_update_pengiriman = "UPDATE Pengiriman SET status = 'dalam pengiriman' WHERE id = ? AND status = 'bkd'";
-        $stmt_update = $conn->prepare($sql_update_pengiriman);
 
         foreach ($pengiriman_ids as $id_pengiriman) {
             $stmt_detail->bind_param("ii", $id_surat_jalan_baru, $id_pengiriman);
             $stmt_detail->execute();
-            $stmt_update->bind_param("i", $id_pengiriman);
-            $stmt_update->execute();
         }
 
         mysqli_commit($conn);
@@ -96,7 +107,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'dalam perjalanan', NOW())";
     } catch (Exception $e) {
         mysqli_rollback($conn);
         $error_message = $e->getMessage();
-        header("Location: create.php?asal=$asal_kode_get&tujuan=$tujuan_kode_get&error=" . urlencode($error_message));
+        header("Location: create.php?tujuan=$tujuan_kode_get&error=" . urlencode($error_message));
         exit;
     }
 }
@@ -109,25 +120,14 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 $tujuan_filter_kode = isset($_GET['tujuan']) ? htmlspecialchars($_GET['tujuan']) : '';
-$asal_filter_kode = isset($_GET['asal']) ? htmlspecialchars($_GET['asal']) : ''; // Untuk SSA, ini dari GET
 
-if ($user_role !== 'superSuperAdmin') {
-    // INI LOGIKA UNTUK ADMIN & SUPERADMIN
-    if (empty($tujuan_filter_kode)) {
-        header("Location: index.php?error=missing_params");
-        exit;
-    }
-    // $asal_filter_kode akan kosong, kita isi nanti dari data session
-} else {
-    // INI LOGIKA UNTUK SUPER SUPER ADMIN
-    if (empty($tujuan_filter_kode) || empty($asal_filter_kode)) {
-        header("Location: index.php?error=missing_params");
-        exit;
-    }
+if (empty($tujuan_filter_kode)) {
+    header("Location: index.php?error=missing_params");
+    exit;
 }
 
-$cabang_asal_id = null;
-$cabang_asal_nama = '';
+$cabang_asal_id = $user_cabang_id;
+$cabang_asal_nama = $_SESSION['nama_cabang'] ?? 'Cabang Anda';
 $cabang_tujuan_id = null;
 $cabang_tujuan_nama = '';
 
@@ -135,30 +135,15 @@ $sql_cabang = "SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang ORDER BY n
 $result_cabang = $conn->query($sql_cabang);
 $cabangs = ($result_cabang->num_rows > 0) ? $result_cabang->fetch_all(MYSQLI_ASSOC) : [];
 
-if ($user_role !== 'superSuperAdmin') {
-    // INI LOGIKA UNTUK ADMIN & SUPERADMIN
-    $cabang_asal_id = $user_cabang_id;
-    $cabang_asal_nama = $_SESSION['nama_cabang'] ?? '';
-    
-    // Kita cari kode cabang (BTG, SMD, dll) berdasarkan ID dari session
-    foreach ($cabangs as $cabang) {
-        if ($cabang['id'] == $cabang_asal_id) {
-            $asal_filter_kode = $cabang['kode_cabang']; // $asal_filter_kode sekarang terisi
-            break;
-        }
-    }
-
-} else {
-    // INI LOGIKA UNTUK SUPER SUPER ADMIN
-    foreach ($cabangs as $cabang) {
-        if ($cabang['kode_cabang'] === $asal_filter_kode) {
-            $cabang_asal_id = $cabang['id'];
-            $cabang_asal_nama = $cabang['nama_cabang'];
-        }
+// Cari kode cabang asal dari ID
+foreach ($cabangs as $cabang) {
+    if ($cabang['id'] == $cabang_asal_id) {
+        $asal_kode_get = $cabang['kode_cabang'];
+        break;
     }
 }
 
-// Logika ini sama untuk semua role
+// Cari cabang tujuan berdasarkan kode
 foreach ($cabangs as $cabang) {
     if ($cabang['kode_cabang'] === $tujuan_filter_kode) {
         $cabang_tujuan_id = $cabang['id'];
@@ -178,6 +163,9 @@ WHERE
 p.id_cabang_penerima = ?
 AND p.id_cabang_pengirim = ?
 AND p.status = 'bkd' 
+AND p.id NOT IN (
+    SELECT id_pengiriman FROM detail_surat_jalan
+)
 ORDER BY p.tanggal DESC";
 
 $stmt = $conn->prepare($sql_pengiriman);
@@ -230,16 +218,15 @@ $max_selection = 15;
                     <input type="hidden" name="id_cabang_penerima" value="<?= htmlspecialchars($cabang_tujuan_id); ?>">
                     <input type="hidden" name="cabang_pengirim_nama" value="<?= htmlspecialchars($cabang_asal_nama); ?>">
                     <input type="hidden" name="cabang_penerima_nama" value="<?= htmlspecialchars($cabang_tujuan_nama); ?>">
-                    <input type="hidden" name="asal_kode" value="<?= htmlspecialchars($asal_filter_kode); ?>">
+                    <input type="hidden" name="asal_kode" value="<?= htmlspecialchars($asal_kode_get); ?>">
                     <input type="hidden" name="tujuan_cabang_kode" value="<?= htmlspecialchars($tujuan_filter_kode); ?>">
-                    <input type="hidden" name="no_surat_jalan" id="hiddenNoSurat" value="">
                     <input type="hidden" name="driver" id="hiddenDriver" value="">
                     <div id="hidden-inputs-container"></div>
 
                     <div class="card border-0 rounded-3 shadow-sm">
                         <div class="card-body p-4">
                             <h6 class="fw-bold text-dark mb-3">
-                                <i class="fa-solid fa-list-check me-2"></i>Pilih resi (Status: BKD, Asal: <?= htmlspecialchars($asal_filter_kode); ?>) - <?= count($pengirimens); ?>/<?= $max_selection; ?>
+                                <i class="fa-solid fa-list-check me-2"></i>Pilih resi (Status: BKD, Asal: <?= htmlspecialchars($asal_kode_get); ?>) - <?= count($pengirimens); ?>/<?= $max_selection; ?>
                             </h6>
 
                             <?php if (empty($pengirimens)): ?>
@@ -247,7 +234,7 @@ $max_selection = 15;
                                     <i class="fa-solid fa-circle-info fa-2x"></i>
                                     <div>
                                         <strong>Tidak ada pengiriman menunggu</strong>
-                                        <p class="mb-0 small">Tidak ada pengiriman berstatus 'bkd' dari <strong><?= htmlspecialchars($cabang_asal_nama); ?></strong> ke <strong><?= htmlspecialchars($cabang_tujuan_nama); ?></strong>.</p>
+                                        <p class="mb-0 small">Tidak ada pengiriman berstatus 'bkd' dari <strong><?= htmlspecialchars($cabang_asal_nama); ?></strong> ke <strong><?= htmlspecialchars($cabang_tujuan_nama); ?></strong> yang belum masuk surat jalan.</p>
                                     </div>
                                 </div>
                             <?php else: ?>
@@ -302,18 +289,10 @@ $max_selection = 15;
             </div>
             <div class="modal-body p-4">
                 <div class="mb-4">
-                    <label class="form-label fw-semibold small mb-2">Pilih Cabang Asal</label>
-                    <input type="text" class="form-control border-2 bg-light" value="<?= htmlspecialchars($cabang_asal_nama); ?>" disabled>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-semibold small mb-2">Nomor Surat Berikutnya:</label>
-                    <p class="mb-0 text-primary fw-semibold fs-5"><?= htmlspecialchars($asal_filter_kode); ?>1</p>
-                </div>
-
-                <div class="mb-4">
-                    <label class="form-label fw-semibold small mb-2">No. Surat Jalan</label>
-                    <input type="text" class="form-control border-2" id="inputNoSurat" placeholder="Contoh: BTG1" required>
+                    <label class="form-label fw-semibold small mb-2">Nomor Surat Jalan</label>
+                    <p class="mb-0 text-primary fw-semibold fs-5">
+                        <i class="fa-solid fa-check-circle me-2"></i>Akan dibuat otomatis
+                    </p>
                 </div>
 
                 <div class="mb-4">
@@ -336,6 +315,8 @@ $max_selection = 15;
     </div>
 </div>
 
+<?php include '../../../templates/footer.php'; ?>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const maxSelection = <?= $max_selection; ?>;
@@ -344,11 +325,9 @@ $max_selection = 15;
         const btnBuatSuratTop = document.getElementById('btnBuatSuratTop');
         const hiddenInputsContainer = document.getElementById('hidden-inputs-container');
         const form = document.getElementById('formSuratJalan');
-        const inputNoSurat = document.getElementById('inputNoSurat');
         const inputDriver = document.getElementById('inputDriver');
         const btnSubmitSurat = document.getElementById('btnSubmitSurat');
         const totalResiModal = document.getElementById('totalResiModal');
-        const hiddenNoSurat = document.getElementById('hiddenNoSurat');
         const hiddenDriver = document.getElementById('hiddenDriver');
 
         function updateSelection() {
@@ -407,18 +386,12 @@ $max_selection = 15;
         });
 
         btnSubmitSurat.addEventListener('click', function () {
-            if (!inputNoSurat.value.trim()) {
-                alert('No. Surat Jalan harus diisi');
-                inputNoSurat.focus();
-                return;
-            }
             if (!inputDriver.value.trim()) {
                 alert('Nama Driver harus diisi');
                 inputDriver.focus();
                 return;
             }
 
-            hiddenNoSurat.value = inputNoSurat.value;
             hiddenDriver.value = inputDriver.value;
 
             form.submit();
