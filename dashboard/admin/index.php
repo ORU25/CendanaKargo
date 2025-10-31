@@ -160,220 +160,183 @@ include '../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
-        <!-- Kartu Statistik -->
-        <div class="row g-4 mb-4">
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
-              <div class="card-body">
-                <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <h4 class="fw-bold text-success mb-0"><?= format_rupiah($total_pendapatan); ?></h4>
-                  <i class="fa-solid fa-money-bill-wave text-success opacity-50 fs-4"></i>
-                </div>
-              </div>
-            </div>
-          </div>
+<!-- Kartu Status Pengiriman -->
+<h5 class="fw-bold mb-3 mt-4">Status Pengiriman</h5>
+<div class="row g-4 mb-4">
 
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
-              <div class="card-body">
-                <p class="text-primary mb-1 small fw-bold">TOTAL PENGIRIMAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <h4 class="fw-bold text-primary mb-0"><?= $total_pengiriman; ?> Kiriman</h4>
-                  <i class="fa-solid fa-truck text-primary opacity-50 fs-4"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-25">
-              <div class="card-body">
-                <p class="text-secondary mb-1 small fw-bold">TOTAL SURAT JALAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <h4 class="fw-bold text-secondary mb-0"><?= $total_surat_jalan; ?></h4>
-                  <i class="fa-solid fa-file-invoice text-secondary opacity-50 fs-4"></i>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- BKD -->
+  <div class="col-xl-4 col-md-6 col-10">
+    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-50">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-dark mb-1 small fw-bold">BKD</p>
+          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['bkd']; ?></h4>
         </div>
-
-        <!-- Kartu Status Pengiriman -->
-        <h5 class="fw-bold mb-3 mt-4">Status Pengiriman</h5>
-        <div class="row g-4 mb-4">
-
-        <!-- BKD -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                <p class="text-dark mb-1 small fw-bold">BKD</p>
-                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['bkd']; ?></h4>
-                </div>
-                <i class="fa-solid fa-box-open text-dark opacity-50 fs-3"></i>
-            </div>
-            </div>
-        </div>
-
-        <!-- Dalam Pengiriman -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                <p class="text-dark mb-1 small fw-bold">Dalam Pengiriman</p>
-                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dalam pengiriman']; ?></h4>
-                </div>
-                <i class="fa-solid fa-truck-moving text-dark opacity-50 fs-3"></i>
-            </div>
-            </div>
-        </div>
-
-        <!-- Sampai Tujuan -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                <p class="text-dark mb-1 small fw-bold">Sampai Tujuan</p>
-                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['sampai tujuan']; ?></h4>
-                </div>
-                <i class="fa-solid fa-location-dot text-dark opacity-50 fs-3"></i>
-            </div>
-            </div>
-        </div>
-
-        <!-- POD -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                <p class="text-dark mb-1 small fw-bold">POD</p>
-                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['pod']; ?></h4>
-                </div>
-                <i class="fa-solid fa-file-circle-check text-dark opacity-50 fs-3"></i>
-            </div>
-            </div>
-        </div>
-
-        <!-- Dibatalkan -->
-        <div class="col-xl-2 col-md-4 col-sm-6">
-            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                <p class="text-dark mb-1 small fw-bold">Dibatalkan</p>
-                <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dibatalkan']; ?></h4>
-                </div>
-                <i class="fa-solid fa-circle-xmark text-dark opacity-50 fs-3"></i>
-            </div>
-            </div>
-        </div>
-
-        </div>
-        <!-- Dua Card Tabel -->
-        <div class="row g-4 mb-5">
-
-          <!-- Pengiriman Keluar -->
-          <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold text-primary mb-0">Pengiriman Keluar</h5>
-                <a href="pengiriman/?tipe=keluar" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
-              </div>
-              <div class="card-body p-0">
-                <div class="table-responsive">
-                  <table class="table table-hover align-middle mb-0 small">
-                    <thead class="table-light">
-                      <tr>
-                        <th class="px-3">No. Resi</th>
-                        <th>Tujuan</th>
-                        <th>Status</th>
-                        <th class="text-center">Detail</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <?php if ($pengiriman_keluar->num_rows > 0): ?>
-                        <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
-                          <tr>
-                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                            <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
-                            <td>
-                              <?php
-                                $statusClass = match(strtolower($row['status'])) {
-                                  'bkd' => 'warning',
-                                  'dalam pengiriman' => 'info',
-                                  'sampai tujuan' => 'success',
-                                  'pod' => 'primary',
-                                  'dibatalkan' => 'danger',
-                                  default => 'secondary'
-                                };
-                              ?>
-                              <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
-                            </td>
-                            <td class="text-center">
-                              <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-info">
-                                <i class="fa-solid fa-eye"></i>
-                              </a>
-                            </td>
-                          </tr>
-                        <?php endwhile; ?>
-                      <?php else: ?>
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
-                      <?php endif; ?>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-
-<!-- Pengiriman Masuk -->
-<div class="col-lg-6">
-  <div class="card border-0 shadow-sm h-100">
-    <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-      <h5 class="fw-bold text-success mb-0">Pengiriman Masuk (Dalam Pengiriman)</h5>
-      <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover align-middle mb-0 small">
-          <thead class="table-light">
-            <tr>
-              <th class="px-3">No. Resi</th>
-              <th>Asal</th>
-              <th>Status</th>
-              <th class="text-center">Detail</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if ($pengiriman_masuk->num_rows > 0): ?>
-              <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
-                <tr>
-                  <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                  <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
-                  <td>
-                    <span class="badge text-bg-primary"><?= htmlspecialchars($row['status']); ?></span>
-                  </td>
-                  <td class="text-center">
-                    <a href="barang_masuk/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-success">
-                      <i class="fa-solid fa-eye"></i>
-                    </a>
-                  </td>
-                </tr>
-              <?php endwhile; ?>
-            <?php else: ?>
-              <tr>
-                <td colspan="4" class="text-center py-4 text-muted">
-                  Belum ada pengiriman masuk yang sedang dalam perjalanan.
-                </td>
-              </tr>
-            <?php endif; ?>
-          </tbody>
-        </table>
+        <i class="fa-solid fa-box-open text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>
+
+  <!-- Dalam Pengiriman -->
+  <div class="col-xl-4 col-md-6 col-10">
+    <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-50">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-dark mb-1 small fw-bold">Dalam Pengiriman</p>
+          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dalam pengiriman']; ?></h4>
+        </div>
+        <i class="fa-solid fa-truck-moving text-dark opacity-50 fs-3"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sampai Tujuan -->
+  <div class="col-xl-4 col-md-6 col-10">
+    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-50">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-dark mb-1 small fw-bold">Sampai Tujuan</p>
+          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['sampai tujuan']; ?></h4>
+        </div>
+        <i class="fa-solid fa-location-dot text-dark opacity-50 fs-3"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- POD -->
+  <div class="col-xl-4 col-md-6 col-10">
+    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-50">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-dark mb-1 small fw-bold">POD</p>
+          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['pod']; ?></h4>
+        </div>
+        <i class="fa-solid fa-file-circle-check text-dark opacity-50 fs-3"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dibatalkan -->
+  <div class="col-xl-4 col-md-6 col-10">
+    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-50">
+      <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+          <p class="text-dark mb-1 small fw-bold">Dibatalkan</p>
+          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dibatalkan']; ?></h4>
+        </div>
+        <i class="fa-solid fa-circle-xmark text-dark opacity-50 fs-3"></i>
+      </div>
+    </div>
+  </div>
+
 </div>
 
+  <!-- Dua Card Tabel -->
+  <div class="row g-4 mb-5">
+
+    <!-- Pengiriman Keluar -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0">Pengiriman Keluar</h5>
+          <a href="pengiriman/?tipe=keluar" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th class="px-3">No. Resi</th>
+                  <th>Tujuan</th>
+                  <th>Status</th>
+                  <th class="text-center">Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($pengiriman_keluar->num_rows > 0): ?>
+                  <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
+                    <tr>
+                      <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                      <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
+                      <td>
+                        <?php
+                          $statusClass = match(strtolower($row['status'])) {
+                            'bkd' => 'warning',
+                            'dalam pengiriman' => 'info',
+                            'sampai tujuan' => 'success',
+                            'pod' => 'primary',
+                            'dibatalkan' => 'danger',
+                            default => 'secondary'
+                          };
+                        ?>
+                        <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                      </td>
+                      <td class="text-center">
+                        <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-info">
+                          <i class="fa-solid fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <?php endwhile; ?>
+                <?php else: ?>
+                  <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pengiriman Masuk -->
+    <div class="col-lg-6">
+      <div class="card border-0 shadow-sm h-100">
+        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+          <h5 class="fw-bold text-dark mb-0">Pengiriman Masuk (Dalam Pengiriman)</h5>
+          <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 small">
+              <thead class="table-light">
+                <tr>
+                  <th class="px-3">No. Resi</th>
+                  <th>Asal</th>
+                  <th>Status</th>
+                  <th class="text-center">Detail</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if ($pengiriman_masuk->num_rows > 0): ?>
+                  <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                    <tr>
+                      <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                      <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
+                      <td>
+                        <span class="badge text-bg-primary"><?= htmlspecialchars($row['status']); ?></span>
+                      </td>
+                      <td class="text-center">
+                        <a href="barang_masuk/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-success">
+                          <i class="fa-solid fa-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <?php endwhile; ?>
+                <?php else: ?>
+                  <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">
+                      Belum ada pengiriman masuk yang sedang dalam perjalanan.
+                    </td>
+                  </tr>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
         </div><!-- end row -->
       </div>
