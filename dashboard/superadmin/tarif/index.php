@@ -127,8 +127,8 @@
                                             <?= htmlspecialchars($tarif['status']); ?>
                                         </span>
                                     </td>
-                                    <td class="text-center">
-                                        <div class="d-flex gap-1 justify-content-center">
+                                    <td class="">
+                                        <div class="d-flex gap-2 justify-content-center">
                                             <a href="update?id=<?= $tarif['id']; ?>" class="btn btn-sm btn-primary" title="Edit">
                                                 <i class="fa-solid fa-pen-to-square"></i>
                                             </a>
