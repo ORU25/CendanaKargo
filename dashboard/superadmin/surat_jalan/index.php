@@ -1,23 +1,18 @@
 <?php
 session_start();
-if (!isset($_SESSION['username'])) {
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
 
-$user_role = $_SESSION['role'] ?? '';
-$user_id = $_SESSION['user_id'] ?? null;
-$user_cabang_id = $_SESSION['id_cabang'] ?? null;
-
-if (!in_array($user_role, ['superAdmin', 'admin'])) {
-    header("Location: ../../../?error=unauthorized_global");
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
+    header("Location: ../../../?error=unauthorized");
     exit;
 }
 
-if ($user_cabang_id === null || $user_cabang_id == 0) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
+$user_role = $_SESSION['role'];
+$user_id = $_SESSION['user_id'];
+$user_cabang_id = $_SESSION['id_cabang'];
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -50,23 +45,31 @@ $title = "Surat Jalan - Cendana Kargo";
         
         <div class="col-lg-10 col-12 p-4">
             <div class="container-fluid">
+
+                <?php if(isset($_GET['success']) && $_GET['success'] == 'created' ){
+                    $type = "success";
+                    $message = "Surat jalan berhasil ditambahkan";
+                    include '../../../components/alert.php';
+                }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
+                    $type = "danger";
+                    $message = "Surat jalan tidak ditemukan";
+                    include '../../../components/alert.php';
+                }?>
                 
-                <div class="mb-4">
-                    <h5 class="fw-bold mb-2">Surat Jalan</h5>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div></div>
+                <!-- Header -->
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="h4 mb-1 fw-bold">Daftar Surat Jalan</h1>
+                    </div>
+                    <div class="d-flex gap-2 mt-2 mt-md-0">
                         <button type="button" class="btn btn-success fw-semibold px-4" data-bs-toggle="modal" data-bs-target="#modalPilihCabang">
                             <i class="fa-solid fa-plus me-2"></i>Tambah Surat Jalan
                         </button>
                     </div>
-                </div>
+                </div> 
 
-                <?php if (isset($_GET['success'])): ?>
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa-solid fa-check-circle me-2"></i>Surat Jalan berhasil dibuat!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                <?php endif; ?>
+
 
                 <div class="card border-0 rounded-3 shadow-sm">
                     <div class="card-body p-0">
@@ -80,8 +83,8 @@ $title = "Surat Jalan - Cendana Kargo";
                                         <th class="px-3 py-3">Tujuan</th>
                                         <th class="px-3 py-3">Driver</th>
                                         <th class="px-3 py-3">Tanggal</th>
-                                        <th class="px-3 py-3 text-center">Status</th>
-                                        <th class="px-3 py-3 text-center" style="width: 60px;">Aksi</th>
+                                        <th class="px-3 py-3">Status</th>
+                                        <th class="px-3 py-3 text-center" style="width: 100px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,7 +97,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['cabang_penerima']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['driver']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars(date('Y-m-d', strtotime($sj['tanggal']))); ?></td>
-                                                <td class="px-3 py-3 text-center">
+                                                <td class="px-3 py-3">
                                                     <?php
                                                     $status = $sj['status'];
                                                     $status_badge = 'secondary';
@@ -120,9 +123,9 @@ $title = "Surat Jalan - Cendana Kargo";
                                                         <?= htmlspecialchars($status_text); ?>
                                                     </span>
                                                 </td>
-                                                <td class="px-3 py-3 text-center">
-                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-link text-primary text-decoration-none p-0" title="Lihat Detail" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
-                                                        <i class="fa-solid fa-eye fs-5"></i>
+                                                <td class="text-center">
+                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail" >
+                                                        <i class="fa-solid fa-eye "></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -130,7 +133,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                     <?php else: ?>
                                         <tr>
                                             <td colspan="8" class="text-center text-muted py-5">
-                                                <i class="fa-solid fa-inbox fa-3x mb-3 d-block opacity-50"></i>
+                                                <i class="fa-solid fa-inbox fa-3x mb-3 opacity-50"></i>
                                                 <p class="mb-0 fw-semibold">Belum ada surat jalan</p>
                                                 <small>Mulai dengan menambahkan surat jalan baru</small>
                                             </td>

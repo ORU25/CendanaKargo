@@ -104,7 +104,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', NOW())";
 
         mysqli_commit($conn);
         unset($_SESSION['csrf_token']);
-        header("Location: index.php?success=created");
+        header("Location: index?success=created");
         exit;
 
     } catch (Exception $e) {
@@ -125,17 +125,6 @@ if (empty($_SESSION['csrf_token'])) {
 $tujuan_filter_kode = isset($_GET['tujuan']) ? htmlspecialchars($_GET['tujuan']) : '';
 $asal_filter_kode = isset($_GET['asal']) ? htmlspecialchars($_GET['asal']) : '';
 
-if ($user_role !== 'superSuperAdmin') {
-    if (empty($tujuan_filter_kode)) {
-        header("Location: index.php?error=missing_params");
-        exit;
-    }
-} else {
-    if (empty($tujuan_filter_kode) || empty($asal_filter_kode)) {
-        header("Location: index.php?error=missing_params");
-        exit;
-    }
-}
 
 $cabang_asal_id = null;
 $cabang_asal_nama = '';
@@ -146,15 +135,10 @@ $sql_cabang = "SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang ORDER BY n
 $result_cabang = $conn->query($sql_cabang);
 $cabangs = ($result_cabang->num_rows > 0) ? $result_cabang->fetch_all(MYSQLI_ASSOC) : [];
 
-if ($user_role !== 'superSuperAdmin') {
-    $cabang_asal_id = $user_cabang_id;
-    $cabang_asal_nama = $_SESSION['nama_cabang'] ?? '';
-} else {
-    foreach ($cabangs as $cabang) {
-        if ($cabang['kode_cabang'] === $asal_filter_kode) {
-            $cabang_asal_id = $cabang['id'];
-            $cabang_asal_nama = $cabang['nama_cabang'];
-        }
+foreach ($cabangs as $cabang) {
+    if ($cabang['kode_cabang'] === $asal_filter_kode) {
+        $cabang_asal_id = $cabang['id'];
+        $cabang_asal_nama = $cabang['nama_cabang'];
     }
 }
 
@@ -166,7 +150,7 @@ foreach ($cabangs as $cabang) {
 }
 
 if ($cabang_asal_id == 0 || $cabang_tujuan_id == 0) {
-    header("Location: index.php?error=invalid_cabang");
+    header("Location: index?error=invalid_cabang");
     exit;
 }
 

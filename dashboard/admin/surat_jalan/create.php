@@ -1,25 +1,20 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     header("Location: ../../../auth/login.php");
     exit;
 }
 
-$user_role = $_SESSION['role'] ?? '';
-$user_id = $_SESSION['user_id'] ?? null;
-$username = $_SESSION['username'] ?? '';
-$user_cabang_id = $_SESSION['id_cabang'] ?? null;
-
-if (!in_array($user_role, ['superAdmin', 'admin'])) {
-    header("Location: ../../../?error=unauthorized_global");
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'admin'){
+    header("Location: ../../../?error=unauthorized");
     exit;
 }
 
-if ($user_cabang_id === null || $user_cabang_id == 0) {
-    header("Location: ../../../?error=unauthorized_global");
-    exit;
-}
+$user_role = $_SESSION['role'];
+$user_cabang_id = $_SESSION['id_cabang'];
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
 
 include '../../../config/database.php';
 
@@ -99,9 +94,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft', NOW())";
             $stmt_detail->execute();
         }
 
+        // Insert log status surat jalan
+        $sql_log = "INSERT INTO log_surat_jalan (id_surat_jalan, id_user, status_lama, status_baru, keterangan, username) 
+                    VALUES (?, ?, NULL, 'draft', 'Surat jalan dibuat', ?)";
+        $stmt_log = $conn->prepare($sql_log);
+        $stmt_log->bind_param("iis", $id_surat_jalan_baru, $user_id, $username);
+        $stmt_log->execute();
+
         mysqli_commit($conn);
         unset($_SESSION['csrf_token']);
-        header("Location: index.php?success=sj_created");
+        header("Location: index?success=created");
         exit;
 
     } catch (Exception $e) {
@@ -122,7 +124,7 @@ if (empty($_SESSION['csrf_token'])) {
 $tujuan_filter_kode = isset($_GET['tujuan']) ? htmlspecialchars($_GET['tujuan']) : '';
 
 if (empty($tujuan_filter_kode)) {
-    header("Location: index.php?error=missing_params");
+    header("Location: index?error=not_found");
     exit;
 }
 
@@ -152,7 +154,7 @@ foreach ($cabangs as $cabang) {
 }
 
 if ($cabang_asal_id == 0 || $cabang_tujuan_id == 0) {
-    header("Location: index.php?error=invalid_cabang");
+    header("Location: index?error=invalid_cabang");
     exit;
 }
 
@@ -163,8 +165,12 @@ WHERE
 p.id_cabang_penerima = ?
 AND p.id_cabang_pengirim = ?
 AND p.status = 'bkd' 
-AND p.id NOT IN (
-    SELECT id_pengiriman FROM detail_surat_jalan
+AND 
+    p.id NOT IN (
+    SELECT dsj.id_pengiriman 
+    FROM detail_surat_jalan dsj
+    JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id
+    WHERE sj.status != 'dibatalkan'
 )
 ORDER BY p.tanggal DESC";
 
@@ -288,13 +294,6 @@ $max_selection = 15;
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <div class="mb-4">
-                    <label class="form-label fw-semibold small mb-2">Nomor Surat Jalan</label>
-                    <p class="mb-0 text-primary fw-semibold fs-5">
-                        <i class="fa-solid fa-check-circle me-2"></i>Akan dibuat otomatis
-                    </p>
-                </div>
-
                 <div class="mb-4">
                     <label class="form-label fw-semibold small mb-2">Nama Driver</label>
                     <input type="text" class="form-control border-2" id="inputDriver" placeholder="Masukkan nama driver" required>

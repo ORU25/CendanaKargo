@@ -14,19 +14,12 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
 $user_role = $_SESSION['role'];
 $user_cabang_id = $_SESSION['id_cabang'] ?? null;
 
-// SuperSuperAdmin tidak perlu validasi cabang
-if ($user_role !== 'superSuperAdmin') {
-    if ($user_cabang_id === null || $user_cabang_id == 0) {
-        header("Location: ../../../?error=unauthorized_global");
-        exit;
-    }
-}
 
 include '../../../config/database.php';
 
 $id_surat_jalan = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id_surat_jalan == 0) {
-    header("Location: index.php?error=invalid_id");
+    header("Location: index?error=not_found");
     exit;
 }
 
@@ -60,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sj_current = $result_check->fetch_assoc();
 
     if (!$sj_current) {
-        header("Location: index.php?error=not_found");
+        header("Location: index?error=not_found");
         exit;
     }
 
@@ -204,23 +197,18 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-// Query disesuaikan untuk SuperSuperAdmin
-if ($user_role === 'superSuperAdmin') {
-    $sql_sj = "SELECT * FROM Surat_jalan WHERE id = ?";
-    $stmt_sj = $conn->prepare($sql_sj);
-    $stmt_sj->bind_param("i", $id_surat_jalan);
-} else {
-    $sql_sj = "SELECT * FROM Surat_jalan WHERE id = ? AND (id_cabang_pengirim = ? OR id_cabang_penerima = ?)";
-    $stmt_sj = $conn->prepare($sql_sj);
-    $stmt_sj->bind_param("iii", $id_surat_jalan, $user_cabang_id, $user_cabang_id);
-}
+
+$sql_sj = "SELECT * FROM Surat_jalan WHERE id = ?";
+$stmt_sj = $conn->prepare($sql_sj);
+$stmt_sj->bind_param("i", $id_surat_jalan);
+
 
 $stmt_sj->execute();
 $result_sj = $stmt_sj->get_result();
 $sj = $result_sj->fetch_assoc();
 
 if (!$sj) {
-    header("Location: index.php?error=not_found");
+    header("Location: index?error=not_found");
     exit;
 }
 

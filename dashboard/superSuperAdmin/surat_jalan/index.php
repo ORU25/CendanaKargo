@@ -11,7 +11,6 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
 }
 
 $user_role = $_SESSION['role'];
-$user_cabang_id = $_SESSION['id_cabang'] ?? null;
 $user_id = $_SESSION['user_id'];
 
 
@@ -81,7 +80,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                         <th class="px-3 py-3">Driver</th>
                                         <th class="px-3 py-3">Tanggal</th>
                                         <th class="px-3 py-3 ">Status</th>
-                                        <th class="px-3 py-3 text-center">Aksi</th>
+                                        <th class="px-3 py-3 text-center" style="width: 100px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -116,7 +115,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                                         <?= htmlspecialchars($status); ?>
                                                     </span>
                                                 </td>
-                                                <td class="px-3 py-3 text-center">
+                                                <td class="text-center">
                                                     <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail" >
                                                         <i class="fa-solid fa-eye "></i>
                                                     </a>
@@ -153,61 +152,33 @@ $title = "Surat Jalan - Cendana Kargo";
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">
+                        Pilih cabang asal dan tujuan untuk memfilter daftar pengiriman.
+                    </p>
                     
-                    <?php if ($user_role === 'superSuperAdmin'): ?>
-                        <p class="text-muted small mb-4">
-                            Pilih cabang asal dan tujuan untuk memfilter daftar pengiriman.
-                        </p>
-                        
-                        <div class="mb-4">
-                            <label for="asal_cabang" class="form-label fw-semibold mb-2">Pilih Cabang Asal</label>
-                            <select class="form-select border-2" id="asal_cabang" name="asal" required>
-                                <option value="">-- Pilih Cabang Asal --</option>
-                                <?php foreach ($cabangs_modal as $cabang): ?>
-                                    <option value="<?= htmlspecialchars($cabang['kode_cabang']); ?>">
-                                        <?= htmlspecialchars($cabang['kode_cabang']); ?> - <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="tujuan_cabang" class="form-label fw-semibold mb-2">Pilih Cabang Tujuan</label>
-                            <select class="form-select border-2" id="tujuan_cabang" name="tujuan" required>
-                                <option value="">-- Pilih Cabang Tujuan --</option>
-                                <?php foreach ($cabangs_modal as $cabang): ?>
-                                    <option value="<?= htmlspecialchars($cabang['kode_cabang']); ?>">
-                                        <?= htmlspecialchars($cabang['kode_cabang']); ?> - <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+                    <div class="mb-4">
+                        <label for="asal_cabang" class="form-label fw-semibold mb-2">Pilih Cabang Asal</label>
+                        <select class="form-select border-2" id="asal_cabang" name="asal" required>
+                            <option value="">-- Pilih Cabang Asal --</option>
+                            <?php foreach ($cabangs_modal as $cabang): ?>
+                                <option value="<?= htmlspecialchars($cabang['kode_cabang']); ?>">
+                                    <?= htmlspecialchars($cabang['kode_cabang']); ?> - <?= htmlspecialchars($cabang['nama_cabang']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
-                    <?php else: ?>
-                        <p class="text-muted small mb-4">
-                            Pilih cabang tujuan. Cabang asal akan otomatis sesuai cabang Anda.
-                        </p>
-                        
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold mb-2">Cabang Asal</label>
-                            <input type="text" class="form-control border-2 bg-light" value="<?= htmlspecialchars($_SESSION['nama_cabang'] ?? 'Cabang Anda'); ?>" disabled>
-                        </div>
-                        
-                        <div class="mb-4">
-                            <label for="tujuan_cabang" class="form-label fw-semibold mb-2">Pilih Cabang Tujuan</label>
-                            <select class="form-select border-2" id="tujuan_cabang" name="tujuan" required>
-                                <option value="">-- Pilih Cabang Tujuan --</option>
-                                <?php foreach ($cabangs_modal as $cabang): ?>
-                                    <?php if ($cabang['id'] !== $user_cabang_id): ?>
-                                        <option value="<?= htmlspecialchars($cabang['kode_cabang']); ?>">
-                                            <?= htmlspecialchars($cabang['kode_cabang']); ?> - <?= htmlspecialchars($cabang['nama_cabang']); ?>
-                                        </option>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                    
-                    <?php endif; ?>
+                    <div class="mb-4">
+                        <label for="tujuan_cabang" class="form-label fw-semibold mb-2">Pilih Cabang Tujuan</label>
+                        <select class="form-select border-2" id="tujuan_cabang" name="tujuan" required>
+                            <option value="">-- Pilih Cabang Tujuan --</option>
+                            <?php foreach ($cabangs_modal as $cabang): ?>
+                                <option value="<?= htmlspecialchars($cabang['kode_cabang']); ?>">
+                                    <?= htmlspecialchars($cabang['kode_cabang']); ?> - <?= htmlspecialchars($cabang['nama_cabang']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
                     
                 </div>
                 <div class="modal-footer border-top p-4">

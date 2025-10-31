@@ -37,15 +37,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $berat = (float) trim($_POST['berat']);
     $jumlah = (int) trim($_POST['jumlah']);
     $diskon = isset($_POST['diskon']) && $_POST['diskon'] !== '' ? (float) trim($_POST['diskon']) : 0;
-    $pembayaran = trim($_POST['jasa_pengiriman']); // masih menggunakan field jasa_pengiriman
+    $pembayaran = trim($_POST['jasa_pengiriman']); // field masih "jasa_pengiriman"
 
-    // Validasi diskon
-    if ($diskon < 0 || $diskon > 100) {
-        header("Location: create?error=invalid_diskon");
-        exit;
-    }
-
-    // Validasi nomor telepon (10–15 digit angka)
+    // Validasi nomor telepon pengirim dan penerima
     if (!preg_match('/^[0-9]{10,15}$/', $telp_pengirim)) {
         header("Location: create?error=invalid_phone_pengirim");
         exit;
@@ -55,7 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Cek tarif pengiriman
+    // Validasi diskon
+    if ($diskon < 0 || $diskon > 100) {
+        header("Location: create?error=invalid_diskon");
+        exit;
+    }
+
     $checkTarif = $conn->prepare("SELECT * FROM tarif_pengiriman WHERE id_cabang_asal = ? AND id_cabang_tujuan = ?");
     $checkTarif->bind_param("ii", $asal, $tujuan);
     $checkTarif->execute();
@@ -71,21 +70,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $batas_berat = (float) $data_tarif['batas_berat_dasar'];
     $tarif_tambahan = (float) $data_tarif['tarif_tambahan_perkg'];
 
-    // Hitung total tarif
-    $tarif_sebelum_diskon = $berat <= $batas_berat
-        ? $tarif_dasar
-        : $tarif_dasar + (($berat - $batas_berat) * $tarif_tambahan);
+    // Hitung tarif sebelum diskon
+    if ($berat <= $batas_berat) {
+        $tarif_sebelum_diskon = $tarif_dasar;
+    } else {
+        $lebih = $berat - $batas_berat;
+        $tarif_sebelum_diskon = $tarif_dasar + ($lebih * $tarif_tambahan);
+    }
 
-    $total_tarif = $diskon > 0
-        ? $tarif_sebelum_diskon - (($tarif_sebelum_diskon * $diskon) / 100)
-        : $tarif_sebelum_diskon;
+    // Hitung total tarif setelah diskon
+    if ($diskon > 0) {
+        $nominal_diskon = ($tarif_sebelum_diskon * $diskon) / 100;
+        $total_tarif = $tarif_sebelum_diskon - $nominal_diskon;
+    } else {
+        $total_tarif = $tarif_sebelum_diskon;
+    }
 
-    // Dapatkan data cabang
     $getCabang = $conn->prepare("SELECT id, nama_cabang, kode_cabang FROM kantor_cabang WHERE id IN (?, ?)");
     $getCabang->bind_param("ii", $asal, $tujuan);
     $getCabang->execute();
     $resultCabangData = $getCabang->get_result();
-
     $nama_cabang_asal = "";
     $nama_cabang_tujuan = "";
     $kode_cabang_asal = "";
@@ -159,35 +163,37 @@ include '../../../components/sidebar_offcanvas.php';
       <div class="card shadow-sm p-4 col-lg-7">
         <h4 class="fw-bold mb-4 text-danger">Tambah Pengiriman</h4>
 
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
+        <?php
+        if(isset($_GET['error']) && $_GET['error'] == 'failed'){
             $type = "danger"; $message = "Gagal menambahkan pengiriman baru";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
             $type = "danger"; $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
             $type = "danger"; $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
             $type = "danger"; $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }?>
-        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
+        }
+        if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
             $type = "danger"; $message = "Diskon tidak valid. Harus antara 0-100%.";
             include '../../../components/alert.php';
-        }?>
+        }
+        ?>
 
         <form method="POST" action="create">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
 
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label fw-semibold">Cabang Asal</label>
+              <label class="form-label fw-semibold" for="asal">Cabang Asal</label>
               <input type="text" class="form-control" value="<?= $_SESSION['cabang']; ?>" readonly>
-              <input type="hidden" name="id_cabang_asal" value="<?= $_SESSION['id_cabang']; ?>">
+              <input id="asal" type="hidden" name="id_cabang_asal" value="<?= $_SESSION['id_cabang']; ?>">
             </div>
 
             <div class="col-md-6">

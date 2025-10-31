@@ -80,8 +80,8 @@ $title = "Surat Jalan - Cendana Kargo";
                                         <th class="px-3 py-3">Tujuan</th>
                                         <th class="px-3 py-3">Driver</th>
                                         <th class="px-3 py-3">Tanggal</th>
-                                        <th class="px-3 py-3 text-center">Status</th>
-                                        <th class="px-3 py-3 text-center" style="width: 60px;">Aksi</th>
+                                        <th class="px-3 py-3">Status</th>
+                                        <th class="px-3 py-3 text-center" style="width: 100px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -94,7 +94,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['cabang_penerima']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars($sj['driver']); ?></td>
                                                 <td class="px-3 py-3"><?= htmlspecialchars(date('Y-m-d', strtotime($sj['tanggal']))); ?></td>
-                                                <td class="px-3 py-3 text-center">
+                                                <td class="px-3 py-3 ">
                                                     <?php
                                                     $status = $sj['status'];
                                                     $status_badge = 'secondary';
@@ -120,9 +120,9 @@ $title = "Surat Jalan - Cendana Kargo";
                                                         <?= htmlspecialchars($status_text); ?>
                                                     </span>
                                                 </td>
-                                                <td class="px-3 py-3 text-center">
-                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-link text-primary text-decoration-none p-0" title="Lihat Detail" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;">
-                                                        <i class="fa-solid fa-eye fs-5"></i>
+                                                <td class="text-center">
+                                                    <a href="detail.php?id=<?= $sj['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail" >
+                                                        <i class="fa-solid fa-eye "></i>
                                                     </a>
                                                 </td>
                                             </tr>
@@ -130,7 +130,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                     <?php else: ?>
                                         <tr>
                                             <td colspan="8" class="text-center text-muted py-5">
-                                                <i class="fa-solid fa-inbox fa-3x mb-3 d-block opacity-50"></i>
+                                                <i class="fa-solid fa-inbox fa-3x mb-3 opacity-50"></i>
                                                 <p class="mb-0 fw-semibold">Belum ada surat jalan</p>
                                                 <small>Mulai dengan menambahkan surat jalan baru</small>
                                             </td>
