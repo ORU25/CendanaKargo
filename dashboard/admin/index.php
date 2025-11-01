@@ -161,70 +161,79 @@ include '../../components/sidebar_offcanvas.php';
         </div>
 
 <!-- Kartu Status Pengiriman -->
-<h5 class="fw-bold mb-3 mt-4">Status Pengiriman</h5>
 <div class="row g-4 mb-4">
 
   <!-- BKD -->
-  <div class="col-xl-4 col-md-6 col-10">
-    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-50">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <p class="text-dark mb-1 small fw-bold">BKD</p>
-          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['bkd']; ?></h4>
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+      <div class="card-body">
+        <p class="text-secondary mb-1 small fw-bold">BKD</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-secondary"><?= $status_counts['bkd']; ?> Kiriman</h4>
+          </div>
+          <i class="fa-solid fa-box-open text-secondary opacity-50" style="font-size: 1.8rem;"></i>
         </div>
-        <i class="fa-solid fa-box-open text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>
 
   <!-- Dalam Pengiriman -->
-  <div class="col-xl-4 col-md-6 col-10">
-    <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-50">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <p class="text-dark mb-1 small fw-bold">Dalam Pengiriman</p>
-          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dalam pengiriman']; ?></h4>
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
+      <div class="card-body">
+        <p class="text-primary mb-1 small fw-bold">DALAM PENGIRIMAN</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-primary"><?= $status_counts['dalam pengiriman']; ?> Kiriman</h4>
+          </div>
+          <i class="fa-solid fa-truck-moving text-primary opacity-50" style="font-size: 1.8rem;"></i>
         </div>
-        <i class="fa-solid fa-truck-moving text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>
 
   <!-- Sampai Tujuan -->
-  <div class="col-xl-4 col-md-6 col-10">
-    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-50">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <p class="text-dark mb-1 small fw-bold">Sampai Tujuan</p>
-          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['sampai tujuan']; ?></h4>
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+      <div class="card-body">
+        <p class="text-info mb-1 small fw-bold">SAMPAI TUJUAN</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-info"><?= $status_counts['sampai tujuan']; ?> Kiriman</h4>
+          </div>
+          <i class="fa-solid fa-location-dot text-info opacity-50" style="font-size: 1.8rem;"></i>
         </div>
-        <i class="fa-solid fa-location-dot text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>
 
   <!-- POD -->
-  <div class="col-xl-4 col-md-6 col-10">
-    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-50">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <p class="text-dark mb-1 small fw-bold">POD</p>
-          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['pod']; ?></h4>
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+      <div class="card-body">
+        <p class="text-success mb-1 small fw-bold">POD</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-success"><?= $status_counts['pod']; ?> Kiriman</h4>
+          </div>
+          <i class="fa-solid fa-file-circle-check text-success opacity-50" style="font-size: 1.8rem;"></i>
         </div>
-        <i class="fa-solid fa-file-circle-check text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>
 
   <!-- Dibatalkan -->
-  <div class="col-xl-4 col-md-6 col-10">
-    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-50">
-      <div class="card-body d-flex justify-content-between align-items-center">
-        <div>
-          <p class="text-dark mb-1 small fw-bold">Dibatalkan</p>
-          <h4 class="fw-bold text-dark mb-0"><?= $status_counts['dibatalkan']; ?></h4>
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+      <div class="card-body">
+        <p class="text-danger mb-1 small fw-bold">DIBATALKAN</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-danger"><?= $status_counts['dibatalkan']; ?> Kiriman</h4>
+          </div>
+          <i class="fa-solid fa-circle-xmark text-danger opacity-50" style="font-size: 1.8rem;"></i>
         </div>
-        <i class="fa-solid fa-circle-xmark text-dark opacity-50 fs-3"></i>
       </div>
     </div>
   </div>

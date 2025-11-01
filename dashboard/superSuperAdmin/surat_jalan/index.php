@@ -125,7 +125,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                     <?php else: ?>
                                         <tr>
                                             <td colspan="8" class="text-center text-muted py-5">
-                                                <i class="fa-solid fa-inbox fa-3x mb-3 d-block opacity-50"></i>
+                                                <i class="fa-solid fa-inbox fa-3x mb-3 opacity-50"></i>
                                                 <p class="mb-0 fw-semibold">Belum ada surat jalan</p>
                                                 <small>Mulai dengan menambahkan surat jalan baru</small>
                                             </td>

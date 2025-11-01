@@ -278,6 +278,7 @@
     include '../../components/navDashboard.php';
     include '../../components/sidebar_offcanvas.php';
 ?>
+
 <div class="container-fluid">
     <div class="row">
         <?php include '../../components/sidebar.php'; ?>
@@ -471,10 +472,10 @@
                                         <tr>
                                             <td class="px-3"><?= $no++; ?></td>
                                             <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="text-end fw-bold text-success"><?= format_rupiah($data['total_revenue']); ?></td>
-                                            <td class="text-end text-primary"><?= format_rupiah($data['cash_revenue']); ?></td>
-                                            <td class="text-end text-info"><?= format_rupiah($data['transfer_revenue']); ?></td>
-                                            <td class="text-end text-warning"><?= format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="text-end fw-bold"><?= format_rupiah($data['total_revenue']); ?></td>
+                                            <td class="text-end"><?= format_rupiah($data['cash_revenue']); ?></td>
+                                            <td class="text-end"><?= format_rupiah($data['transfer_revenue']); ?></td>
+                                            <td class="text-end"><?= format_rupiah($data['cod_revenue']); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -515,11 +516,11 @@
                                         <tr>
                                             <td class="px-3"><?= $no++; ?></td>
                                             <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="fw-bold text-primary text-center"><?= $data['total_shipments']; ?></td>
-                                            <td class="text-center text-warning"><?= $data['count_proses']; ?></td>
-                                            <td class="text-center text-info"><?= $data['count_pengiriman']; ?></td>
-                                            <td class="text-center text-success"><?= $data['count_selesai']; ?></td>
-                                            <td class="text-center text-danger"><?= $data['count_dibatalkan']; ?></td>
+                                            <td class="fw-bold text-center"><?= $data['total_shipments']; ?></td>
+                                            <td class="text-center"><?= $data['count_proses']; ?></td>
+                                            <td class="text-center"><?= $data['count_pengiriman']; ?></td>
+                                            <td class="text-center"><?= $data['count_selesai']; ?></td>
+                                            <td class="text-center"><?= $data['count_dibatalkan']; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -560,11 +561,11 @@
                                         <tr>
                                             <td class="px-3"><?= $no++; ?></td>
                                             <td class="fw-bold"><?= htmlspecialchars($branch_name); ?></td>
-                                            <td class="fw-bold text-primary text-center"><?= $data['total_manifests']; ?></td>
-                                            <td class="text-center text-secondary"><?= $data['count_dibuat']; ?></td>
-                                            <td class="text-center text-info"><?= $data['count_berangkat']; ?></td>
-                                            <td class="text-center text-success"><?= $data['count_sampai_tujuan']; ?></td>
-                                            <td class="text-center text-danger"><?= $data['count_dibatalkan']; ?></td>
+                                            <td class="fw-bold text-center"><?= $data['total_manifests']; ?></td>
+                                            <td class="text-center"><?= $data['count_dibuat']; ?></td>
+                                            <td class="text-center"><?= $data['count_berangkat']; ?></td>
+                                            <td class="text-center"><?= $data['count_sampai_tujuan']; ?></td>
+                                            <td class="text-center"><?= $data['count_dibatalkan']; ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
