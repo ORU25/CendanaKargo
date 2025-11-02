@@ -104,19 +104,6 @@ CREATE TABLE log_status_pengiriman (
     FOREIGN KEY (diubah_oleh) REFERENCES User(id) ON DELETE SET NULL
 );
 
-CREATE TABLE log_surat_jalan (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    id_surat_jalan BIGINT NOT NULL,
-    id_user INT,
-    status_lama ENUM('draft', 'diberangkatkan') NULL,
-    status_baru ENUM('draft', 'diberangkatkan') NOT NULL,
-    keterangan TEXT,
-    tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
-    username VARCHAR(50) NOT NULL,
-    FOREIGN KEY (id_surat_jalan) REFERENCES Surat_jalan(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL
-);
-
 -- akun user superadmin dengan password 'supersuperadmin' (hashed)
 INSERT INTO User (username, password, role)
 VALUES (
