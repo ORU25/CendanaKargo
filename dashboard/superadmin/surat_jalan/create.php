@@ -197,9 +197,7 @@ $max_selection = 15;
             <div class="container-fluid">
 
                 <div class="mb-4">
-                    <a href="index.php" class="btn btn-outline-secondary btn-sm mb-3">
-                        <i class="fa-solid fa-arrow-left me-2"></i>Belum ada surat
-                    </a>
+
                     <div class="d-flex justify-content-between align-items-start gap-3">
                         <div>
                             <h5 class="fw-bold mb-2">Tambah Surat Jalan</h5>

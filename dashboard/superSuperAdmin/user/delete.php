@@ -19,7 +19,6 @@
         }
         $id = intval($_POST['id']);
 
-        // Cegah superadmin menghapus dirinya sendiri
         if($id === $_SESSION['user_id']){
             header("Location: ./?error=cannot_delete_self");
             exit;

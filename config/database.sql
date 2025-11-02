@@ -68,7 +68,7 @@ CREATE TABLE Surat_jalan (
     cabang_penerima VARCHAR(100) NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     driver VARCHAR(100) NOT NULL,
-    status ENUM('draft','dalam perjalanan', 'sampai tujuan', 'dibatalkan') DEFAULT 'draft',
+    status ENUM('draft','diberangkatkan') DEFAULT 'draft',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL
@@ -78,8 +78,8 @@ CREATE TABLE detail_surat_jalan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_surat_jalan BIGINT,
     id_pengiriman BIGINT,
-    FOREIGN KEY (id_surat_jalan) REFERENCES Surat_jalan(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_pengiriman) REFERENCES Pengiriman(id) ON DELETE SET NULL
+    FOREIGN KEY (id_surat_jalan) REFERENCES Surat_jalan(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_pengiriman) REFERENCES Pengiriman(id) ON DELETE CASCADE
 );
 
 CREATE TABLE pengambilan (
@@ -89,7 +89,7 @@ CREATE TABLE pengambilan (
     nama_pengambil VARCHAR(100) NOT NULL,
     telp_pengambil VARCHAR(20) NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL
+    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE
 );
 
 CREATE TABLE log_status_pengiriman (
@@ -108,8 +108,8 @@ CREATE TABLE log_surat_jalan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_surat_jalan BIGINT NOT NULL,
     id_user INT,
-    status_lama ENUM('draft', 'dalam perjalanan', 'sampai tujuan', 'dibatalkan') NULL,
-    status_baru ENUM('draft', 'dalam perjalanan', 'sampai tujuan', 'dibatalkan') NOT NULL,
+    status_lama ENUM('draft', 'diberangkatkan') NULL,
+    status_baru ENUM('draft', 'diberangkatkan') NOT NULL,
     keterangan TEXT,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     username VARCHAR(50) NOT NULL,
