@@ -293,7 +293,7 @@
                             Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>!
                         </p>
 
-                        <!-- Data Agregat Info Box (Tanpa Icon, Warna & Font Serasi) -->
+                        <!-- Data Agregat Info Box -->
                         <div class="px-3 py-2 rounded-3 d-inline-block" 
                             style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
                             <span class="fw-normal text-secondary" style="font-size: 0.9rem;">
@@ -332,7 +332,7 @@
                     <div class="col-xl-4 col-md-6">
                         <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
                             <div class="card-body">
-                                <p class="text-success mb-1 small fw-bold">RINGKASAN PENDAPATAN</p>
+                                <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h4 class="mb-0 fw-bold text-success"><?= format_rupiah($total_pendapatan); ?></h4>
@@ -347,7 +347,7 @@
                     <div class="col-xl-4 col-md-6">
                         <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
                             <div class="card-body">
-                                <p class="text-primary mb-1 small fw-bold">RINGKASAN PENGIRIMAN</p>
+                                <p class="text-primary mb-1 small fw-bold">TOTAL PENGIRIMAN</p>
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <h4 class="mb-0 fw-bold text-primary"><?= $total_pengiriman; ?> Kiriman</h4>

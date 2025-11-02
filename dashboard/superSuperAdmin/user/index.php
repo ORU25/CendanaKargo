@@ -187,51 +187,53 @@
                             </thead>
                             <tbody>
                                 <?php foreach($users as $index => $user): ?>
-                                <tr>
-                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($user['id']); ?></td>
-                                    <td><?= htmlspecialchars($user['username']); ?></td>
-                                    <td><?= htmlspecialchars($user['role']); ?></td>
-                                    <td>
-                                        <span class="badge bg-secondary">
-                                            <?= htmlspecialchars($user['kode_cabang'] ?? '-'); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
-                                            <i class="fa-solid fa-pen-to-square"></i>
-                                        </a>
-                                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
-                                            <i class="fa-solid fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                <!-- Delete Modal -->
-                                <div class="modal fade" id="delete<?= $user['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $user['id']; ?>" aria-hidden="true">
-                                    <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
-                                        <div class="modal-content">
-                                            <div class="modal-header bg-danger text-white">
-                                                <h5 class="modal-title" id="deleteLabel<?= $user['id']; ?>">
-                                                    Konfirmasi Hapus User
-                                                </h5>
-                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                
-                                            <div class="modal-body text-center">
-                                                <p>Apakah Anda yakin ingin menghapus user <strong><?= htmlspecialchars($user['username']); ?></strong>?</p>
-                                                <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
-                                            </div>
-                
-                                            <div class="modal-footer justify-content-center">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                                    <form action="delete" method="POST" class="d-inline">
-                                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
-                                                        <input type="hidden" name="id" value="<?= $user['id']; ?>">
-                                                        <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
-                                                    </form>
+                                    <?php if($user['id'] !== $_SESSION['user_id']): ?>
+                                        <tr>
+                                            <td class="px-4 fw-semibold"><?= htmlspecialchars($user['id']); ?></td>
+                                            <td><?= htmlspecialchars($user['username']); ?></td>
+                                            <td><?= htmlspecialchars($user['role']); ?></td>
+                                            <td>
+                                                <span class="badge bg-secondary">
+                                                    <?= htmlspecialchars($user['kode_cabang'] ?? '-'); ?>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                                                    <i class="fa-solid fa-pen-to-square"></i>
+                                                </a>
+                                                <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $user['id']; ?>" class="btn btn-sm btn-danger <?= $_SESSION['user_id'] === $user['id'] ? 'disabled' : ''; ?>">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" id="delete<?= $user['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $user['id']; ?>" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-danger text-white">
+                                                        <h5 class="modal-title" id="deleteLabel<?= $user['id']; ?>">
+                                                            Konfirmasi Hapus User
+                                                        </h5>
+                                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                        
+                                                    <div class="modal-body text-center">
+                                                        <p>Apakah Anda yakin ingin menghapus user <strong><?= htmlspecialchars($user['username']); ?></strong>?</p>
+                                                        <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+                                                    </div>
+                        
+                                                    <div class="modal-footer justify-content-center">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                            <form action="delete" method="POST" class="d-inline">
+                                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                                <input type="hidden" name="id" value="<?= $user['id']; ?>">
+                                                                <button type="submit" name="delete" class="btn btn-danger">Hapus</button>
+                                                            </form>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                                 <?php if (empty($users)): ?>
                                     <tr>

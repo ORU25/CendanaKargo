@@ -147,7 +147,7 @@ $title = "Surat Jalan - Cendana Kargo";
             <form id="formPilihCabang" method="GET" action="create.php">
                 <div class="modal-header border-bottom">
                     <h5 class="modal-title fw-bold" id="modalPilihCabangLabel">
-                        <i class="fa-solid fa-location-dot me-2 text-danger"></i>Pilih Cabang Tujuan
+                        <i class="fa-solid fa-location-dot me-2 text-danger"></i>Pilih Cabang 
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

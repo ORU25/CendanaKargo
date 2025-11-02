@@ -27,16 +27,68 @@
         $keterangan = trim((string)($_POST['keterangan'] ?? ''));
         
         if ($id_update > 0 && $status_baru !== '') {
-            // Ambil status lama
-            $stmt_old = $conn->prepare('SELECT status FROM pengiriman WHERE id = ?');
+            // Ambil data pengiriman
+            $stmt_old = $conn->prepare('SELECT status, no_resi FROM pengiriman WHERE id = ?');
             $stmt_old->bind_param('i', $id_update);
             $stmt_old->execute();
             $result_old = $stmt_old->get_result();
             $status_lama = null;
+            $no_resi = null;
+            
             if ($result_old->num_rows > 0) {
                 $data_old = $result_old->fetch_assoc();
-                $status_lama = $data_old['status'];
+                $status_lama = strtolower($data_old['status']);
+                $no_resi = $data_old['no_resi'];
 
+                // Validasi perubahan status berdasarkan status lama
+                $allowed = false;
+                $error_message = '';
+                
+                switch($status_lama) {
+                    case 'bkd':
+                        if (in_array($status_baru, ['dalam pengiriman', 'dibatalkan'])) {
+                            $allowed = true;
+                        } else {
+                            $error_message = 'Status BKD hanya dapat diubah ke Dalam Pengiriman atau Dibatalkan';
+                        }
+                        break;
+                    case 'dalam pengiriman':
+                        if ($status_baru === 'sampai tujuan') {
+                            $allowed = true;
+                        } else {
+                            $error_message = 'Status Dalam Pengiriman hanya dapat diubah ke Sampai Tujuan';
+                        }
+                        break;
+                    case 'sampai tujuan':
+                        if ($status_baru === 'pod') {
+                            // Validasi data pengambil
+                            $nama_pengambil = trim((string)($_POST['nama_pengambil'] ?? ''));
+                            $telp_pengambil = trim((string)($_POST['telp_pengambil'] ?? ''));
+                            
+                            if (empty($nama_pengambil) || empty($telp_pengambil)) {
+                                header('Location: detail?id=' . $id_update . '&error=pengambil_required');
+                                exit;
+                            }
+                            $allowed = true;
+                        } else {
+                            $error_message = 'Status Sampai Tujuan hanya dapat diubah ke POD';
+                        }
+                        break;
+                    case 'pod':
+                        $error_message = 'Status POD tidak dapat diubah lagi';
+                        break;
+                    case 'dibatalkan':
+                        $error_message = 'Status Dibatalkan tidak dapat diubah lagi';
+                        break;
+                    default:
+                        $error_message = 'Status tidak valid';
+                }
+                
+                if (!$allowed) {
+                    header('Location: detail?id=' . $id_update . '&error=invalid_status_change');
+                    exit;
+                }
+                
                 if ($status_lama === $status_baru) {
                     header('Location: detail?id=' . $id_update . '&error=same_status');
                     exit;
@@ -50,12 +102,26 @@
                 $stmt->bind_param('si', $status_baru, $id_update);
                 if ($stmt->execute()) {
                     // Insert log perubahan status
-                    $id_user_update = $_SESSION['user_id'] ?? null;
+                    $id_user_update = $_SESSION['user_id'];
                     $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, ?, ?, ?, ?)');
                     if ($stmt_log) {
                         $stmt_log->bind_param('isssi', $id_update, $status_lama, $status_baru, $keterangan, $id_user_update);
                         $stmt_log->execute();
                         $stmt_log->close();
+                    }
+                    
+                    // Jika status baru adalah POD, insert data pengambilan
+                    if ($status_baru === 'pod') {
+                        $nama_pengambil = trim((string)($_POST['nama_pengambil'] ?? ''));
+                        $telp_pengambil = trim((string)($_POST['telp_pengambil'] ?? ''));
+                        
+                        
+                        $stmt_pengambilan = $conn->prepare('INSERT INTO pengambilan (id_user,no_resi, nama_pengambil, telp_pengambil) VALUES (?, ?, ?, ?)');
+                        if ($stmt_pengambilan) {
+                            $stmt_pengambilan->bind_param('isss',$id_user_update, $no_resi, $nama_pengambil, $telp_pengambil);
+                            $stmt_pengambilan->execute();
+                            $stmt_pengambilan->close();
+                        }
                     }
                     
                     header('Location: detail?id=' . $id_update . '&success=updated');
@@ -159,6 +225,16 @@
                 $message = "Gagal memperbarui status pengiriman";
                 include '../../../components/alert.php';}    
             ?>
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_status_change'){
+                $type = "danger";
+                $message = "Perubahan status tidak diizinkan. Periksa aturan perubahan status.";
+                include '../../../components/alert.php';}    
+            ?>
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'pengambil_required'){
+                $type = "danger";
+                $message = "Nama dan nomor telepon pengambil wajib diisi untuk status POD";
+                include '../../../components/alert.php';}    
+            ?>
 
             <!-- Header -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -168,9 +244,19 @@
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
+                    <?php 
+                    $current_status = strtolower($pengiriman['status']);
+                    // Tampilkan tombol update status jika status belum POD atau Dibatalkan
+                    if (!in_array($current_status, ['sampai tujuan','pod', 'dibatalkan'])): 
+                    ?>
                     <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        Update Status
+                        <i class="fa-solid fa-arrows-rotate"></i> Update Status
                     </button>
+                    <?php elseif ($current_status === 'sampai tujuan'): ?>
+                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#podStatusModal">
+                            Tandai Selesai (POD)
+                        </button>
+                    <?php endif; ?>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>
             </div>
@@ -368,13 +454,13 @@
   <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
-        <form method="POST" action="">
+        <form method="POST" action="" >
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
           <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
           <input type="hidden" name="update_status" value="1">
           
           <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title fw-bold" id="updateStatusModalLabel">Update Status</h5>
+            <h5 class="modal-title fw-bold" id="updateStatusModalLabel">Update Status Pengiriman</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body px-4 py-3">
@@ -383,7 +469,8 @@
               <div class="p-3 bg-light rounded">
                 <?php
                     $currentBadgeClass = 'secondary';
-                    switch(strtolower($pengiriman['status'])) {
+                    $current_status_lower = strtolower($pengiriman['status']);
+                    switch($current_status_lower) {
                         case 'bkd':
                             $currentBadgeClass = 'warning';
                             break;
@@ -404,31 +491,84 @@
                 <span class="text-uppercase badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
               </div>
             </div>
+            
             <div class="mb-3">
               <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
               <select class="form-select form-select-lg" id="status" name="status" required>
                 <option value="">-- Pilih Status --</option>
-                <option value="bkd">Booked (BKD)</option>
-                <option value="dalam pengiriman">Dalam Pengiriman</option>
-                <option value="sampai tujuan">Sampai Tujuan</option>
-                <option value="pod">Proof of Delivery (POD)</option>
-                <option value="dibatalkan">Dibatalkan</option>
+                <?php
+                  $current_status_lower = strtolower($pengiriman['status']);
+                  // BKD: hanya bisa ke dalam pengiriman atau dibatalkan
+                  if ($current_status_lower === 'bkd') {
+                      echo '<option value="dalam pengiriman">Dalam Pengiriman</option>';
+                      echo '<option value="dibatalkan">Dibatalkan</option>';
+                  }
+                  // Dalam Pengiriman: hanya bisa ke sampai tujuan
+                  elseif ($current_status_lower === 'dalam pengiriman') {
+                      echo '<option value="sampai tujuan">Sampai Tujuan</option>';
+                  }
+                ?>
               </select>
-              <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>
-            </div>
+              <small class="form-text text-muted">Pilih status baru sesuai alur pengiriman.</small>
+            </div>            
             <div class="mb-3">
-              <label for="keterangan" class="form-label fw-semibold">Keterangan (Opsional)</label>
-              <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Tambahkan catatan atau keterangan..."></textarea>
+              <label for="keterangan" class="form-label fw-semibold">Keterangan</label>
+              <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Tambahkan catatan atau keterangan..." required></textarea>
             </div>
           </div>
           <div class="modal-footer border-0 pt-0">
             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-warning">Simpan</button>
+            <button type="submit" class="btn btn-warning">
+              <i class="fa-solid fa-save me-1"></i> Simpan Perubahan
+            </button>
           </div>
         </form>
       </div>
     </div>
   </div>
+
+  <!-- Modal Konfirmasi POD -->
+<div class="modal fade" id="podStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow">
+      <form method="POST" action="">
+        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+        <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
+        <input type="hidden" name="status" value="pod">
+        <input type="hidden" name="update_status" value="1">
+
+        <div class="modal-header border-0 pb-0">
+          <h5 class="modal-title fw-bold">Konfirmasi Pengambilan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <div class="modal-body">
+          <p>Isi data berikut untuk konfirmasi pengambilan barang:</p>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nama Pengambil <span class="text-danger">*</span></label>
+            <input type="text" name="nama_pengambil" class="form-control" required placeholder="Masukkan nama pengambil">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Nomor Telepon <span class="text-danger">*</span></label>
+            <input type="tel" name="telp_pengambil" class="form-control" 
+                   required pattern="^(\+62|0)[0-9]{9,14}$"
+                   title="Nomor telepon harus diawali +62 atau 0 dan terdiri dari 10–15 digit angka"
+                   placeholder="contoh: 081234567890">
+          </div>
+        </div>
+
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-success">Simpan & Tandai POD</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
 </div>
 
 <?php

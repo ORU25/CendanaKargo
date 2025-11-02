@@ -16,6 +16,70 @@
 
     include '../../../config/database.php';
     
+    // Handle cancel shipment (only for BKD status)
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_shipment'])) {
+        if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            header('Location: detail?id=' . intval($_GET['id']) . '&error=cancel_failed');
+            exit;
+        }
+        $id_update = (int)($_POST['id'] ?? 0);
+        $keterangan = trim((string)($_POST['keterangan'] ?? ''));
+
+        if ($id_update > 0) {
+            // Get current status
+            $stmt_check = $conn->prepare('SELECT status, cabang_pengirim FROM pengiriman WHERE id = ? LIMIT 1');
+            if ($stmt_check) {
+                $stmt_check->bind_param('i', $id_update);
+                $stmt_check->execute();
+                $result_check = $stmt_check->get_result();
+                if ($result_check->num_rows > 0) {
+                    $check_data = $result_check->fetch_assoc();
+                    $status_lama = strtolower($check_data['status']);
+                    
+                    // Check if user has permission
+                    if($check_data['cabang_pengirim'] != $_SESSION['cabang']){
+                        header("Location: ./?error=unauthorized");
+                        exit;
+                    }
+
+                    // Only allow cancellation if status is BKD
+                    if ($status_lama !== 'bkd') {
+                        header('Location: detail?id=' . $id_update . '&error=cannot_cancel');
+                        exit;
+                    }
+
+                    if ($status_lama === 'dibatalkan') {
+                        header('Location: detail?id=' . $id_update . '&error=already_cancelled');
+                        exit;
+                    }
+
+                    // Update status pengiriman to 'dibatalkan'
+                    $status_baru = 'dibatalkan';
+                    $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
+                    if ($stmt) {
+                        $stmt->bind_param('si', $status_baru, $id_update);
+                        if ($stmt->execute()) {
+                            // Insert log perubahan status
+                            $id_user_update = $_SESSION['user_id'] ?? null;
+                            $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, ?, ?, ?, ?)');
+                            if ($stmt_log) {
+                                $stmt_log->bind_param('isssi', $id_update, $status_lama, $status_baru, $keterangan, $id_user_update);
+                                $stmt_log->execute();
+                                $stmt_log->close();
+                            }
+                            header('Location: detail?id=' . $id_update . '&success=cancelled');
+                            exit;
+                        }
+                        $stmt->close();
+                    }
+                }
+                $stmt_check->close();
+            }
+        }
+        header('Location: detail?error=cancel_failed');
+        exit;
+    }
+    
     // Ambil data pengiriman
     $pengiriman = null;
     if(isset($_GET['id'])) {
@@ -71,45 +135,6 @@
                 $stmt_logs->close();
             }
         }
-        
-            // Handle update status
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
-            if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-                header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
-                exit;
-            }
-            $id_update = (int)($_POST['id'] ?? 0);
-            $status_baru = trim((string)($_POST['status'] ?? ''));
-
-            if ($pengiriman['status'] === $status_baru) {
-                header('Location: detail?id=' . $id_update . '&error=same_status');
-                exit;
-            }
-
-            $keterangan = trim((string)($_POST['keterangan'] ?? ''));
-            if ($id_update > 0 && $status_baru !== '') {
-                $stmt = $conn->prepare('UPDATE pengiriman SET status = ? WHERE id = ?');
-                if ($stmt) {
-                    $stmt->bind_param('si', $status_baru, $id_update);
-                    if ($stmt->execute()) {
-                        // Insert log perubahan status
-                        $id_user_update = $_SESSION['user_id'] ?? null;
-                        $status_lama = $pengiriman['status'];
-                        $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, ?, ?, ?, ?)');
-                        if ($stmt_log) {
-                            $stmt_log->bind_param('isssi', $id_update, $status_lama, $status_baru, $keterangan, $id_user_update);
-                            $stmt_log->execute();
-                            $stmt_log->close();
-                        }
-                        header('Location: detail?id=' . $id_update . '&success=updated');
-                        exit;
-                    }
-                    $stmt->close();
-                }
-            }
-            header('Location: detail?error=update_failed');
-            exit;
-        }
     }
 
 
@@ -137,19 +162,24 @@
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">
             <!-- Alerts -->
-            <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'){
+            <?php if(isset($_GET['success']) && $_GET['success'] == 'cancelled'){
                 $type = "success";
-                $message = "Status pengiriman berhasil diperbarui";
+                $message = "Pengiriman berhasil dibatalkan";
                 include '../../../components/alert.php';}
             ?>
-            <?php if(isset($_GET['error']) && $_GET['error'] == 'same_status'){
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'cannot_cancel'){
                 $type = "danger";
-                $message = "Status baru tidak boleh sama dengan status lama";
+                $message = "Pengiriman hanya dapat dibatalkan jika status masih BKD";
                 include '../../../components/alert.php';}    
             ?>
-            <?php if(isset($_GET['error']) && $_GET['error'] == 'update_failed'){
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'already_cancelled'){
                 $type = "danger";
-                $message = "Gagal memperbarui status pengiriman";
+                $message = "Pengiriman sudah dibatalkan sebelumnya";
+                include '../../../components/alert.php';}    
+            ?>
+            <?php if(isset($_GET['error']) && $_GET['error'] == 'cancel_failed'){
+                $type = "danger";
+                $message = "Gagal membatalkan pengiriman";
                 include '../../../components/alert.php';}    
             ?>
 
@@ -161,9 +191,9 @@
                     <p class="text-muted small mb-0">No. Resi: <span class="fw-semibold"><?= htmlspecialchars($pengiriman['no_resi']); ?></span></p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
-                    <?php if($pengiriman['status'] == 'bkd'): ?>
-                    <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        Update Status
+                    <?php if(strtolower($pengiriman['status']) == 'bkd'): ?>
+                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#cancelShipmentModal">
+                        <i class="fa-solid fa-ban"></i> Batalkan Pengiriman
                     </button>
                     <?php endif; ?>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
@@ -381,63 +411,37 @@
     </div>
   </div>
 
-  <!-- Modal Update Status -->
-  <div class="modal fade" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
+  <!-- Modal Cancel Shipment -->
+  <div class="modal fade" id="cancelShipmentModal" tabindex="-1" aria-labelledby="cancelShipmentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-0 shadow-lg">
         <form method="POST" action="">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
           <input type="hidden" name="id" value="<?= (int)$pengiriman['id']; ?>">
-          <input type="hidden" name="update_status" value="1">
+          <input type="hidden" name="cancel_shipment" value="1">
           
-          <div class="modal-header border-0 pb-0">
-            <h5 class="modal-title fw-bold" id="updateStatusModalLabel">Update Status</h5>
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold text-danger" id="cancelShipmentModalLabel">
+              <i class="fa-solid fa-triangle-exclamation me-2"></i>Batalkan Pengiriman
+            </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body px-4 py-3">
-            <div class="mb-3">
-              <label class="form-label small text-muted">Status Saat Ini</label>
-              <div class="p-3 bg-light rounded">
-                <?php
-                    $currentBadgeClass = 'secondary';
-                    switch(strtolower($pengiriman['status'])) {
-                        case 'bkd':
-                            $currentBadgeClass = 'warning';
-                            break;
-                        case 'dalam pengiriman':
-                            $currentBadgeClass = 'primary';
-                            break;
-                        case 'sampai tujuan':
-                            $currentBadgeClass = 'info';
-                            break;
-                        case 'pod':
-                            $currentBadgeClass = 'success';
-                            break;
-                        case 'dibatalkan':
-                            $currentBadgeClass = 'danger';
-                            break;
-                    }
-                ?>
-                <span class="text-uppercase badge bg-<?= $currentBadgeClass; ?>"><?= htmlspecialchars($pengiriman['status']); ?></span>
-              </div>
+            <div class="alert alert-warning" role="alert">
+              <i class="fa-solid fa-circle-info me-2"></i>
+              <strong>Perhatian!</strong> Tindakan ini akan membatalkan pengiriman dengan No. Resi <strong><?= htmlspecialchars($pengiriman['no_resi']); ?></strong>.
             </div>
             <div class="mb-3">
-                <label for="status" class="form-label fw-semibold">Status Baru <span class="text-danger">*</span></label>
-                <select class="form-select form-select-lg" id="status" name="status" required>
-                    <option value="">-- Pilih Status --</option>
-                    <option value="bkd">Booked (BKD)</option>
-                    <option value="dibatalkan">Dibatalkan</option>
-                </select>
-                <small class="form-text text-muted">Pilih status baru untuk tracking pengiriman.</small>
-                <div class="mb-3">
-                    <label for="keterangan" class="form-label fw-semibold">Keterangan (Opsional)</label>
-                    <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Tambahkan catatan atau keterangan..."></textarea>
-                </div>
+              <label for="keterangan" class="form-label fw-semibold">Alasan Pembatalan <span class="text-danger">*</span></label>
+              <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Masukkan alasan pembatalan..." required></textarea>
+              <small class="form-text text-muted">Jelaskan alasan pembatalan pengiriman ini.</small>
             </div>
           </div>
           <div class="modal-footer border-0 pt-0">
             <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-            <button type="submit" class="btn btn-warning">Simpan</button>
+            <button type="submit" class="btn btn-danger">
+              <i class="fa-solid fa-ban me-1"></i> Batalkan Pengiriman
+            </button>
           </div>
         </form>
       </div>
