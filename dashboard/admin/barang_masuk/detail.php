@@ -163,7 +163,7 @@
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
                     <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                        Update Status
+                        <i class="fa-solid fa-pen-to-square"></i> Update Status
                     </button>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
                 </div>

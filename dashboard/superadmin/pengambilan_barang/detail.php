@@ -10,6 +10,8 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
     exit;
 }
 
+$id_cabang_user = $_SESSION['id_cabang'];
+
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
@@ -20,8 +22,8 @@ include '../../../config/database.php';
 $pengiriman = null;
 if(isset($_GET['id'])) {
     $id = intval($_GET['id']);
-    $stmt = $conn->prepare('SELECT * FROM pengiriman WHERE id = ? LIMIT 1');
-    $stmt->bind_param('i', $id);
+    $stmt = $conn->prepare('SELECT * FROM pengiriman WHERE id = ? AND id_cabang_penerima = ? LIMIT 1');
+    $stmt->bind_param('ii', $id, $id_cabang_user);
     $stmt->execute();
     $result = $stmt->get_result();
     $pengiriman = $result->fetch_assoc();
@@ -153,7 +155,7 @@ include '../../../components/sidebar_offcanvas.php';
                 <div class="d-flex gap-2 mt-2 mt-md-0">
                     <?php if ($pengiriman['status'] === 'sampai tujuan'): ?>
                         <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#updateStatusModal">
-                            Tandai Selesai (POD)
+                            <i class="fa-solid fa-check"></i> Tandai Selesai (POD)
                         </button>
                     <?php endif; ?>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
@@ -230,36 +232,40 @@ include '../../../components/sidebar_offcanvas.php';
 
             <!-- Timeline + Pengambilan -->
             <div class="row g-3 mb-4 text-capitalize d-flex align-items-stretch">
+                <!-- Kiri: Log Status Pengiriman -->
                 <?php include '../../../components/logStatusPengiriman.php'; ?>
-                <div class="col-md-6 d-flex">
-                    <div class="card border-0 shadow-sm h-100 flex-fill">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-info bg-opacity-10 rounded p-2 me-3">
-                                    <i class="fa-solid fa-box-open"></i>
-                                </div>
-                                <h6 class="mb-0 fw-semibold">Data Pengambilan Barang</h6>
-                            </div>
 
-                            <?php if ($pengambilanData): ?>
+                <!-- Kanan: Data Pengambilan Barang -->
+                <div class="col-md-6 d-flex">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm ">
+                            <div class="card-body p-4">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="bg-info bg-opacity-10 rounded p-2 me-3">
+                                        <i class="fa-solid fa-box-open"></i>
+                                    </div>
+                                    <h6 class="mb-0 fw-semibold">Data Pengambilan Barang</h6>
+                                </div>
+                                <?php if ($pengambilanData): ?>
                                 <div class="mb-3">
                                     <small class="text-muted d-block mb-1">Nama Pengambil</small>
-                                    <p class="mb-0 fw-semibold"><?= htmlspecialchars($pengambilanData['nama_pengambil']); ?></p>
+                                    <p class="mb-0 fw-semibold"><?= htmlspecialchars($pengambilanData['nama_pengambil'] ?? '-'); ?></p>
                                 </div>
                                 <div class="mb-3">
                                     <small class="text-muted d-block mb-1">Nomor Telepon</small>
-                                    <p class="mb-0"><?= htmlspecialchars($pengambilanData['telp_pengambil']); ?></p>
+                                    <p class="mb-0"><?= htmlspecialchars($pengambilanData['telp_pengambil'] ?? '-'); ?></p>
                                 </div>
                                 <div>
                                     <small class="text-muted d-block mb-1">Tanggal Pengambilan</small>
                                     <p class="mb-0"><?= date('d/m/Y H:i', strtotime($pengambilanData['tanggal'])); ?></p>
                                 </div>
-                            <?php else: ?>
-                                <div class="text-muted text-center pt-4">
-                                    <i class="fa-solid fa-circle-info mb-2 d-block"></i>
-                                    <p class="mb-0">Belum ada data pengambilan barang.</p>
-                                </div>
-                            <?php endif; ?>
+                                <?php else: ?>
+                                    <div class="text-muted d-flex flex-column align-items-center justify-content-center py-5">
+                                        <i class="fa-solid fa-circle-info mb-2 d-block"></i>
+                                        <p class="mb-0">Belum ada data pengambilan barang.</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
                 </div>

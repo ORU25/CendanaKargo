@@ -10,6 +10,9 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
     exit;
 }
 
+$id_cabang_user = $_SESSION['id_cabang'];
+$cabang_user = $_SESSION['cabang'];
+
 include '../../../config/database.php';
 
 $title = "Pengambilan Barang - Cendana Kargo (Super Admin)";
@@ -28,16 +31,18 @@ if ($search !== '') {
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         AND status IN (?, ?)
+        AND id_cabang_penerima = ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1]);
+    $stmt->bind_param('ssssssi', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_user);
 } else {
     $stmt = $conn->prepare("
         SELECT COUNT(*) AS total 
         FROM pengiriman 
         WHERE status IN (?, ?)
+        AND id_cabang_penerima = ?
     ");
-    $stmt->bind_param('ss', $status_filter[0], $status_filter[1]);
+    $stmt->bind_param('ssi', $status_filter[0], $status_filter[1], $id_cabang_user);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -51,18 +56,20 @@ if ($search !== '') {
         SELECT * FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         AND status IN (?, ?)
+        AND id_cabang_penerima = ?
         ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $limit, $offset);
+    $stmt->bind_param('sssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_user, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
         WHERE status IN (?, ?)
+        AND id_cabang_penerima = ?
         ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('ssii', $status_filter[0], $status_filter[1], $limit, $offset);
+    $stmt->bind_param('ssiii', $status_filter[0], $status_filter[1], $id_cabang_user, $limit, $offset);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -80,13 +87,19 @@ include '../../../components/sidebar_offcanvas.php';
     <?php include '../../../components/sidebar.php'; ?>
 
     <div class="col-lg-10 bg-light">
+
         <div class="container-fluid p-4">
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
+            $type = "danger";
+            $message = "Pengiriman tidak ditemukan";
+            include '../../../components/alert.php';
+        }?>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
             <div>
-            <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Semua Cabang)</h1>
+            <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (<?= htmlspecialchars($cabang_user); ?>)</h1>
             <p class="text-muted small mb-0">
-              Menampilkan <?= count($pengambilan_barang); ?> dari <?= $total_records; ?> data
+                Menampilkan <?= count($pengambilan_barang); ?> dari <?= $total_records; ?> data
                 <?php if ($total_pages > 1): ?>
                 (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
                 <?php endif; ?>

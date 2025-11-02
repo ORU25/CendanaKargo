@@ -254,7 +254,7 @@
                     </button>
                     <?php elseif ($current_status === 'sampai tujuan'): ?>
                         <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#podStatusModal">
-                            Tandai Selesai (POD)
+                            <i class="fa-solid fa-check"></i> Tandai Selesai (POD)
                         </button>
                     <?php endif; ?>
                     <a href="./" class="btn btn-sm btn-outline-secondary">Kembali</a>
