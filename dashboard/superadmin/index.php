@@ -212,6 +212,60 @@
             </div>
           </div>
         </div>
+                <!-- === FITUR LACAK PAKET=== -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body">
+            <h5 class="fw-bold text-dark mb-3">
+              <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+            </h5>
+
+            <!-- Input & Tombol -->
+            <div class="row g-3 align-items-center">
+              <div class="col-md-6 col-lg-5">
+                <input type="text" id="resiSuper" class="form-control" placeholder="Masukkan nomor resi..." />
+              </div>
+              <div class="col-md-auto">
+                <button id="btnLacakSuper" class="btn btn-danger">
+                  <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+                </button>
+                <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+                  <i class="fa-solid fa-eraser me-1"></i> Hapus
+                </button>
+              </div>
+            </div>
+
+            <!-- Alert -->
+            <div id="alertSuper" 
+                class="mt-3" 
+                style="display:none; padding:10px; border-radius:8px; font-size:14px;">
+            </div>
+
+            <!-- Hasil -->
+            <div id="resultSuper" 
+                style="display:none; margin-top:20px;" 
+                class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
+              <h6 class="fw-bold mb-3 text-danger">
+                <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-borderless mb-0">
+                  <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
+                  <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
+                  <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
+                  <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
+                  <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
+                  <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
+                  <tr>
+                    <th>Status</th>
+                    <td id="displayStatusSuper">
+                      <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
                 <!-- TABEL PENDAPATAN -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white border-0 py-3">
@@ -345,6 +399,120 @@
 
       </div>
     </main>
+    <script>
+// ===== Variabel =====
+const btnLacakSuper = document.getElementById('btnLacakSuper');
+const inputResiSuper = document.getElementById('resiSuper');
+const alertSuper = document.getElementById('alertSuper');
+const resultSuper = document.getElementById('resultSuper');
+const btnHapusSuper = document.getElementById('btnHapusSuper');
+
+// ===== Alert helper =====
+function showAlertSuper(message, type) {
+  alertSuper.style.display = 'block';
+  alertSuper.textContent = message;
+  if (type === 'error') {
+    alertSuper.style.backgroundColor = '#f8d7da';
+    alertSuper.style.color = '#721c24';
+    alertSuper.style.border = '1px solid #f5c6cb';
+  } else if (type === 'success') {
+    alertSuper.style.backgroundColor = '#d4edda';
+    alertSuper.style.color = '#155724';
+    alertSuper.style.border = '1px solid #c3e6cb';
+  }
+}
+function hideAlertSuper() {
+  alertSuper.style.display = 'none';
+}
+
+// ===== Tampilkan hasil =====
+function displayResultSuper(data) {
+  document.getElementById('displayResiSuper').textContent = data.no_resi;
+  document.getElementById('displayPengirimSuper').textContent = data.nama_pengirim;
+  document.getElementById('displayPenerimaSuper').textContent = data.nama_penerima;
+  document.getElementById('displayAsalSuper').textContent = data.asal;
+  document.getElementById('displayTujuanSuper').textContent = data.tujuan;
+  document.getElementById('displayTarifSuper').textContent = 'Rp ' + data.total_tarif;
+
+  const spanStatus = document.getElementById('displayStatusSuper').querySelector('span');
+  const s = data.status.toLowerCase();
+
+  let bg = '#e2e3e5', text = '#383d41', label = data.status;
+  switch (s) {
+    case 'bkd': bg='#fff3cd'; text='#856404'; label='BKD'; break;
+    case 'dalam pengiriman': bg='#cce5ff'; text='#004085'; label='Dalam Pengiriman'; break;
+    case 'sampai tujuan': bg='#d1ecf1'; text='#0c5460'; label='Sampai Tujuan'; break;
+    case 'pod': bg='#d4edda'; text='#155724'; label='POD'; break;
+    case 'dibatalkan': bg='#f8d7da'; text='#721c24'; label='Dibatalkan'; break;
+  }
+
+  spanStatus.textContent = label;
+  spanStatus.style.backgroundColor = bg;
+  spanStatus.style.color = text;
+
+  resultSuper.style.display = 'block';
+  btnHapusSuper.style.display = 'inline-block';
+}
+
+// ===== Tombol Lacak =====
+btnLacakSuper.addEventListener('click', () => {
+  const resi = inputResiSuper.value.trim();
+  hideAlertSuper();
+  resultSuper.style.display = 'none';
+  btnHapusSuper.style.display = 'none';
+
+  if (!resi) {
+    showAlertSuper('Nomor resi tidak boleh kosong', 'error');
+    return;
+  }
+
+  btnLacakSuper.disabled = true;
+  btnLacakSuper.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+
+  fetch('../../utils/cekResi.php?no_resi=' + encodeURIComponent(resi))
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        hideAlertSuper();
+        displayResultSuper(data.data);
+      } else {
+        showAlertSuper(data.message || 'Nomor resi tidak ditemukan', 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showAlertSuper('Terjadi kesalahan. Silakan coba lagi.', 'error');
+    })
+    .finally(() => {
+      btnLacakSuper.disabled = false;
+      btnLacakSuper.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
+    });
+});
+
+// ===== Enter untuk submit =====
+inputResiSuper.addEventListener('keypress', e => {
+  if (e.key === 'Enter') btnLacakSuper.click();
+});
+
+// ===== Tombol Hapus =====
+btnHapusSuper.addEventListener('click', function() {
+  inputResiSuper.value = '';
+  resultSuper.style.display = 'none';
+  hideAlertSuper();
+  btnHapusSuper.style.display = 'none';
+
+  document.getElementById('displayResiSuper').textContent = '-';
+  document.getElementById('displayPengirimSuper').textContent = '-';
+  document.getElementById('displayPenerimaSuper').textContent = '-';
+  document.getElementById('displayAsalSuper').textContent = '-';
+  document.getElementById('displayTujuanSuper').textContent = '-';
+  document.getElementById('displayTarifSuper').textContent = '-';
+  const spanStatus = document.getElementById('displayStatusSuper').querySelector('span');
+  spanStatus.textContent = '-';
+  spanStatus.style.backgroundColor = '';
+  spanStatus.style.color = '';
+});
+</script>
   </div>
 </div>
 

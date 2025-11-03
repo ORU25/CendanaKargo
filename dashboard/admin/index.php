@@ -160,9 +160,30 @@ include '../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
-<!-- Kartu Status Pengiriman -->
-<div class="row g-4 mb-4">
 
+<!-- === CARD TOTAL PENDAPATAN (baru ditambahkan) === -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+      <div class="card-body">
+        <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-success">
+              <?= format_rupiah($total_pendapatan ?? 0); ?>
+            </h4>
+            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+          </div>
+          <i class="fa-solid fa-money-bill-wave text-success opacity-50" style="font-size:1.8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<!-- === CARD STATUS PENGIRIMAN === -->
+<div class="row g-4 mb-4">
+<!-- === JUDUL UNTUK STATUS PENGIRIMAN === -->
+<h5 class="fw-bold text-dark mb-3 mt-4"> Status Pengiriman </h5>
   <!-- BKD -->
   <div class="col-xl-4 col-md-6">
     <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
@@ -238,6 +259,62 @@ include '../../components/sidebar_offcanvas.php';
     </div>
   </div>
 
+</div>
+
+
+<!-- === LACAK PAKET === -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="fw-bold text-dark mb-3">
+      <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+    </h5>
+
+    <!-- Input & Tombol -->
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6 col-lg-5">
+        <input type="text" id="resiAdmin" class="form-control" placeholder="Masukkan nomor resi..." />
+      </div>
+      <div class="col-md-auto">
+        <button id="btnLacakAdmin" class="btn btn-danger">
+          <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+        </button>
+        <button id="btnHapusPencarian" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+          <i class="fa-solid fa-eraser me-1"></i> Hapus
+        </button>
+      </div>
+    </div>
+
+    <!-- Alert -->
+    <div id="alertLacakAdmin" 
+         class="mt-3" 
+         style="display:none; padding:10px; border-radius:8px; font-size:14px;">
+    </div>
+
+    <!-- Hasil -->
+    <div id="resultLacakAdmin" 
+         style="display:none; margin-top:20px;" 
+         class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
+      <h6 class="fw-bold mb-3 text-danger">
+        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+      </h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><th style="width:30%">No. Resi</th><td id="displayResiAdmin">-</td></tr>
+          <tr><th>Nama Pengirim</th><td id="displayPengirimAdmin">-</td></tr>
+          <tr><th>Nama Penerima</th><td id="displayPenerimaAdmin">-</td></tr>
+          <tr><th>Asal</th><td id="displayAsalAdmin">-</td></tr>
+          <tr><th>Tujuan</th><td id="displayTujuanAdmin">-</td></tr>
+          <tr><th>Total Tarif</th><td id="displayTarifAdmin">-</td></tr>
+          <tr>
+            <th>Status</th>
+            <td id="displayStatusAdmin">
+              <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
   <!-- Dua Card Tabel -->
@@ -349,6 +426,122 @@ include '../../components/sidebar_offcanvas.php';
 
         </div><!-- end row -->
       </div>
+<script>
+const btnLacakAdmin = document.getElementById('btnLacakAdmin');
+const inputResiAdmin = document.getElementById('resiAdmin');
+const alertLacakAdmin = document.getElementById('alertLacakAdmin');
+const resultLacakAdmin = document.getElementById('resultLacakAdmin');
+const btnHapusPencarian = document.getElementById('btnHapusPencarian');
+
+// ===== Alert helper =====
+function showAlertAdmin(message, type) {
+  alertLacakAdmin.style.display = 'block';
+  alertLacakAdmin.textContent = message;
+  if (type === 'error') {
+    alertLacakAdmin.style.backgroundColor = '#f8d7da';
+    alertLacakAdmin.style.color = '#721c24';
+    alertLacakAdmin.style.border = '1px solid #f5c6cb';
+  } else if (type === 'success') {
+    alertLacakAdmin.style.backgroundColor = '#d4edda';
+    alertLacakAdmin.style.color = '#155724';
+    alertLacakAdmin.style.border = '1px solid #c3e6cb';
+  }
+}
+function hideAlertAdmin() {
+  alertLacakAdmin.style.display = 'none';
+}
+
+// ===== Tampilkan hasil pencarian =====
+function displayResultAdmin(data) {
+  document.getElementById('displayResiAdmin').textContent = data.no_resi;
+  document.getElementById('displayPengirimAdmin').textContent = data.nama_pengirim;
+  document.getElementById('displayPenerimaAdmin').textContent = data.nama_penerima;
+  document.getElementById('displayAsalAdmin').textContent = data.asal;
+  document.getElementById('displayTujuanAdmin').textContent = data.tujuan;
+  document.getElementById('displayTarifAdmin').textContent = 'Rp ' + data.total_tarif;
+
+  const spanStatus = document.getElementById('displayStatusAdmin').querySelector('span');
+  const s = data.status.toLowerCase();
+
+  let bg = '#e2e3e5', text = '#383d41', label = data.status;
+  switch (s) {
+    case 'bkd': bg='#fff3cd'; text='#856404'; label='BKD'; break;
+    case 'dalam pengiriman': bg='#cce5ff'; text='#004085'; label='Dalam Pengiriman'; break;
+    case 'sampai tujuan': bg='#d1ecf1'; text='#0c5460'; label='Sampai Tujuan'; break;
+    case 'pod': bg='#d4edda'; text='#155724'; label='POD'; break;
+    case 'dibatalkan': bg='#f8d7da'; text='#721c24'; label='Dibatalkan'; break;
+  }
+
+  spanStatus.textContent = label;
+  spanStatus.style.backgroundColor = bg;
+  spanStatus.style.color = text;
+
+  resultLacakAdmin.style.display = 'block';
+  btnHapusPencarian.style.display = 'inline-block'; // tampilkan tombol hapus
+}
+
+// ===== Tombol Lacak ditekan =====
+btnLacakAdmin.addEventListener('click', () => {
+  const resi = inputResiAdmin.value.trim();
+  hideAlertAdmin();
+  resultLacakAdmin.style.display = 'none';
+  btnHapusPencarian.style.display = 'none';
+
+  if (!resi) {
+    showAlertAdmin('Nomor resi tidak boleh kosong', 'error');
+    return;
+  }
+
+  btnLacakAdmin.disabled = true;
+  btnLacakAdmin.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+
+  fetch('../../utils/cekResi.php?no_resi=' + encodeURIComponent(resi))
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        hideAlertAdmin();
+        displayResultAdmin(data.data);
+      } else {
+        let msg = data.message || 'Nomor resi tidak ditemukan';
+        showAlertAdmin(msg, 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showAlertAdmin('Terjadi kesalahan. Silakan coba lagi.', 'error');
+    })
+    .finally(() => {
+      btnLacakAdmin.disabled = false;
+      btnLacakAdmin.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
+    });
+});
+
+// ===== Enter untuk submit =====
+inputResiAdmin.addEventListener('keypress', e => {
+  if (e.key === 'Enter') btnLacakAdmin.click();
+});
+
+// ===== Tombol Hapus Pencarian =====
+btnHapusPencarian.addEventListener('click', function() {
+  inputResiAdmin.value = '';
+  resultLacakAdmin.style.display = 'none';
+  hideAlertAdmin();
+  btnHapusPencarian.style.display = 'none';
+
+  // Reset tampilan data
+  document.getElementById('displayResiAdmin').textContent = '-';
+  document.getElementById('displayPengirimAdmin').textContent = '-';
+  document.getElementById('displayPenerimaAdmin').textContent = '-';
+  document.getElementById('displayAsalAdmin').textContent = '-';
+  document.getElementById('displayTujuanAdmin').textContent = '-';
+  document.getElementById('displayTarifAdmin').textContent = '-';
+
+  const spanStatus = document.getElementById('displayStatusAdmin').querySelector('span');
+  spanStatus.textContent = '-';
+  spanStatus.style.backgroundColor = '';
+  spanStatus.style.color = '';
+});
+</script>
     </main>
   </div>
 </div>
