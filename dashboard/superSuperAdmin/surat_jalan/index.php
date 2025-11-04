@@ -140,6 +140,11 @@ $title = "Surat Jalan - Cendana Kargo";
                     $message = "Surat jalan tidak ditemukan";
                     include '../../../components/alert.php';
                 }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_cabang'){
+                    $type = "danger";
+                    $message = "Cabang asal dan tujuan tidak boleh sama";
+                    include '../../../components/alert.php';
+                }?>
                 <?php if(isset($_GET['error']) && $_GET['error'] == 'delete_failed'){
                     $type = "danger";
                     $message = "Gagal menghapus draft surat jalan";
@@ -182,7 +187,7 @@ $title = "Surat Jalan - Cendana Kargo";
                                         <th class="px-3 py-3">Tujuan</th>
                                         <th class="px-3 py-3">Tanggal</th>
                                         <th class="px-3 py-3">Status</th>
-                                        <th class="px-3 py-3 text-center" style="width: 150px;">Aksi</th>
+                                        <th class="px-3 py-3 text-center" style="width: 100px;">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -197,8 +202,8 @@ $title = "Surat Jalan - Cendana Kargo";
                                                 <td class="px-3 py-3">
                                                     <span class="badge bg-secondary text-capitalize">Draft</span>
                                                 </td>
-                                                <td class="text-center">
-                                                    <div class="btn-group" role="group">
+                                                <td class="">
+                                                    <div class="">
                                                         <a href="create.php?id=<?= $draft['id']; ?>" class="btn btn-sm btn-outline-primary" title="Edit">
                                                             <i class="fa-solid fa-pencil"></i>
                                                         </a>

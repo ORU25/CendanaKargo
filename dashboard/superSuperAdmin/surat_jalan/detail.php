@@ -95,7 +95,7 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                     <div class="card-body p-4">
                         <div class="row">
                             <div class="col-md-8">
-                                <h5 class="fw-bold mb-3">Surat Jalan #<?= htmlspecialchars($sj['no_surat_jalan']); ?></h5>
+                                <h5 class="fw-bold mb-3">Surat Jalan</h5>
                                 <div class="row g-3">
                                     <div class="col-6 col-md-3">
                                         <small class="opacity-75 d-block">Tanggal</small>
