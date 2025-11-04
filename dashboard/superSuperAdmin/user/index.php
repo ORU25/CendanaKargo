@@ -31,10 +31,10 @@
             SELECT COUNT(*) as total 
             FROM user AS u 
             LEFT JOIN kantor_cabang AS c ON u.id_cabang = c.id 
-            WHERE u.username LIKE ?
+            WHERE u.username LIKE ?  OR c.kode_cabang LIKE ?
         ");
         $searchParam = "%$search%";
-        $stmt->bind_param('s', $searchParam);
+        $stmt->bind_param('ss',  $searchParam, $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
@@ -52,12 +52,12 @@
             SELECT u.id, u.username, u.role, c.kode_cabang 
             FROM user AS u 
             LEFT JOIN kantor_cabang AS c ON u.id_cabang = c.id 
-            WHERE u.username LIKE ?
+            WHERE u.username LIKE ? OR c.kode_cabang LIKE ?
             ORDER BY u.id ASC 
             LIMIT ? OFFSET ?
         ");
         $searchParam = "%$search%";
-        $stmt->bind_param('sii', $searchParam, $limit, $offset);
+        $stmt->bind_param('ssii', $searchParam, $searchParam, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $users = $result->fetch_all(MYSQLI_ASSOC);
@@ -152,7 +152,7 @@
                 <div class="card-body p-3">
                     <form method="GET" action="" class="row g-2 align-items-center">
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan Username..." value="<?= htmlspecialchars($search); ?>">
+                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan Username atau Kode Cabang..." value="<?= htmlspecialchars($search); ?>">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
