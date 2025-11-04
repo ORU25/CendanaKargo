@@ -1,19 +1,67 @@
+<?php
+session_start();
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
+    header("Location: ../../../auth/login.php");
+    exit;
+}
+
+if (isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin') {
+    header("Location: ../../../?error=unauthorized");
+    exit;
+}
+
+include '../../../config/database.php';
+
+$id_surat_jalan = isset($_GET['id']) ? intval($_GET['id']) : 0;
+if ($id_surat_jalan == 0) {
+    header("Location: index.php?error=not_found");
+    exit;
+}
+
+// Ambil data surat jalan
+$sql_sj = "SELECT * FROM Surat_jalan WHERE id = ?";
+$stmt_sj = $conn->prepare($sql_sj);
+$stmt_sj->bind_param("i", $id_surat_jalan);
+$stmt_sj->execute();
+$result_sj = $stmt_sj->get_result();
+$sj = $result_sj->fetch_assoc();
+
+if (!$sj) {
+    header("Location: index.php?error=not_found");
+    exit;
+}
+
+// Ambil detail pengiriman (maksimal 15)
+$sql_detail = "SELECT p.* FROM Pengiriman p 
+               JOIN detail_surat_jalan d ON p.id = d.id_pengiriman 
+               WHERE d.id_surat_jalan = ? 
+               ORDER BY p.tanggal DESC 
+               LIMIT 15";
+$stmt_detail = $conn->prepare($sql_detail);
+$stmt_detail->bind_param("i", $id_surat_jalan);
+$stmt_detail->execute();
+$result_detail = $stmt_detail->get_result();
+$pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI_ASSOC) : [];
+?>
 <!DOCTYPE html>
 <html lang="id">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
-        crossorigin="anonymous"
-        />
-        <title>Surat Jalan Barang - Full A4 Landscape</title>
-        <style>
-        /* === RESET === */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Surat Jalan - <?= htmlspecialchars($sj['no_surat_jalan']); ?></title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
         body {
             font-family: Arial, sans-serif;
             background-color: #fff;
@@ -21,13 +69,11 @@
             padding: 0;
         }
 
-        /* === PRINT PAGE SETUP === */
         @page {
             size: A4 landscape;
             margin: 0;
         }
 
-        /* === CONTAINER: dua kolom landscape === */
         .page-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -40,12 +86,10 @@
             background: white;
         }
 
-        /* kolom kanan kosong */
         .empty-column {
             background: white;
             border: none;
         }
-
 
         .surat-jalan {
             border: 2px solid black;
@@ -56,24 +100,44 @@
             background: white;
         }
 
-        /* Header / Logo */
         .header {
             display: flex;
             align-items: center;
             gap: 8px;
             flex: 0 0 auto;
         }
-        .logo img { width: 48px; height: auto; }
-        .header-text { text-align: center; flex: 1 1 auto; }
-        .header-text h1 {
-            font-size: 14px; color: red; font-weight: bold; margin-bottom: 2px;
-        }
-        .header-text h2 {
-            font-size: 12px; color: black; font-weight: bold; text-decoration: underline; margin-bottom: 2px;
-        }
-        .header-text p { font-size: 11px; color: red; margin: 0; }
 
-        /* form info (tgl / dari / tujuan) */
+        .logo img {
+            width: 48px;
+            height: auto;
+        }
+
+        .header-text {
+            text-align: center;
+            flex: 1 1 auto;
+        }
+
+        .header-text h1 {
+            font-size: 14px;
+            color: red;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .header-text h2 {
+            font-size: 12px;
+            color: black;
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 2px;
+        }
+
+        .header-text p {
+            font-size: 11px;
+            color: red;
+            margin: 0;
+        }
+
         .form-info {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -83,15 +147,19 @@
             font-size: 10px;
             flex: 0 0 auto;
         }
-        .form-info label { font-weight: bold; min-width: 40px; }
-        .form-info input {
+
+        .form-info label {
+            font-weight: bold;
+            min-width: 40px;
+        }
+
+        .form-info .value {
             border: none;
             border-bottom: 1px solid #333;
             padding: 2px;
             font-size: 10px;
         }
 
-        /* TABLE SECTION */
         .table-section {
             flex: 1 1 auto;
             display: flex;
@@ -100,18 +168,16 @@
             min-height: 0;
         }
 
-        /* table */
         .surat-jalan table {
             width: 100%;
             border-collapse: collapse;
             font-size: 9px;
-            height: 100%;
             table-layout: fixed;
         }
 
         .surat-jalan th {
             border: 2px solid black;
-            padding: 6px 4px;
+            padding: 4px;
             background: #fff;
             color: black;
             font-weight: bold;
@@ -120,135 +186,137 @@
 
         .surat-jalan td {
             border: 1px solid black;
-            padding: 6px 4px;
+            padding: 4px;
             vertical-align: middle;
+            height: 32px;
         }
 
-        .surat-jalan thead { display: table-header-group; }
-        .surat-jalan tbody { display: table-row-group; }
+        .surat-jalan thead {
+            display: table-header-group;
+        }
 
-        /* Footer (signature area) */
+        .surat-jalan tbody {
+            display: table-row-group;
+        }
+
         .footer-section {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 20px;
             flex: 0 0 auto;
             font-size: 9px;
         }
-        .footer-item { text-align: center; }
-        .footer-item label { display: block; font-weight: bold; margin-bottom: 18px; }
+
+        .footer-item {
+            text-align: center;
+        }
+
+        .footer-item label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 145px;
+        }
 
         .signature-line {
             border-bottom: 1px solid #333;
             margin: 0 12px;
-            padding-top: 10px;
+            margin-top: -20px;
         }
 
-        /* Hide control panel */
-        .control-panel-wrapper { display: none; }
         @media print {
-            body { margin: 0; padding: 0; background: white; }
-            .page-container { height: 210mm; margin: 0; padding: 0; }
-            .surat-jalan { padding: 8px; box-sizing: border-box; }
-            @page { size: A4 landscape; margin: 0; }
-        }
-        </style>
-    </head>
-    <body>
-        <!-- control panel (hidden on print) -->
-        <div class="control-panel-wrapper">
-        <div class="card border-primary" style="margin:8px;">
-            <div class="card-header bg-primary text-white"><h5 class="mb-0">Pengaturan Data</h5></div>
-            <div class="card-body">
-            <div class="row g-3">
-                <div class="col-md-6">
-                <label for="dataCount" class="form-label">Jumlah Data</label>
-                <input type="number" class="form-control" id="dataCount" value="1" min="1" max="100" />
-                </div>
-                <div class="col-md-6">
-                <label for="startResi" class="form-label">Nomor Resi Awal</label>
-                <input type="number" class="form-control" id="startResi" value="154701" />
-                </div>
-                <div class="col-md-12 d-flex align-items-end gap-2">
-                <button class="btn btn-primary flex-fill" onclick="generateSuratJalan()">Generate</button>
-                <button class="btn btn-primary flex-fill" onclick="window.print()">Print</button>
-                </div>
-            </div>
-            </div>
-        </div>
-        </div>
-
-        <!-- container tempat surat akan dibuat -->
-        <div id="container"></div>
-
-        <script>
-        function generateSuratJalan() {
-            const dataCount = parseInt(document.getElementById('dataCount').value) || 0;
-            const startResi = parseInt(document.getElementById('startResi').value) || 154701;
-            const container = document.getElementById('container');
-            container.innerHTML = '';
-            let resiNumber = startResi;
-
-            for (let i = 0; i < dataCount; i++) {
-            const pageDiv = document.createElement('div');
-            pageDiv.className = 'page-container';
-
-            // surat di kolom kiri
-            const suratJalan = createSuratJalan(resiNumber, 18);
-            pageDiv.innerHTML = suratJalan;
-
-            // kolom kanan kosong
-            const emptyDiv = document.createElement('div');
-            emptyDiv.className = 'empty-column';
-            pageDiv.appendChild(emptyDiv);
-
-            container.appendChild(pageDiv);
-            resiNumber++;
-            }
-        }
-
-        // createSuratJalan: membuat satu kartu surat
-        function createSuratJalan(resiNumber, rowCount) {
-            let rows = '';
-            for (let r = 0; r < rowCount; r++) {
-            rows += `<tr><td></td><td></td><td></td><td></td></tr>`;
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
             }
 
-            return `
-            <div class="surat-jalan">
-                <div class="header">
-                <div class="logo"><img src="../../assets/logo.jpg" alt="Logo"></div>
+            .page-container {
+                height: 210mm;
+                margin: 0;
+                padding: 0;
+            }
+
+            .surat-jalan {
+                padding: 8px;
+                box-sizing: border-box;
+            }
+
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body onload="window.print()">
+    <div class="page-container">
+        <div class="surat-jalan">
+            <div class="header">
+                <div class="logo"><img src="../../../assets/logo.jpg" alt="Logo"></div>
                 <div class="header-text">
                     <h1>PT. CENDANA LINTAS KARGO</h1>
                     <h2>SURAT JALAN BARANG</h2>
-                    <p>NO. : ${String(resiNumber).padStart(7, '0')}</p>
+                    <p>NO. : <?= htmlspecialchars($sj['no_surat_jalan']); ?></p>
                 </div>
-                </div>
+            </div>
 
-                <div class="form-info">
-                <div><label>TGL :</label><input type="text"></div>
-                <div><label>DARI :</label><input type="text"></div>
-                <div><label>TUJUAN :</label><input type="text"></div>
+            <div class="form-info">
+                <div>
+                    <label>TGL :</label>
+                    <div class="value"><?= date('d/m/Y', strtotime($sj['tanggal'])); ?></div>
                 </div>
+                <div>
+                    <label>DARI :</label>
+                    <div class="value"><?= htmlspecialchars($sj['cabang_pengirim']); ?></div>
+                </div>
+                <div>
+                    <label>TUJUAN :</label>
+                    <div class="value"><?= htmlspecialchars($sj['cabang_penerima']); ?></div>
+                </div>
+            </div>
 
-                <div class="table-section">
+            <div class="table-section">
                 <table>
                     <thead>
-                    <tr>
-                        <th style="width:8%;">NO</th>
-                        <th style="width:20%;">NO. RESI</th>
-                        <th style="width:52%;">NAMA BARANG</th>
-                        <th style="width:20%;">BANYAKNYA</th>
-                    </tr>
+                        <tr>
+                            <th style="width:6%;">NO</th>
+                            <th style="width:20%;">NO. RESI</th>
+                            <th style="width:54%;">NAMA BARANG</th>
+                            <th style="width:20%;">BANYAKNYA</th>
+                        </tr>
                     </thead>
                     <tbody>
-                    ${rows}
+                        <?php
+                        $no = 1;
+                        foreach ($pengirimens as $p):
+                            ?>
+                            <tr>
+                                <td style="text-align: center;"><?= $no++; ?></td>
+                                <td><?= htmlspecialchars($p['no_resi']); ?></td>
+                                <td><?= htmlspecialchars($p['nama_barang']); ?></td>
+                                <td><?= htmlspecialchars($p['jumlah']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+
+                        <?php
+                        // Tambahkan baris kosong sampai total 15 baris
+                        $sisa_baris = 15 - count($pengirimens);
+                        for ($i = 0; $i < $sisa_baris; $i++):
+                            ?>
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                                <td>&nbsp;</td>
+                            </tr>
+                        <?php endfor; ?>
                     </tbody>
                 </table>
-                </div>
+            </div>
 
-                <div class="footer-section">
+            <div class="footer-section">
                 <div class="footer-item">
                     <label>PENGIRIM</label>
                     <div class="signature-line"></div>
@@ -261,12 +329,11 @@
                     <label>PENERIMA</label>
                     <div class="signature-line"></div>
                 </div>
-                </div>
             </div>
-            `;
-        }
+        </div>
 
-        generateSuratJalan();
-        </script>
-    </body>
-    </html>
+        <div class="empty-column"></div>
+    </div>
+</body>
+
+</html>

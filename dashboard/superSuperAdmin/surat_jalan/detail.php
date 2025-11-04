@@ -1,12 +1,12 @@
 <?php
 session_start();
 
-if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
     header("Location: ../../../auth/login.php");
     exit;
 }
 
-if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+if (isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin') {
     header("Location: ../../../?error=unauthorized");
     exit;
 }
@@ -73,7 +73,8 @@ $title = "Detail Surat Jalan - Cendana Kargo";
 
                 <?php if (isset($_GET['error'])): ?>
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        <i class="fa-solid fa-circle-exclamation me-2"></i><?= htmlspecialchars(urldecode($_GET['error'])); ?>
+                        <i
+                            class="fa-solid fa-circle-exclamation me-2"></i><?= htmlspecialchars(urldecode($_GET['error'])); ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 <?php endif; ?>
@@ -82,8 +83,10 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                     <div>
                         <h1 class="h4 mb-1 fw-bold">Detail Surat Jalan</h1>
-                        <p class="text-muted small mb-0">Dibuat oleh: <span class="fw-semibold"><?= htmlspecialchars($sj['user']); ?></span></p>
-                        <p class="text-muted small mb-0">No. Surat Jalan: <span class="fw-semibold"><?= htmlspecialchars($sj['no_surat_jalan']); ?></span></p>
+                        <p class="text-muted small mb-0">Dibuat oleh: <span
+                                class="fw-semibold"><?= htmlspecialchars($sj['user']); ?></span></p>
+                        <p class="text-muted small mb-0">No. Surat Jalan: <span
+                                class="fw-semibold"><?= htmlspecialchars($sj['no_surat_jalan']); ?></span></p>
                     </div>
                     <div class="d-flex gap-2 mt-2 mt-md-0">
                         <a href="index.php" class="btn btn-sm btn-outline-secondary">Kembali</a>
@@ -121,10 +124,13 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                                 <?php
                                 $status = $sj['status'];
                                 $status_badge = 'secondary';
-                                if ($status == 'draft') $status_badge = 'warning';
-                                if ($status == 'diberangkatkan') $status_badge = 'primary';
+                                if ($status == 'draft')
+                                    $status_badge = 'warning';
+                                if ($status == 'diberangkatkan')
+                                    $status_badge = 'primary';
                                 ?>
-                                <span class="text-uppercase px-3 py-2 badge rounded-pill text-bg-<?= $status_badge; ?>"><?= htmlspecialchars($status); ?></span>
+                                <span
+                                    class="text-uppercase px-3 py-2 badge rounded-pill text-bg-<?= $status_badge; ?>"><?= htmlspecialchars($status); ?></span>
                             </div>
                         </div>
                     </div>
@@ -169,7 +175,8 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                                                     <div>
                                                         <strong><?= htmlspecialchars($p['nama_penerima']); ?></strong>
                                                         <br>
-                                                        <small class="text-muted"><?= htmlspecialchars($p['telp_penerima']); ?></small>
+                                                        <small
+                                                            class="text-muted"><?= htmlspecialchars($p['telp_penerima']); ?></small>
                                                     </div>
                                                 </td>
                                                 <td class="text-center"><?= htmlspecialchars($p['berat']); ?> Kg</td>
@@ -184,9 +191,9 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <a href="surat?id=<?= (int)$sj['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
-                        <i class="fa-solid fa-receipt"></i>
-                        Cetak Surat
+                    <a href="surat_jalan.php?id=<?= (int) $sj['id']; ?>" class="btn btn-md btn-secondary"
+                        target="_blank">
+                        <i class="fa-solid fa-receipt me-2"></i>Cetak Surat
                     </a>
                 </div>
 

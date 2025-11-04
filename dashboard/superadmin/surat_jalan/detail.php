@@ -186,7 +186,7 @@ $title = "Detail Surat Jalan - Cendana Kargo";
                 </div>
 
                 <div class="d-flex justify-content-end">
-                    <a href="surat?id=<?= (int)$sj['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
+                    <a href="surat_jalan.php?id=<?= (int)$sj['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
                         <i class="fa-solid fa-receipt"></i>
                         Cetak Surat
                     </a>
