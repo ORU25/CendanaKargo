@@ -18,8 +18,9 @@
 
   $filter = isset($_GET['filter']) ? $_GET['filter'] : 'bulan';
   $where_clause = ($filter === 'hari')
-      ? "DATE(tanggal) = '$current_date'"
+      ? "tanggal >= CURDATE() AND tanggal < CURDATE() + INTERVAL 1 DAY"
       : "MONTH(tanggal) = '$current_month' AND YEAR(tanggal) = '$current_year'";
+
 
   // === variabel untuk ditampilkan di kotak info ===
   $selected_date_display = ($filter === 'hari') ? " (" . date('d F Y') . ")" : " " . date('F Y');
