@@ -52,10 +52,40 @@ $total_surat_jalan = $conn->query("
     WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
 ")->fetch_assoc()['total'] ?? 0;
 
+// === TOTAL PENDAPATAN & PEMBAYARAN ===
 $total_pendapatan = $conn->query("
     SELECT SUM(total_tarif) AS total 
     FROM pengiriman 
-    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
+    WHERE $where_clause 
+      AND id_cabang_pengirim = '$id_cabang_admin'
+      AND status != 'dibatalkan'
+")->fetch_assoc()['total'] ?? 0;
+
+$total_transfer = $conn->query("
+    SELECT SUM(total_tarif) AS total 
+    FROM pengiriman 
+    WHERE $where_clause 
+      AND id_cabang_pengirim = '$id_cabang_admin'
+      AND pembayaran = 'transfer'
+      AND status != 'dibatalkan'
+")->fetch_assoc()['total'] ?? 0;
+
+$total_cash = $conn->query("
+    SELECT SUM(total_tarif) AS total 
+    FROM pengiriman 
+    WHERE $where_clause 
+      AND id_cabang_pengirim = '$id_cabang_admin'
+      AND pembayaran = 'cash'
+      AND status != 'dibatalkan'
+")->fetch_assoc()['total'] ?? 0;
+
+$total_cod = $conn->query("
+    SELECT SUM(total_tarif) AS total 
+    FROM pengiriman 
+    WHERE $where_clause 
+      AND id_cabang_pengirim = '$id_cabang_admin'
+      AND pembayaran = 'bayar ditempat'
+      AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
 // Helper format rupiah
@@ -161,9 +191,9 @@ include '../../components/sidebar_offcanvas.php';
         </div>
 
 
-<!-- === CARD TOTAL PENDAPATAN (baru ditambahkan) === -->
+<!-- === CARD TOTAL PENDAPATAN === -->
 <div class="row g-4 mb-4">
-  <div class="col-xl-4 col-md-6">
+  <div class="col-xl-12 col-md-6">
     <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
       <div class="card-body">
         <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
@@ -179,6 +209,57 @@ include '../../components/sidebar_offcanvas.php';
       </div>
     </div>
   </div>
+  <!-- === CARD RINCIAN METODE PEMBAYARAN === -->
+<div class="row g-4 mb-4">
+  <!-- Transfer -->
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+      <div class="card-body">
+        <p class="text-info mb-1 small fw-bold">TOTAL TRANSFER</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-info"><?= format_rupiah($total_transfer ?? 0); ?></h4>
+            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+          </div>
+          <i class="fa-solid fa-credit-card text-info opacity-50" style="font-size:1.8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cash -->
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+      <div class="card-body">
+        <p class="text-warning mb-1 small fw-bold">TOTAL CASH</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
+            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+          </div>
+          <i class="fa-solid fa-money-bill-1-wave text-warning opacity-50" style="font-size:1.8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bayar di Tempat -->
+  <div class="col-xl-4 col-md-6">
+    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+      <div class="card-body">
+        <p class="text-danger mb-1 small fw-bold">BAYAR DI TEMPAT (COD)</p>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_cod ?? 0); ?></h4>
+            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+          </div>
+          <i class="fa-solid fa-truck-ramp-box text-danger opacity-50" style="font-size:1.8rem;"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- === CARD STATUS PENGIRIMAN === -->
 <div class="row g-4 mb-4">
