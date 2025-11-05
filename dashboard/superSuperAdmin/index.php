@@ -15,22 +15,57 @@ if (isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin') {
 include '../../config/database.php';
 
 // =======================================================
-// FILTERING LOGIC (Simple Toggle: Today vs Month)
+// FILTERING LOGIC (Support: today / month / specific date / month-only via YYYY-MM)
 // =======================================================
 $filter = isset($_GET['filter']) && in_array($_GET['filter'], ['today', 'month'])
           ? htmlspecialchars($_GET['filter'])
           : 'month'; // Default: month (Bulan Ini)
 
 $selected_date_display = '';
+$date_condition = '';       // akan diisi sesuai pilihan
+$date_condition_sj = '';    // akan diisi sesuai pilihan
 
-// Tentukan klausa kondisi tanggal untuk injeksi langsung ke SQL (tanpa prepared statement untuk tanggal)
-if ($filter === 'today') {
+// Prioritas:
+// 1) Jika ada parameter periode (YYYY-MM-DD) -> gunakan itu (tanggal spesifik).
+// 2) Jika tidak ada periode tapi ada parameter bulan (YYYY-MM) -> gunakan itu (bulanan).
+// 3) Jika tidak ada, gunakan ?filter=today atau default bulan ini.
+if (isset($_GET['periode']) && $_GET['periode'] !== '') {
+    // Bersihkan input
+    $periode_raw = trim($_GET['periode']);
+    // jika format YYYY-MM-DD (tanggal spesifik)
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $periode_raw)) {
+        $selected_date = $periode_raw;
+        // gunakan filter per tanggal
+        $date_condition = "DATE(p.tanggal) = '" . $selected_date . "'";
+        $date_condition_sj = "DATE(sj.tanggal) = '" . $selected_date . "'";
+        $selected_date_display = date('d F Y', strtotime($selected_date));
+    }
+    // jika format YYYY-MM (user mengetik tanpa -DD) treat as month
+    elseif (preg_match('/^\d{4}-\d{2}$/', $periode_raw)) {
+        $selected_month = $periode_raw;
+        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $selected_month . "'";
+        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $selected_month . "'";
+        $selected_date_display = date('F Y', strtotime($selected_month . '-01'));
+    }
+    // jika bukan format di atas, fallback ke bulan ini
+    else {
+        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $selected_date_display = date('F Y');
+    }
+} elseif (isset($_GET['bulan']) && preg_match('/^\d{4}-\d{2}$/', $_GET['bulan'])) {
+    // Jika user pilih bulan (YYYY-MM) via input type=month
+    $selected_month = $_GET['bulan'];
+    $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $selected_month . "'";
+    $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $selected_month . "'";
+    $selected_date_display = date('F Y', strtotime($selected_month . '-01'));
+} elseif ($filter === 'today') {
     // Data hari ini
     $date_condition = 'DATE(p.tanggal) = CURDATE()';
     $date_condition_sj = 'DATE(sj.tanggal) = CURDATE()';
     $selected_date_display = date('d F Y');
-} else { // monthly (default: current month)
-    // Data bulan ini
+} else {
+    // Default: data bulan ini
     $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
     $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
     $selected_date_display = date('F Y');
@@ -89,7 +124,9 @@ function get_total_revenue_all_time($conn)
     $revenue = 0;
 
     if ($result && $result->num_rows > 0) {
-        $revenue = $result->fetch_assoc()['total_tarif'] ?? 0;
+        // Perhatikan nama field SUM di query: total_revenue, tapi di fetch kita guard dengan 'total_tarif' fallback
+        $assoc = $result->fetch_assoc();
+        $revenue = isset($assoc['total_revenue']) ? $assoc['total_revenue'] : ($assoc['total_tarif'] ?? 0);
     }
 
     $stmt->close();
@@ -134,6 +171,10 @@ function get_branch_revenue_data($conn, $date_condition) // Hapus $date_param
         ";
 
     $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        error_log('Database Error: Failed to prepare statement for branch revenue.');
+        return $data;
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -169,6 +210,10 @@ function get_branch_shipment_data($conn, $date_condition) // Hapus $date_param
         ";
 
     $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        error_log('Database Error: Failed to prepare statement for branch shipment.');
+        return $data;
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -204,6 +249,10 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
         ";
 
     $stmt = $conn->prepare($sql);
+    if ($stmt === false) {
+        error_log('Database Error: Failed to prepare statement for branch manifest.');
+        return $data;
+    }
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -303,18 +352,55 @@ include '../../components/sidebar_offcanvas.php';
                         </p>
 
                         <!-- Data Agregat Info Box -->
-                        <div class="px-3 py-2 rounded-3 d-inline-block" 
-                            style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
-                            <span class="fw-normal text-secondary" style="font-size: 0.9rem;">
-                                Data untuk periode: 
-                                <strong class="text-dark"><?php echo $selected_date_display; ?></strong>
-                            </span>
+                        <!-- Modified: add date + month picker; if both present, date (periode) prioritized -->
+                        <form method="GET" class="d-flex align-items-center gap-2" id="periodeForm">
+                            <div class="px-3 py-2 rounded-3 d-inline-block" 
+                                style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
+                                <label for="periode" class="fw-normal text-secondary" style="font-size: 0.9rem; margin-right:8px;">
+                                    Data untuk periode:
+                                </label>
+
+                                <!-- date picker (specific day). If periode present, it will be used. -->
+                                <input type="date" id="periode" name="periode" 
+                                    value="<?php
+                                        if (isset($_GET['periode']) && $_GET['periode'] !== '') {
+                                            echo htmlspecialchars($_GET['periode']);
+                                        } else {
+                                            // default: empty (so default logic shows bulan ini)
+                                            echo '';
+                                        }
+                                    ?>"
+                                    class="form-control form-control-sm d-inline-block" 
+                                    style="width: 150px; display:inline-block;">
+
+                                <span class="fw-normal text-secondary mx-2" style="font-size: 0.9rem;">atau</span>
+
+                                <!-- month picker (YYYY-MM). Only used if periode is not set. -->
+                                <input type="month" id="bulan" name="bulan"
+                                    value="<?php
+                                        if (isset($_GET['bulan']) && $_GET['bulan'] !== '') {
+                                            echo htmlspecialchars($_GET['bulan']);
+                                        } else {
+                                            echo '';
+                                        }
+                                    ?>"
+                                    class="form-control form-control-sm d-inline-block" 
+                                    style="width: 150px; display:inline-block;">
+                            </div>
+                            <!-- changed button to type="button" and added id so JS can control which param to send -->
+                            <button type="button" id="tampilkanBtn" class="btn btn-sm btn-primary">Tampilkan</button>
+                            <button type="button" id="resetPeriodeBtn" class="btn btn-sm btn-outline-secondary">Reset</button>
+                        </form>
+
+                        <!-- Small description of selected period -->
+                        <div class="mt-2">
+                            <small class="text-muted">Menampilkan: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></small>
                         </div>
                     </div>
 
                     <!-- Filter Tombol -->
                     <div>
-                        <span class="badge text-bg-secondary me-2 align-self-center">Periode Data:</span>
+                        <span class="badge text-bg-secondary me-2 align-self-center">Periode Cepat:</span>
                         <div class="btn-group" role="group" aria-label="Filter data">
                             <a href="?filter=month" 
                             class="btn btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-outline-primary'; ?>">
@@ -383,6 +469,61 @@ include '../../components/sidebar_offcanvas.php';
                     </div>
                 </div>
                 <!-- END NEW TOP SECTION -->
+            
+                <!-- === FITUR LACAK PAKET=== -->
+                <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="fw-bold text-dark mb-3">
+                    <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+                    </h5>
+
+                    <!-- Input & Tombol -->
+                    <div class="row g-3 align-items-center">
+                    <div class="col-md-6 col-lg-5">
+                        <input type="text" id="resiSuper" class="form-control" placeholder="Masukkan nomor resi..." />
+                    </div>
+                    <div class="col-md-auto">
+                        <button id="btnLacakSuper" class="btn btn-danger">
+                        <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+                        </button>
+                        <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+                        <i class="fa-solid fa-eraser me-1"></i> Hapus
+                        </button>
+                    </div>
+                    </div>
+
+                    <!-- Alert -->
+                    <div id="alertSuper" 
+                        class="mt-3" 
+                        style="display:none; padding:10px; border-radius:8px; font-size:14px;">
+                    </div>
+
+                    <!-- Hasil -->
+                    <div id="resultSuper" 
+                        style="display:none; margin-top:20px;" 
+                        class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
+                    <h6 class="fw-bold mb-3 text-danger">
+                        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless mb-0">
+                        <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
+                        <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
+                        <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
+                        <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
+                        <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
+                        <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
+                        <tr>
+                            <th>Status</th>
+                            <td id="displayStatusSuper">
+                            <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
+                            </td>
+                        </tr>
+                        </table>
+                    </div>
+                    </div>
+                </div>
+                </div>
 
                 <!-- Statistics Cards Row 3 (Original, All Time) -->
                 <div class="row g-4 mb-4">
@@ -467,6 +608,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="text-end">Cash</th>
                                         <th class="text-end">Transfer</th>
                                         <th class="text-end">Bayar di Tempat</th>
+                                        <th class="text-center">Cetak Data</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -477,6 +619,8 @@ include '../../components/sidebar_offcanvas.php';
                                             'total_revenue' => 0, 'cash_revenue' => 0,
                                             'transfer_revenue' => 0, 'cod_revenue' => 0,
                                         ];
+                                        $periode_param = isset($_GET['periode']) ? '&periode=' . urlencode($_GET['periode']) : '';
+                                        $bulan_param = isset($_GET['bulan']) ? '&bulan=' . urlencode($_GET['bulan']) : '';
                                     ?>
                                         <tr>
                                             <td class="px-3"><?php echo $no++; ?></td>
@@ -485,6 +629,12 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="text-end"><?php echo format_rupiah($data['cash_revenue']); ?></td>
                                             <td class="text-end"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
                                             <td class="text-end"><?php echo format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="text-center">
+                                                <a href="export_pendapatan.php?cabang=<?php echo urlencode($branch_name) . $periode_param . $bulan_param; ?>" 
+                                                class="btn btn-sm btn-outline-success">
+                                                <i class="fa-solid fa-file-export me-1"></i> Ekspor
+                                                </a>
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -586,6 +736,165 @@ include '../../components/sidebar_offcanvas.php';
         </div>
     </div>
 </div>
+
+<!-- JavaScript to handle choose-one-of-two behavior for periode/month picker -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tampilBtn = document.getElementById('tampilkanBtn');
+    const resetBtn = document.getElementById('resetPeriodeBtn');
+    const periodeInput = document.getElementById('periode');
+    const bulanInput = document.getElementById('bulan');
+
+    tampilBtn.addEventListener('click', function() {
+        const periode = periodeInput.value.trim();
+        const bulan = bulanInput.value.trim();
+
+        // If periode (date) is filled -> use that.
+        if (periode) {
+            // preserve filter param if present
+            const current = new URL(window.location.href);
+            const params = new URLSearchParams();
+            params.set('periode', periode);
+            if (current.searchParams.has('filter')) {
+                params.set('filter', current.searchParams.get('filter'));
+            }
+            window.location.href = window.location.pathname + '?' + params.toString();
+            return;
+        }
+
+        // If bulan (month) is filled -> use that.
+        if (bulan) {
+            const current = new URL(window.location.href);
+            const params = new URLSearchParams();
+            params.set('bulan', bulan);
+            if (current.searchParams.has('filter')) {
+                params.set('filter', current.searchParams.get('filter'));
+            }
+            window.location.href = window.location.pathname + '?' + params.toString();
+            return;
+        }
+
+        // Neither filled -> alert
+        alert('Pilih tanggal (periode) atau bulan terlebih dahulu, lalu klik Tampilkan.');
+    });
+
+    resetBtn.addEventListener('click', function() {
+        // Clear inputs and reload to default (bulan ini)
+        periodeInput.value = '';
+        bulanInput.value = '';
+        // Remove query params and go to same path (default behavior uses bulan ini)
+        window.location.href = window.location.pathname;
+
+// ===== Tombol Lacak (SuperSuperAdmin) =====
+const btnLacakSuperSuper = document.getElementById('btnLacakSuperSuper');
+const inputResiSuperSuper = document.getElementById('resiSuperSuper');
+const alertSuperSuper = document.getElementById('alertSuperSuper');
+const resultSuperSuper = document.getElementById('resultSuperSuper');
+const btnHapusSuperSuper = document.getElementById('btnHapusSuperSuper');
+
+// ===== Alert Helper =====
+function showAlertSuperSuper(message, type) {
+  alertSuperSuper.style.display = 'block';
+  alertSuperSuper.textContent = message;
+  alertSuperSuper.className = 'alert';
+  if (type === 'error') {
+    alertSuperSuper.classList.add('alert-danger');
+  } else if (type === 'success') {
+    alertSuperSuper.classList.add('alert-success');
+  }
+}
+function hideAlertSuperSuper() {
+  alertSuperSuper.style.display = 'none';
+}
+
+// ===== Tampilkan Hasil =====
+function displayResultSuperSuper(data) {
+  document.getElementById('displayResiSuperSuper').textContent = data.no_resi;
+  document.getElementById('displayPengirimSuperSuper').textContent = data.nama_pengirim;
+  document.getElementById('displayPenerimaSuperSuper').textContent = data.nama_penerima;
+  document.getElementById('displayAsalSuperSuper').textContent = data.asal;
+  document.getElementById('displayTujuanSuperSuper').textContent = data.tujuan;
+  document.getElementById('displayTarifSuperSuper').textContent = 'Rp ' + data.total_tarif;
+
+  const spanStatus = document.getElementById('displayStatusSuperSuper').querySelector('span');
+  const s = data.status.toLowerCase();
+
+  let bg = '#e2e3e5', text = '#383d41', label = data.status;
+  switch (s) {
+    case 'bkd': bg='#fff3cd'; text='#856404'; label='BKD'; break;
+    case 'dalam pengiriman': bg='#cce5ff'; text='#004085'; label='Dalam Pengiriman'; break;
+    case 'sampai tujuan': bg='#d1ecf1'; text='#0c5460'; label='Sampai Tujuan'; break;
+    case 'pod': bg='#d4edda'; text='#155724'; label='POD'; break;
+    case 'dibatalkan': bg='#f8d7da'; text='#721c24'; label='Dibatalkan'; break;
+  }
+
+  spanStatus.textContent = label;
+  spanStatus.style.backgroundColor = bg;
+  spanStatus.style.color = text;
+
+  resultSuperSuper.style.display = 'block';
+  btnHapusSuperSuper.style.display = 'inline-block';
+}
+
+// ===== Tombol Lacak =====
+btnLacakSuperSuper.addEventListener('click', () => {
+  const resi = inputResiSuperSuper.value.trim();
+  hideAlertSuperSuper();
+  resultSuperSuper.style.display = 'none';
+  btnHapusSuperSuper.style.display = 'none';
+
+  if (!resi) {
+    showAlertSuperSuper('Nomor resi tidak boleh kosong', 'error');
+    return;
+  }
+
+  btnLacakSuperSuper.disabled = true;
+  btnLacakSuperSuper.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+
+  fetch('../../utils/cekResi.php?no_resi=' + encodeURIComponent(resi))
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        hideAlertSuperSuper();
+        displayResultSuperSuper(data.data);
+      } else {
+        showAlertSuperSuper(data.message || 'Nomor resi tidak ditemukan', 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showAlertSuperSuper('Terjadi kesalahan. Silakan coba lagi.', 'error');
+    })
+    .finally(() => {
+      btnLacakSuperSuper.disabled = false;
+      btnLacakSuperSuper.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
+    });
+});
+
+// ===== Enter untuk submit =====
+inputResiSuperSuper.addEventListener('keypress', e => {
+  if (e.key === 'Enter') btnLacakSuperSuper.click();
+});
+
+// ===== Tombol Hapus =====
+btnHapusSuperSuper.addEventListener('click', function() {
+  inputResiSuperSuper.value = '';
+  resultSuperSuper.style.display = 'none';
+  hideAlertSuperSuper();
+  btnHapusSuperSuper.style.display = 'none';
+
+  document.getElementById('displayResiSuperSuper').textContent = '-';
+  document.getElementById('displayPengirimSuperSuper').textContent = '-';
+  document.getElementById('displayPenerimaSuperSuper').textContent = '-';
+  document.getElementById('displayAsalSuperSuper').textContent = '-';
+  document.getElementById('displayTujuanSuperSuper').textContent = '-';
+  document.getElementById('displayTarifSuperSuper').textContent = '-';
+  const spanStatus = document.getElementById('displayStatusSuperSuper').querySelector('span');
+  spanStatus.textContent = '-';
+  spanStatus.style.backgroundColor = '';
+  spanStatus.style.color = '';
+});
+</script>
 
 <?php
     include '../../templates/footer.php';
