@@ -110,7 +110,9 @@ function get_count_stat($conn, $table, $condition = '')
  */
 function get_total_revenue_all_time($conn)
 {
-    $sql = 'SELECT SUM(total_tarif) AS total_revenue FROM pengiriman';
+$sql = "SELECT SUM(total_tarif) AS total_revenue 
+        FROM pengiriman 
+        WHERE status != 'dibatalkan'";
 
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
@@ -150,25 +152,25 @@ function format_rupiah($number)
 /**
  * Mengambil data pendapatan per cabang berdasarkan filter tanggal.
  */
-function get_branch_revenue_data($conn, $date_condition) // Hapus $date_param
-{$data = [];
-    // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
+function get_branch_revenue_data($conn, $date_condition)
+{
+    $data = [];
     $sql = "
-            SELECT
-                kc.nama_cabang,
-                SUM(CASE WHEN p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS total_revenue,
-                SUM(CASE WHEN p.pembayaran = 'cash' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cash_revenue,
-                SUM(CASE WHEN p.pembayaran = 'transfer' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-                SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
-            FROM
-                kantor_cabang kc
-            LEFT JOIN
-                pengiriman p ON kc.nama_cabang = p.cabang_pengirim 
-            GROUP BY
-                kc.nama_cabang
-            ORDER BY
-                kc.nama_cabang
-        ";
+        SELECT
+            kc.nama_cabang,
+            SUM(CASE WHEN p.id IS NOT NULL AND p.status != 'dibatalkan' AND $date_condition THEN p.total_tarif ELSE 0 END) AS total_revenue,
+            SUM(CASE WHEN p.pembayaran = 'cash' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cash_revenue,
+            SUM(CASE WHEN p.pembayaran = 'transfer' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
+            SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
+        FROM
+            kantor_cabang kc
+        LEFT JOIN
+            pengiriman p ON kc.nama_cabang = p.cabang_pengirim 
+        GROUP BY
+            kc.nama_cabang
+        ORDER BY
+            kc.nama_cabang
+    ";
 
     $stmt = $conn->prepare($sql);
     if ($stmt === false) {
@@ -470,60 +472,60 @@ include '../../components/sidebar_offcanvas.php';
                 </div>
                 <!-- END NEW TOP SECTION -->
             
-                <!-- === FITUR LACAK PAKET=== -->
-                <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body">
-                    <h5 class="fw-bold text-dark mb-3">
-                    <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
-                    </h5>
+<!-- === LACAK PAKET=== -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <h5 class="fw-bold text-danger mb-3">
+      <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+    </h5>
 
-                    <!-- Input & Tombol -->
-                    <div class="row g-3 align-items-center">
-                    <div class="col-md-6 col-lg-5">
-                        <input type="text" id="resiSuper" class="form-control" placeholder="Masukkan nomor resi..." />
-                    </div>
-                    <div class="col-md-auto">
-                        <button id="btnLacakSuper" class="btn btn-danger">
-                        <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
-                        </button>
-                        <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
-                        <i class="fa-solid fa-eraser me-1"></i> Hapus
-                        </button>
-                    </div>
-                    </div>
+    <!-- Input & Tombol -->
+    <div class="row g-3 align-items-center">
+      <div class="col-md-6 col-lg-5">
+        <input type="text" id="resiSuper" class="form-control border-danger" placeholder="Masukkan nomor resi..." />
+      </div>
+      <div class="col-md-auto">
+        <button id="btnLacakSuper" class="btn btn-danger">
+          <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+        </button>
+        <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+          <i class="fa-solid fa-eraser me-1"></i> Hapus
+        </button>
+      </div>
+    </div>
 
-                    <!-- Alert -->
-                    <div id="alertSuper" 
-                        class="mt-3" 
-                        style="display:none; padding:10px; border-radius:8px; font-size:14px;">
-                    </div>
+    <!-- Alert -->
+    <div id="alertSuper" 
+        class="mt-3 bg-danger bg-opacity-10 border border-danger text-danger fw-semibold rounded-3 p-3" 
+        style="display:none; font-size:14px;">
+    </div>
 
-                    <!-- Hasil -->
-                    <div id="resultSuper" 
-                        style="display:none; margin-top:20px;" 
-                        class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
-                    <h6 class="fw-bold mb-3 text-danger">
-                        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-borderless mb-0">
-                        <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
-                        <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
-                        <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
-                        <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
-                        <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
-                        <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
-                        <tr>
-                            <th>Status</th>
-                            <td id="displayStatusSuper">
-                            <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
-                            </td>
-                        </tr>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-                </div>
+    <!-- Hasil -->
+    <div id="resultSuper" 
+        style="display:none; margin-top:20px;" 
+        class="p-3 rounded-3 border-start border-4 border-danger bg-light bg-opacity-10">
+      <h6 class="fw-bold mb-3 text-danger">
+        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+      </h6>
+      <div class="table-responsive">
+        <table class="table table-sm table-borderless mb-0">
+          <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
+          <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
+          <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
+          <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
+          <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
+          <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
+          <tr>
+            <th>Status</th>
+            <td id="displayStatusSuper">
+              <span class="bg-danger text-white px-3 py-1 rounded-pill fw-semibold small">-</span>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
                 <!-- Statistics Cards Row 3 (Original, All Time) -->
                 <div class="row g-4 mb-4">
@@ -630,7 +632,7 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="text-end"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
                                             <td class="text-end"><?php echo format_rupiah($data['cod_revenue']); ?></td>
                                             <td class="text-center">
-                                                <a href="export_pendapatan.php?cabang=<?php echo urlencode($branch_name) . $periode_param . $bulan_param; ?>" 
+                                                <a href="export/export.php?cabang=<?php echo urlencode($branch_name) . $periode_param . $bulan_param; ?>" 
                                                 class="btn btn-sm btn-outline-success">
                                                 <i class="fa-solid fa-file-export me-1"></i> Ekspor
                                                 </a>
@@ -739,162 +741,118 @@ include '../../components/sidebar_offcanvas.php';
 
 <!-- JavaScript to handle choose-one-of-two behavior for periode/month picker -->
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const tampilBtn = document.getElementById('tampilkanBtn');
-    const resetBtn = document.getElementById('resetPeriodeBtn');
-    const periodeInput = document.getElementById('periode');
-    const bulanInput = document.getElementById('bulan');
+    document.getElementById('tampilkanBtn').addEventListener('click', function () {
+    const periode = document.getElementById('periode').value;
+    const bulan = document.getElementById('bulan').value;
+    let url = window.location.pathname + '?'; // ambil URL tanpa query sebelumnya
 
-    tampilBtn.addEventListener('click', function() {
-        const periode = periodeInput.value.trim();
-        const bulan = bulanInput.value.trim();
+    if (periode) {
+        url += 'periode=' + encodeURIComponent(periode);
+    } else if (bulan) {
+        url += 'bulan=' + encodeURIComponent(bulan);
+    } else {
+        url += 'filter=month'; // fallback ke bulan ini
+    }
 
-        // If periode (date) is filled -> use that.
-        if (periode) {
-            // preserve filter param if present
-            const current = new URL(window.location.href);
-            const params = new URLSearchParams();
-            params.set('periode', periode);
-            if (current.searchParams.has('filter')) {
-                params.set('filter', current.searchParams.get('filter'));
-            }
-            window.location.href = window.location.pathname + '?' + params.toString();
-            return;
-        }
+    window.location.href = url; // redirect dengan parameter filter yang benar
+});
 
-        // If bulan (month) is filled -> use that.
-        if (bulan) {
-            const current = new URL(window.location.href);
-            const params = new URLSearchParams();
-            params.set('bulan', bulan);
-            if (current.searchParams.has('filter')) {
-                params.set('filter', current.searchParams.get('filter'));
-            }
-            window.location.href = window.location.pathname + '?' + params.toString();
-            return;
-        }
+document.getElementById('resetPeriodeBtn').addEventListener('click', function () {
+    // hapus query parameter dan reload default
+    window.location.href = window.location.pathname;
+});
+// ===== Variabel =====
+const btnLacakSuper = document.getElementById('btnLacakSuper');
+const inputResiSuper = document.getElementById('resiSuper');
+const alertSuper = document.getElementById('alertSuper');
+const resultSuper = document.getElementById('resultSuper');
+const btnHapusSuper = document.getElementById('btnHapusSuper');
 
-        // Neither filled -> alert
-        alert('Pilih tanggal (periode) atau bulan terlebih dahulu, lalu klik Tampilkan.');
-    });
-
-    resetBtn.addEventListener('click', function() {
-        // Clear inputs and reload to default (bulan ini)
-        periodeInput.value = '';
-        bulanInput.value = '';
-        // Remove query params and go to same path (default behavior uses bulan ini)
-        window.location.href = window.location.pathname;
-
-// ===== Tombol Lacak (SuperSuperAdmin) =====
-const btnLacakSuperSuper = document.getElementById('btnLacakSuperSuper');
-const inputResiSuperSuper = document.getElementById('resiSuperSuper');
-const alertSuperSuper = document.getElementById('alertSuperSuper');
-const resultSuperSuper = document.getElementById('resultSuperSuper');
-const btnHapusSuperSuper = document.getElementById('btnHapusSuperSuper');
-
-// ===== Alert Helper =====
-function showAlertSuperSuper(message, type) {
-  alertSuperSuper.style.display = 'block';
-  alertSuperSuper.textContent = message;
-  alertSuperSuper.className = 'alert';
-  if (type === 'error') {
-    alertSuperSuper.classList.add('alert-danger');
-  } else if (type === 'success') {
-    alertSuperSuper.classList.add('alert-success');
-  }
+// ===== Alert helper =====
+function showAlertSuper(message) {
+  alertSuper.style.display = 'block';
+  alertSuper.textContent = message;
 }
-function hideAlertSuperSuper() {
-  alertSuperSuper.style.display = 'none';
+function hideAlertSuper() {
+  alertSuper.style.display = 'none';
 }
 
-// ===== Tampilkan Hasil =====
-function displayResultSuperSuper(data) {
-  document.getElementById('displayResiSuperSuper').textContent = data.no_resi;
-  document.getElementById('displayPengirimSuperSuper').textContent = data.nama_pengirim;
-  document.getElementById('displayPenerimaSuperSuper').textContent = data.nama_penerima;
-  document.getElementById('displayAsalSuperSuper').textContent = data.asal;
-  document.getElementById('displayTujuanSuperSuper').textContent = data.tujuan;
-  document.getElementById('displayTarifSuperSuper').textContent = 'Rp ' + data.total_tarif;
+// ===== Tampilkan hasil =====
+function displayResultSuper(data) {
+  document.getElementById('displayResiSuper').textContent = data.no_resi;
+  document.getElementById('displayPengirimSuper').textContent = data.nama_pengirim;
+  document.getElementById('displayPenerimaSuper').textContent = data.nama_penerima;
+  document.getElementById('displayAsalSuper').textContent = data.asal;
+  document.getElementById('displayTujuanSuper').textContent = data.tujuan;
+  document.getElementById('displayTarifSuper').textContent = 'Rp ' + data.total_tarif;
 
-  const spanStatus = document.getElementById('displayStatusSuperSuper').querySelector('span');
+  const spanStatus = document.getElementById('displayStatusSuper').querySelector('span');
   const s = data.status.toLowerCase();
+  let bg = 'bg-secondary', text = 'text-white', label = data.status;
 
-  let bg = '#e2e3e5', text = '#383d41', label = data.status;
   switch (s) {
-    case 'bkd': bg='#fff3cd'; text='#856404'; label='BKD'; break;
-    case 'dalam pengiriman': bg='#cce5ff'; text='#004085'; label='Dalam Pengiriman'; break;
-    case 'sampai tujuan': bg='#d1ecf1'; text='#0c5460'; label='Sampai Tujuan'; break;
-    case 'pod': bg='#d4edda'; text='#155724'; label='POD'; break;
-    case 'dibatalkan': bg='#f8d7da'; text='#721c24'; label='Dibatalkan'; break;
+    case 'bkd': bg = 'bg-warning text-dark'; label = 'BKD'; break;
+    case 'dalam pengiriman': bg = 'bg-info text-dark'; label = 'Dalam Pengiriman'; break;
+    case 'sampai tujuan': bg = 'bg-primary text-white'; label = 'Sampai Tujuan'; break;
+    case 'pod': bg = 'bg-success text-white'; label = 'POD'; break;
+    case 'dibatalkan': bg = 'bg-danger text-white'; label = 'Dibatalkan'; break;
   }
 
+  spanStatus.className = `px-3 py-1 rounded-pill fw-semibold small ${bg}`;
   spanStatus.textContent = label;
-  spanStatus.style.backgroundColor = bg;
-  spanStatus.style.color = text;
 
-  resultSuperSuper.style.display = 'block';
-  btnHapusSuperSuper.style.display = 'inline-block';
+  resultSuper.style.display = 'block';
+  btnHapusSuper.style.display = 'inline-block';
 }
 
 // ===== Tombol Lacak =====
-btnLacakSuperSuper.addEventListener('click', () => {
-  const resi = inputResiSuperSuper.value.trim();
-  hideAlertSuperSuper();
-  resultSuperSuper.style.display = 'none';
-  btnHapusSuperSuper.style.display = 'none';
+btnLacakSuper.addEventListener('click', () => {
+  const resi = inputResiSuper.value.trim();
+  hideAlertSuper();
+  resultSuper.style.display = 'none';
+  btnHapusSuper.style.display = 'none';
 
   if (!resi) {
-    showAlertSuperSuper('Nomor resi tidak boleh kosong', 'error');
+    showAlertSuper('⚠️ Nomor resi tidak boleh kosong.');
     return;
   }
 
-  btnLacakSuperSuper.disabled = true;
-  btnLacakSuperSuper.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
+  btnLacakSuper.disabled = true;
+  btnLacakSuper.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Mencari...';
 
   fetch('../../utils/cekResi.php?no_resi=' + encodeURIComponent(resi))
     .then(res => res.json())
     .then(data => {
       if (data.success) {
-        hideAlertSuperSuper();
-        displayResultSuperSuper(data.data);
+        hideAlertSuper();
+        displayResultSuper(data.data);
       } else {
-        showAlertSuperSuper(data.message || 'Nomor resi tidak ditemukan', 'error');
+        showAlertSuper('❌ Nomor resi tidak ditemukan.');
       }
     })
-    .catch(err => {
-      console.error(err);
-      showAlertSuperSuper('Terjadi kesalahan. Silakan coba lagi.', 'error');
+    .catch(() => {
+      showAlertSuper('🚫 Terjadi kesalahan. Silakan coba lagi.');
     })
     .finally(() => {
-      btnLacakSuperSuper.disabled = false;
-      btnLacakSuperSuper.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
+      btnLacakSuper.disabled = false;
+      btnLacakSuper.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> Lacak Paket';
     });
 });
 
 // ===== Enter untuk submit =====
-inputResiSuperSuper.addEventListener('keypress', e => {
-  if (e.key === 'Enter') btnLacakSuperSuper.click();
+inputResiSuper.addEventListener('keypress', e => {
+  if (e.key === 'Enter') btnLacakSuper.click();
 });
 
 // ===== Tombol Hapus =====
-btnHapusSuperSuper.addEventListener('click', function() {
-  inputResiSuperSuper.value = '';
-  resultSuperSuper.style.display = 'none';
-  hideAlertSuperSuper();
-  btnHapusSuperSuper.style.display = 'none';
-
-  document.getElementById('displayResiSuperSuper').textContent = '-';
-  document.getElementById('displayPengirimSuperSuper').textContent = '-';
-  document.getElementById('displayPenerimaSuperSuper').textContent = '-';
-  document.getElementById('displayAsalSuperSuper').textContent = '-';
-  document.getElementById('displayTujuanSuperSuper').textContent = '-';
-  document.getElementById('displayTarifSuperSuper').textContent = '-';
-  const spanStatus = document.getElementById('displayStatusSuperSuper').querySelector('span');
-  spanStatus.textContent = '-';
-  spanStatus.style.backgroundColor = '';
-  spanStatus.style.color = '';
+btnHapusSuper.addEventListener('click', function() {
+  inputResiSuper.value = '';
+  resultSuper.style.display = 'none';
+  hideAlertSuper();
+  btnHapusSuper.style.display = 'none';
 });
 </script>
+
 
 <?php
     include '../../templates/footer.php';
