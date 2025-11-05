@@ -191,322 +191,323 @@ include '../../components/sidebar_offcanvas.php';
         </div>
 
 
-<!-- === CARD TOTAL PENDAPATAN === -->
-<div class="row g-4 mb-4">
-  <div class="col-xl-12 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
-      <div class="card-body">
-        <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-success">
-              <?= format_rupiah($total_pendapatan ?? 0); ?>
-            </h4>
-            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
-          </div>
-          <i class="fa-solid fa-money-bill-wave text-success opacity-50" style="font-size:1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- === CARD RINCIAN METODE PEMBAYARAN === -->
-<div class="row g-4 mb-4">
-  <!-- Transfer -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
-      <div class="card-body">
-        <p class="text-info mb-1 small fw-bold">TOTAL TRANSFER</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-info"><?= format_rupiah($total_transfer ?? 0); ?></h4>
-            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
-          </div>
-          <i class="fa-solid fa-credit-card text-info opacity-50" style="font-size:1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Cash -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
-      <div class="card-body">
-        <p class="text-warning mb-1 small fw-bold">TOTAL CASH</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
-            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
-          </div>
-          <i class="fa-solid fa-money-bill-1-wave text-warning opacity-50" style="font-size:1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bayar di Tempat -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
-      <div class="card-body">
-        <p class="text-danger mb-1 small fw-bold">BAYAR DI TEMPAT (COD)</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_cod ?? 0); ?></h4>
-            <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
-          </div>
-          <i class="fa-solid fa-truck-ramp-box text-danger opacity-50" style="font-size:1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-<!-- === CARD STATUS PENGIRIMAN === -->
-<div class="row g-4 mb-4">
-<!-- === JUDUL UNTUK STATUS PENGIRIMAN === -->
-<h5 class="fw-bold text-dark mb-3 mt-4"> Status Pengiriman </h5>
-  <!-- BKD -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
-      <div class="card-body">
-        <p class="text-secondary mb-1 small fw-bold">BKD</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-secondary"><?= $status_counts['bkd']; ?> Kiriman</h4>
-          </div>
-          <i class="fa-solid fa-box-open text-secondary opacity-50" style="font-size: 1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dalam Pengiriman -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
-      <div class="card-body">
-        <p class="text-primary mb-1 small fw-bold">DALAM PENGIRIMAN</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-primary"><?= $status_counts['dalam pengiriman']; ?> Kiriman</h4>
-          </div>
-          <i class="fa-solid fa-truck-moving text-primary opacity-50" style="font-size: 1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Sampai Tujuan -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
-      <div class="card-body">
-        <p class="text-info mb-1 small fw-bold">SAMPAI TUJUAN</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-info"><?= $status_counts['sampai tujuan']; ?> Kiriman</h4>
-          </div>
-          <i class="fa-solid fa-location-dot text-info opacity-50" style="font-size: 1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- POD -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
-      <div class="card-body">
-        <p class="text-success mb-1 small fw-bold">POD</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-success"><?= $status_counts['pod']; ?> Kiriman</h4>
-          </div>
-          <i class="fa-solid fa-file-circle-check text-success opacity-50" style="font-size: 1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dibatalkan -->
-  <div class="col-xl-4 col-md-6">
-    <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
-      <div class="card-body">
-        <p class="text-danger mb-1 small fw-bold">DIBATALKAN</p>
-        <div class="d-flex justify-content-between align-items-center">
-          <div>
-            <h4 class="mb-0 fw-bold text-danger"><?= $status_counts['dibatalkan']; ?> Kiriman</h4>
-          </div>
-          <i class="fa-solid fa-circle-xmark text-danger opacity-50" style="font-size: 1.8rem;"></i>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-
-<!-- === LACAK PAKET === -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <h5 class="fw-bold text-dark mb-3">
-      <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
-    </h5>
-
-    <!-- Input & Tombol -->
-    <div class="row g-3 align-items-center">
-      <div class="col-md-6 col-lg-5">
-        <input type="text" id="resiAdmin" class="form-control" placeholder="Masukkan nomor resi..." />
-      </div>
-      <div class="col-md-auto">
-        <button id="btnLacakAdmin" class="btn btn-danger">
-          <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
-        </button>
-        <button id="btnHapusPencarian" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
-          <i class="fa-solid fa-eraser me-1"></i> Hapus
-        </button>
-      </div>
-    </div>
-
-    <!-- Alert -->
-    <div id="alertLacakAdmin" 
-         class="mt-3" 
-         style="display:none; padding:10px; border-radius:8px; font-size:14px;">
-    </div>
-
-    <!-- Hasil -->
-    <div id="resultLacakAdmin" 
-         style="display:none; margin-top:20px;" 
-         class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
-      <h6 class="fw-bold mb-3 text-danger">
-        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
-      </h6>
-      <div class="table-responsive">
-        <table class="table table-sm table-borderless mb-0">
-          <tr><th style="width:30%">No. Resi</th><td id="displayResiAdmin">-</td></tr>
-          <tr><th>Nama Pengirim</th><td id="displayPengirimAdmin">-</td></tr>
-          <tr><th>Nama Penerima</th><td id="displayPenerimaAdmin">-</td></tr>
-          <tr><th>Asal</th><td id="displayAsalAdmin">-</td></tr>
-          <tr><th>Tujuan</th><td id="displayTujuanAdmin">-</td></tr>
-          <tr><th>Total Tarif</th><td id="displayTarifAdmin">-</td></tr>
-          <tr>
-            <th>Status</th>
-            <td id="displayStatusAdmin">
-              <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-  <!-- Dua Card Tabel -->
-  <div class="row g-4 mb-5">
-
-    <!-- Pengiriman Keluar -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-          <h5 class="fw-bold text-dark mb-0">Pengiriman Keluar</h5>
-          <a href="pengiriman/?tipe=keluar" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
-        </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 small">
-              <thead class="table-light">
-                <tr>
-                  <th class="px-3">No. Resi</th>
-                  <th>Tujuan</th>
-                  <th>Status</th>
-                  <th class="text-center">Detail</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if ($pengiriman_keluar->num_rows > 0): ?>
-                  <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
-                    <tr>
-                      <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                      <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
-                      <td>
-                        <?php
-                          $statusClass = match(strtolower($row['status'])) {
-                            'bkd' => 'warning',
-                            'dalam pengiriman' => 'info',
-                            'sampai tujuan' => 'success',
-                            'pod' => 'primary',
-                            'dibatalkan' => 'danger',
-                            default => 'secondary'
-                          };
-                        ?>
-                        <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
-                      </td>
-                      <td class="text-center">
-                        <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-info">
-                          <i class="fa-solid fa-eye"></i>
-                        </a>
-                      </td>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
-                  <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
-                <?php endif; ?>
-              </tbody>
-            </table>
+        <!-- === CARD TOTAL PENDAPATAN === -->
+        <div class="row g-4 mb-4">
+          <div class="col-xl-12 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+              <div class="card-body">
+                <p class="text-success mb-1 small fw-bold">TOTAL PENDAPATAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-success">
+                      <?= format_rupiah($total_pendapatan ?? 0); ?>
+                    </h4>
+                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-money-bill-wave text-success opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+          <!-- === CARD RINCIAN METODE PEMBAYARAN === -->
+        <div class="row g-4 mb-4">
+          <!-- Transfer -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+              <div class="card-body">
+                <p class="text-info mb-1 small fw-bold">TOTAL TRANSFER</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-info"><?= format_rupiah($total_transfer ?? 0); ?></h4>
+                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-credit-card text-info opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
 
-    <!-- Pengiriman Masuk -->
-    <div class="col-lg-6">
-      <div class="card border-0 shadow-sm h-100">
-        <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-          <h5 class="fw-bold text-dark mb-0">Pengiriman Masuk (Dalam Pengiriman)</h5>
-          <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+          <!-- Cash -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+              <div class="card-body">
+                <p class="text-warning mb-1 small fw-bold">TOTAL CASH</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
+                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-money-bill-1-wave text-warning opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bayar di Tempat -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+              <div class="card-body">
+                <p class="text-danger mb-1 small fw-bold">BAYAR DI TEMPAT (COD)</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_cod ?? 0); ?></h4>
+                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-truck-ramp-box text-danger opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 small">
-              <thead class="table-light">
-                <tr>
-                  <th class="px-3">No. Resi</th>
-                  <th>Asal</th>
-                  <th>Status</th>
-                  <th class="text-center">Detail</th>
-                </tr>
-              </thead>
-              <tbody>
-                <?php if ($pengiriman_masuk->num_rows > 0): ?>
-                  <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
-                    <tr>
-                      <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
-                      <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
-                      <td>
-                        <span class="badge text-bg-primary"><?= htmlspecialchars($row['status']); ?></span>
-                      </td>
-                      <td class="text-center">
-                        <a href="barang_masuk/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-success">
-                          <i class="fa-solid fa-eye"></i>
-                        </a>
-                      </td>
-                    </tr>
-                  <?php endwhile; ?>
-                <?php else: ?>
+
+
+        <!-- === CARD STATUS PENGIRIMAN === -->
+        <div class="row g-4 mb-4">
+          <!-- === JUDUL UNTUK STATUS PENGIRIMAN === -->
+          <h5 class="fw-bold text-dark mb-0 mt-5"> Status Pengiriman Cabang <?=$_SESSION['cabang']?></h5>
+          <!-- BKD -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+              <div class="card-body">
+                <p class="text-secondary mb-1 small fw-bold">BKD</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-secondary"><?= $status_counts['bkd']; ?> Kiriman</h4>
+                  </div>
+                  <i class="fa-solid fa-box-open text-secondary opacity-50" style="font-size: 1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dalam Pengiriman -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
+              <div class="card-body">
+                <p class="text-primary mb-1 small fw-bold">DALAM PENGIRIMAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-primary"><?= $status_counts['dalam pengiriman']; ?> Kiriman</h4>
+                  </div>
+                  <i class="fa-solid fa-truck-moving text-primary opacity-50" style="font-size: 1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sampai Tujuan -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+              <div class="card-body">
+                <p class="text-info mb-1 small fw-bold">SAMPAI TUJUAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-info"><?= $status_counts['sampai tujuan']; ?> Kiriman</h4>
+                  </div>
+                  <i class="fa-solid fa-location-dot text-info opacity-50" style="font-size: 1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- POD -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+              <div class="card-body">
+                <p class="text-success mb-1 small fw-bold">POD</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-success"><?= $status_counts['pod']; ?> Kiriman</h4>
+                  </div>
+                  <i class="fa-solid fa-file-circle-check text-success opacity-50" style="font-size: 1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dibatalkan -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+              <div class="card-body">
+                <p class="text-danger mb-1 small fw-bold">DIBATALKAN</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-danger"><?= $status_counts['dibatalkan']; ?> Kiriman</h4>
+                  </div>
+                  <i class="fa-solid fa-circle-xmark text-danger opacity-50" style="font-size: 1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- === LACAK PAKET === -->
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body">
+            <h5 class="fw-bold text-dark mb-3">
+              <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+            </h5>
+
+            <!-- Input & Tombol -->
+            <div class="row g-3 align-items-center">
+              <div class="col-md-6 col-lg-5">
+                <input type="text" id="resiAdmin" class="form-control" placeholder="Masukkan nomor resi..." />
+              </div>
+              <div class="col-md-auto">
+                <button id="btnLacakAdmin" class="btn btn-danger">
+                  <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+                </button>
+                <button id="btnHapusPencarian" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+                  <i class="fa-solid fa-eraser me-1"></i> Hapus
+                </button>
+              </div>
+            </div>
+
+            <!-- Alert -->
+            <div id="alertLacakAdmin" 
+                class="mt-3" 
+                style="display:none; padding:10px; border-radius:8px; font-size:14px;">
+            </div>
+
+            <!-- Hasil -->
+            <div id="resultLacakAdmin" 
+                style="display:none; margin-top:20px;" 
+                class="p-3 rounded-3 border-start border-4 border-danger bg-light-subtle">
+              <h6 class="fw-bold mb-3 text-danger">
+                <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+              </h6>
+              <div class="table-responsive">
+                <table class="table table-sm table-borderless mb-0">
+                  <tr><th style="width:30%">No. Resi</th><td id="displayResiAdmin">-</td></tr>
+                  <tr><th>Nama Pengirim</th><td id="displayPengirimAdmin">-</td></tr>
+                  <tr><th>Nama Penerima</th><td id="displayPenerimaAdmin">-</td></tr>
+                  <tr><th>Asal</th><td id="displayAsalAdmin">-</td></tr>
+                  <tr><th>Tujuan</th><td id="displayTujuanAdmin">-</td></tr>
+                  <tr><th>Total Tarif</th><td id="displayTarifAdmin">-</td></tr>
                   <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">
-                      Belum ada pengiriman masuk yang sedang dalam perjalanan.
+                    <th>Status</th>
+                    <td id="displayStatusAdmin">
+                      <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600;">-</span>
                     </td>
                   </tr>
-                <?php endif; ?>
-              </tbody>
-            </table>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+
+        <!-- Dua Card Tabel -->
+        <div class="row g-4 mb-5">
+
+          <!-- Pengiriman Keluar -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">Pengiriman Keluar</h5>
+                <a href="pengiriman/?tipe=keluar" class="btn btn-sm btn-outline-primary">Lihat Semua</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="px-3">No. Resi</th>
+                        <th>Tujuan</th>
+                        <th>Status</th>
+                        <th class="text-center">Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if ($pengiriman_keluar->num_rows > 0): ?>
+                        <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
+                          <tr>
+                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                            <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
+                            <td>
+                              <?php
+                                $statusClass = match(strtolower($row['status'])) {
+                                  'bkd' => 'warning',
+                                  'dalam pengiriman' => 'info',
+                                  'sampai tujuan' => 'success',
+                                  'pod' => 'primary',
+                                  'dibatalkan' => 'danger',
+                                  default => 'secondary'
+                                };
+                              ?>
+                              <span class="badge text-bg-<?= $statusClass; ?>"><?= htmlspecialchars($row['status']); ?></span>
+                            </td>
+                            <td class="text-center">
+                              <a href="pengiriman/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-info">
+                                <i class="fa-solid fa-eye"></i>
+                              </a>
+                            </td>
+                          </tr>
+                        <?php endwhile; ?>
+                      <?php else: ?>
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pengiriman Masuk -->
+          <div class="col-lg-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold text-dark mb-0">Pengiriman Masuk (Dalam Pengiriman)</h5>
+                <a href="barang_masuk/index.php" class="btn btn-sm btn-outline-success">Lihat Semua</a>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead class="table-light">
+                      <tr>
+                        <th class="px-3">No. Resi</th>
+                        <th>Asal</th>
+                        <th>Status</th>
+                        <th class="text-center">Detail</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <?php if ($pengiriman_masuk->num_rows > 0): ?>
+                        <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                          <tr>
+                            <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
+                            <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
+                            <td>
+                              <span class="badge text-bg-primary"><?= htmlspecialchars($row['status']); ?></span>
+                            </td>
+                            <td class="text-center">
+                              <a href="barang_masuk/detail.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-success">
+                                <i class="fa-solid fa-eye"></i>
+                              </a>
+                            </td>
+                          </tr>
+                        <?php endwhile; ?>
+                      <?php else: ?>
+                        <tr>
+                          <td colspan="4" class="text-center py-4 text-muted">
+                            Belum ada pengiriman masuk yang sedang dalam perjalanan.
+                          </td>
+                        </tr>
+                      <?php endif; ?>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div><!-- end row -->
     </div>
-
-  </div>
-
-        </div><!-- end row -->
-      </div>
 <script>
 const btnLacakAdmin = document.getElementById('btnLacakAdmin');
 const inputResiAdmin = document.getElementById('resiAdmin');
