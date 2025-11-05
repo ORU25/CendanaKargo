@@ -52,12 +52,15 @@ $total_surat_jalan = $conn->query("
     WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
 ")->fetch_assoc()['total'] ?? 0;
 
-// === TOTAL PENDAPATAN & PEMBAYARAN ===
+// === TOTAL PENDAPATAN & PEMBAYARAN (khusus admin login) ===
+$id_admin = $_SESSION['user_id'];
+
 $total_pendapatan = $conn->query("
     SELECT SUM(total_tarif) AS total 
     FROM pengiriman 
     WHERE $where_clause 
       AND id_cabang_pengirim = '$id_cabang_admin'
+      AND id_user = '$id_admin'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
@@ -66,6 +69,7 @@ $total_transfer = $conn->query("
     FROM pengiriman 
     WHERE $where_clause 
       AND id_cabang_pengirim = '$id_cabang_admin'
+      AND id_user = '$id_admin'
       AND pembayaran = 'transfer'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
@@ -75,6 +79,7 @@ $total_cash = $conn->query("
     FROM pengiriman 
     WHERE $where_clause 
       AND id_cabang_pengirim = '$id_cabang_admin'
+      AND id_user = '$id_admin'
       AND pembayaran = 'cash'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
@@ -84,9 +89,11 @@ $total_cod = $conn->query("
     FROM pengiriman 
     WHERE $where_clause 
       AND id_cabang_pengirim = '$id_cabang_admin'
+      AND id_user = '$id_admin'
       AND pembayaran = 'bayar ditempat'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
+
 
 // Helper format rupiah
 function format_rupiah($angka) {
@@ -106,9 +113,10 @@ $stmt = $conn->prepare("
     SELECT status, COUNT(*) AS jumlah
     FROM pengiriman
     WHERE id_cabang_pengirim = ? 
+      AND id_user = ?
     GROUP BY status
 ");
-$stmt->bind_param('i', $id_cabang_admin);
+$stmt->bind_param('ii', $id_cabang_admin, $id_admin);
 $stmt->execute();
 $result_status = $stmt->get_result();
 while ($row = $result_status->fetch_assoc()) {
