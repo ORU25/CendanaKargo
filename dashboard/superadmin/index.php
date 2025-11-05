@@ -30,7 +30,8 @@
   // === TOTAL DATA (hanya untuk cabang user) ===
   $total_pengiriman = $conn->query("SELECT COUNT(*) AS total FROM pengiriman WHERE $where_clause AND cabang_pengirim = '$cabang_superadmin'")->fetch_assoc()['total'] ?? 0;
   $total_surat_jalan = $conn->query("SELECT COUNT(*) AS total FROM surat_jalan s JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id WHERE $where_clause AND kc.nama_cabang = '$cabang_superadmin'")->fetch_assoc()['total'] ?? 0;
-  $total_pendapatan = $conn->query("SELECT SUM(total_tarif) AS total FROM pengiriman WHERE $where_clause AND cabang_pengirim = '$cabang_superadmin'")->fetch_assoc()['total'] ?? 0;
+  $total_pendapatan = $conn->query("SELECT SUM(total_tarif) AS total FROM pengiriman WHERE $where_clause AND cabang_pengirim = '$cabang_superadmin'AND status != 'dibatalkan'")->fetch_assoc()['total'] ?? 0;
+
 
   // Helper function untuk format rupiah
   function format_rupiah($number) {
@@ -50,19 +51,39 @@
 
   // === PENDAPATAN PER ADMIN (dengan LEFT JOIN agar semua user muncul) ===
   $pendapatan_data = [];
-  $sql_pendapatan = "
-      SELECT u.id, u.username,
-          SUM(CASE WHEN p.pembayaran = 'cash' AND p.id IS NOT NULL AND $where_clause THEN p.total_tarif ELSE 0 END) AS cash,
-          SUM(CASE WHEN p.pembayaran = 'transfer' AND p.id IS NOT NULL AND $where_clause THEN p.total_tarif ELSE 0 END) AS transfer,
-          SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.id IS NOT NULL AND $where_clause THEN p.total_tarif ELSE 0 END) AS cod,
-          SUM(CASE WHEN p.id IS NOT NULL AND $where_clause THEN p.total_tarif ELSE 0 END) AS total
-      FROM User u
-      LEFT JOIN pengiriman p ON u.id = p.id_user
-      WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
-          AND u.role != 'superSuperAdmin'
-      GROUP BY u.id, u.username
-      ORDER BY u.username
-  ";
+$sql_pendapatan = "
+    SELECT u.id, u.username,
+        SUM(CASE 
+            WHEN p.pembayaran = 'cash' 
+                 AND p.id IS NOT NULL 
+                 AND $where_clause 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END) AS cash,
+        SUM(CASE 
+            WHEN p.pembayaran = 'transfer' 
+                 AND p.id IS NOT NULL 
+                 AND $where_clause 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END) AS transfer,
+        SUM(CASE 
+            WHEN p.pembayaran = 'bayar di tempat' 
+                 AND p.id IS NOT NULL 
+                 AND $where_clause 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END) AS cod,
+        SUM(CASE 
+            WHEN p.id IS NOT NULL 
+                 AND $where_clause 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END) AS total
+    FROM User u
+    LEFT JOIN pengiriman p ON u.id = p.id_user
+    WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
+        AND u.role != 'superSuperAdmin'
+    GROUP BY u.id, u.username
+    ORDER BY u.username
+";
+
   $stmt_pendapatan = $conn->prepare($sql_pendapatan);
   $stmt_pendapatan->bind_param('s', $cabang_superadmin);
   $stmt_pendapatan->execute();
