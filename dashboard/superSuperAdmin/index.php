@@ -15,60 +15,70 @@ if (isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin') {
 include '../../config/database.php';
 
 // =======================================================
-// FILTERING LOGIC (Support: today / month / specific date / month-only via YYYY-MM)
+// FILTERING LOGIC - Single Smart Filter
 // =======================================================
-$filter = isset($_GET['filter']) && in_array($_GET['filter'], ['today', 'month'])
-          ? htmlspecialchars($_GET['filter'])
-          : 'month'; // Default: month (Bulan Ini)
-
+$filter_type = 'bulan_ini'; // default
+$filter_value = '';
 $selected_date_display = '';
-$date_condition = '';       // akan diisi sesuai pilihan
-$date_condition_sj = '';    // akan diisi sesuai pilihan
+$date_condition = '';
+$date_condition_sj = '';
 
-// Prioritas:
-// 1) Jika ada parameter periode (YYYY-MM-DD) -> gunakan itu (tanggal spesifik).
-// 2) Jika tidak ada periode tapi ada parameter bulan (YYYY-MM) -> gunakan itu (bulanan).
-// 3) Jika tidak ada, gunakan ?filter=today atau default bulan ini.
-if (isset($_GET['periode']) && $_GET['periode'] !== '') {
-    // Bersihkan input
-    $periode_raw = trim($_GET['periode']);
-    // jika format YYYY-MM-DD (tanggal spesifik)
-    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $periode_raw)) {
-        $selected_date = $periode_raw;
-        // gunakan filter per tanggal
-        $date_condition = "DATE(p.tanggal) = '" . $selected_date . "'";
-        $date_condition_sj = "DATE(sj.tanggal) = '" . $selected_date . "'";
-        $selected_date_display = date('d F Y', strtotime($selected_date));
-    }
-    // jika format YYYY-MM (user mengetik tanpa -DD) treat as month
-    elseif (preg_match('/^\d{4}-\d{2}$/', $periode_raw)) {
-        $selected_month = $periode_raw;
-        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $selected_month . "'";
-        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $selected_month . "'";
-        $selected_date_display = date('F Y', strtotime($selected_month . '-01'));
-    }
-    // jika bukan format di atas, fallback ke bulan ini
-    else {
+// Cek parameter filter dari form
+if (isset($_GET['filter_type'])) {
+    $filter_type = htmlspecialchars($_GET['filter_type']);
+}
+if (isset($_GET['filter_value'])) {
+    $filter_value = htmlspecialchars($_GET['filter_value']);
+}
+
+// Proses filter berdasarkan tipe
+switch ($filter_type) {
+    case 'hari_ini':
+        $date_condition = 'DATE(p.tanggal) = CURDATE()';
+        $date_condition_sj = 'DATE(sj.tanggal) = CURDATE()';
+        $selected_date_display = 'Hari Ini - ' . date('d F Y');
+        break;
+    
+    case 'bulan_ini':
         $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
         $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-        $selected_date_display = date('F Y');
-    }
-} elseif (isset($_GET['bulan']) && preg_match('/^\d{4}-\d{2}$/', $_GET['bulan'])) {
-    // Jika user pilih bulan (YYYY-MM) via input type=month
-    $selected_month = $_GET['bulan'];
-    $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $selected_month . "'";
-    $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $selected_month . "'";
-    $selected_date_display = date('F Y', strtotime($selected_month . '-01'));
-} elseif ($filter === 'today') {
-    // Data hari ini
-    $date_condition = 'DATE(p.tanggal) = CURDATE()';
-    $date_condition_sj = 'DATE(sj.tanggal) = CURDATE()';
-    $selected_date_display = date('d F Y');
-} else {
-    // Default: data bulan ini
-    $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-    $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-    $selected_date_display = date('F Y');
+        $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        break;
+    
+    case 'tanggal_spesifik':
+        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
+            $date_condition = "DATE(p.tanggal) = '" . $filter_value . "'";
+            $date_condition_sj = "DATE(sj.tanggal) = '" . $filter_value . "'";
+            $selected_date_display = 'Tanggal - ' . date('d F Y', strtotime($filter_value));
+        } else {
+            // fallback ke bulan ini jika tanggal tidak valid
+            $filter_type = 'bulan_ini';
+            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        }
+        break;
+    
+    case 'bulan_spesifik':
+        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
+            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $filter_value . "'";
+            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $filter_value . "'";
+            $selected_date_display = 'Bulan - ' . date('F Y', strtotime($filter_value . '-01'));
+        } else {
+            // fallback ke bulan ini jika bulan tidak valid
+            $filter_type = 'bulan_ini';
+            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        }
+        break;
+    
+    default:
+        // Default: bulan ini
+        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        break;
 }
 
 // =======================================================
@@ -345,83 +355,93 @@ include '../../components/sidebar_offcanvas.php';
         <!-- Konten utama -->
         <div class="col-lg-10 bg-light">
             <div class="container-fluid p-4">
+                <?php if (isset($_GET['already_logined'])){
+                    $type = "info";
+                    $message = "Anda sudah login sebelumnya";
+                    include '../../components/alert.php';
+                }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'no_data'){
+                    $type = "danger";
+                    $message = "Data tidak ditemukan";
+                    include '../../components/alert.php';
+                }?>
+
+
                 <!-- Header -->
-                <div class="mb-4 d-flex justify-content-between align-items-center">
-                    <div>
-                        <h1 class="h3 mb-1 fw-bold">Dashboard SuperSuperAdmin</h1>
-                        <p class="text-muted small mb-2">
-                            Selamat datang, <?php echo htmlspecialchars($_SESSION['username']); ?>!
-                        </p>
-
-                        <!-- Data Agregat Info Box -->
-                        <!-- Modified: add date + month picker; if both present, date (periode) prioritized -->
-                        <form method="GET" class="d-flex align-items-center gap-2" id="periodeForm">
-                            <div class="px-3 py-2 rounded-3 d-inline-block" 
-                                style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
-                                <label for="periode" class="fw-normal text-secondary" style="font-size: 0.9rem; margin-right:8px;">
-                                    Data untuk periode:
-                                </label>
-
-                                <!-- date picker (specific day). If periode present, it will be used. -->
-                                <input type="date" id="periode" name="periode" 
-                                    value="<?php
-                                        if (isset($_GET['periode']) && $_GET['periode'] !== '') {
-                                            echo htmlspecialchars($_GET['periode']);
-                                        } else {
-                                            // default: empty (so default logic shows bulan ini)
-                                            echo '';
-                                        }
-                                    ?>"
-                                    class="form-control form-control-sm d-inline-block" 
-                                    style="width: 150px; display:inline-block;">
-
-                                <span class="fw-normal text-secondary mx-2" style="font-size: 0.9rem;">atau</span>
-
-                                <!-- month picker (YYYY-MM). Only used if periode is not set. -->
-                                <input type="month" id="bulan" name="bulan"
-                                    value="<?php
-                                        if (isset($_GET['bulan']) && $_GET['bulan'] !== '') {
-                                            echo htmlspecialchars($_GET['bulan']);
-                                        } else {
-                                            echo '';
-                                        }
-                                    ?>"
-                                    class="form-control form-control-sm d-inline-block" 
-                                    style="width: 150px; display:inline-block;">
-                            </div>
-                            <!-- changed button to type="button" and added id so JS can control which param to send -->
-                            <button type="button" id="tampilkanBtn" class="btn btn-sm btn-primary">Tampilkan</button>
-                            <button type="button" id="resetPeriodeBtn" class="btn btn-sm btn-outline-secondary">Reset</button>
-                        </form>
-
-                        <!-- Small description of selected period -->
-                        <div class="mt-2">
-                            <small class="text-muted">Menampilkan: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></small>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="h3 mb-1 fw-bold">Dashboard SuperSuperAdmin</h1>
+                            <p class="text-muted small mb-0">
+                                Selamat datang, <span class="fw-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!
+                            </p>
                         </div>
                     </div>
 
-                    <!-- Filter Tombol -->
-                    <div>
-                        <span class="badge text-bg-secondary me-2 align-self-center">Periode Cepat:</span>
-                        <div class="btn-group" role="group" aria-label="Filter data">
-                            <a href="?filter=month" 
-                            class="btn btn-sm <?php echo $filter === 'month' ? 'btn-primary' : 'btn-outline-primary'; ?>">
-                            Bulan Ini
-                            </a>
-                            <a href="?filter=today" 
-                            class="btn btn-sm <?php echo $filter === 'today' ? 'btn-primary' : 'btn-outline-primary'; ?>">
-                            Hari Ini
-                            </a>
+                    <!-- Smart Filter Card - Single Popup Concept -->
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-body p-3">
+                            <form method="GET" id="smartFilterForm" class="row g-3 align-items-end">
+                                
+                                <!-- Tipe Filter - Dropdown -->
+                                <div class="col-lg-3 col-md-4">
+                                    <label for="filter_type" class="form-label small text-muted mb-2 fw-semibold">
+                                        <i class="fa-solid fa-filter me-1"></i>Filter
+                                    </label>
+                                    <select class="form-select form-select-sm" id="filter_type" name="filter_type">
+                                        <option value="hari_ini" <?php echo $filter_type === 'hari_ini' ? 'selected' : ''; ?>>
+                                            📅 Hari Ini
+                                        </option>
+                                        <option value="bulan_ini" <?php echo $filter_type === 'bulan_ini' ? 'selected' : ''; ?>>
+                                            📆 Bulan Ini
+                                        </option>
+                                        <option value="tanggal_spesifik" <?php echo $filter_type === 'tanggal_spesifik' ? 'selected' : ''; ?>>
+                                            🗓️ Pilih Tanggal
+                                        </option>
+                                        <option value="bulan_spesifik" <?php echo $filter_type === 'bulan_spesifik' ? 'selected' : ''; ?>>
+                                            🗓️ Pilih Bulan
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Input Value - Conditional Display -->
+                                <div class="col-lg-3 col-md-4" id="filter_value_container" style="<?php echo in_array($filter_type, ['tanggal_spesifik', 'bulan_spesifik']) ? '' : 'display:none;'; ?>">
+                                    <label for="filter_value" class="form-label small text-muted mb-1 fw-semibold">
+                                        <i class="fa-solid fa-calendar-check me-1"></i>
+                                        <span id="filter_value_label">
+                                            <?php echo $filter_type === 'bulan_spesifik' ? 'Pilih Bulan' : 'Pilih Tanggal'; ?>
+                                        </span>
+                                    </label>
+                                    <input type="<?php echo $filter_type === 'bulan_spesifik' ? 'month' : 'date'; ?>" 
+                                           class="form-control form-control-sm" 
+                                           id="filter_value" 
+                                           name="filter_value"
+                                           value="<?php echo htmlspecialchars($filter_value); ?>">
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="col-lg-auto col-md-4">
+                                    <button type="submit" class="btn btn-sm btn-success me-1">
+                                        <i class="fa-solid fa-check me-1"></i>Terapkan
+                                    </button>
+                                    <button type="button" id="resetFilterBtn" class="btn btn-sm btn-outline-secondary">
+                                        <i class="fa-solid fa-rotate-left me-1"></i>Reset
+                                    </button>
+                                </div>
+
+                                <!-- Display Current Period -->
+                                <div class="col-12">
+                                    <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
+                                        <i class="fa-solid fa-info-circle me-2"></i>
+                                        <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
+                                    </div>
+                                </div>
+
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <?php if (isset($_GET['already_logined'])) { ?>
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        <strong>Info!</strong> Anda sudah login sebelumnya.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                <?php } ?>
                 
                 <!-- Periode Tampilan -->
                 <div class="row g-4 mb-4">
@@ -471,61 +491,6 @@ include '../../components/sidebar_offcanvas.php';
                     </div>
                 </div>
                 <!-- END NEW TOP SECTION -->
-            
-<!-- === LACAK PAKET=== -->
-<div class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <h5 class="fw-bold text-danger mb-3">
-      <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
-    </h5>
-
-    <!-- Input & Tombol -->
-    <div class="row g-3 align-items-center">
-      <div class="col-md-6 col-lg-5">
-        <input type="text" id="resiSuper" class="form-control border-danger" placeholder="Masukkan nomor resi..." />
-      </div>
-      <div class="col-md-auto">
-        <button id="btnLacakSuper" class="btn btn-danger">
-          <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
-        </button>
-        <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
-          <i class="fa-solid fa-eraser me-1"></i> Hapus
-        </button>
-      </div>
-    </div>
-
-    <!-- Alert -->
-    <div id="alertSuper" 
-        class="mt-3 bg-danger bg-opacity-10 border border-danger text-danger fw-semibold rounded-3 p-3" 
-        style="display:none; font-size:14px;">
-    </div>
-
-    <!-- Hasil -->
-    <div id="resultSuper" 
-        style="display:none; margin-top:20px;" 
-        class="p-3 rounded-3 border-start border-4 border-danger bg-light bg-opacity-10">
-      <h6 class="fw-bold mb-3 text-danger">
-        <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
-      </h6>
-      <div class="table-responsive">
-        <table class="table table-sm table-borderless mb-0">
-          <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
-          <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
-          <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
-          <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
-          <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
-          <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
-          <tr>
-            <th>Status</th>
-            <td id="displayStatusSuper">
-              <span class="bg-danger text-white px-3 py-1 rounded-pill fw-semibold small">-</span>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
 
                 <!-- Statistics Cards Row 3 (Original, All Time) -->
                 <div class="row g-4 mb-4">
@@ -590,6 +555,62 @@ include '../../components/sidebar_offcanvas.php';
                     </div>
                 </div>
 
+                <!-- === LACAK PAKET=== -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold text-danger mb-3">
+                        <i class="fa-solid fa-truck-fast me-2 text-danger"></i>Lacak Paket
+                        </h5>
+
+                        <!-- Input & Tombol -->
+                        <div class="row g-3 align-items-center">
+                        <div class="col-md-6 col-lg-5">
+                            <input type="text" id="resiSuper" class="form-control border-danger" placeholder="Masukkan nomor resi..."/>
+                        </div>
+                        <div class="col-md-auto">
+                            <button id="btnLacakSuper" class="btn btn-danger">
+                            <i class="fa-solid fa-magnifying-glass"></i> Lacak Paket
+                            </button>
+                            <button id="btnHapusSuper" class="btn btn-outline-danger btn-sm ms-2" style="display:none;">
+                            <i class="fa-solid fa-eraser me-1"></i> Hapus
+                            </button>
+                        </div>
+                        </div>
+
+                        <!-- Alert -->
+                        <div id="alertSuper" 
+                            class="mt-3 bg-danger bg-opacity-10 border border-danger text-danger fw-semibold rounded-3 p-3" 
+                            style="display:none; font-size:14px;">
+                        </div>
+
+                        <!-- Hasil -->
+                        <div id="resultSuper" 
+                            style="display:none; margin-top:20px;" 
+                            class="p-3 rounded-3 border-start border-4 border-danger bg-light bg-opacity-10">
+                        <h6 class="fw-bold mb-3 text-danger">
+                            <i class="fa-solid fa-circle-check me-1"></i>Informasi Pengiriman
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless mb-0">
+                            <tr><th style="width:30%">No. Resi</th><td id="displayResiSuper">-</td></tr>
+                            <tr><th>Nama Pengirim</th><td id="displayPengirimSuper">-</td></tr>
+                            <tr><th>Nama Penerima</th><td id="displayPenerimaSuper">-</td></tr>
+                            <tr><th>Asal</th><td id="displayAsalSuper">-</td></tr>
+                            <tr><th>Tujuan</th><td id="displayTujuanSuper">-</td></tr>
+                            <tr><th>Total Tarif</th><td id="displayTarifSuper">-</td></tr>
+                            <tr>
+                                <th>Status</th>
+                                <td id="displayStatusSuper">
+                                <span class="bg-danger text-white px-3 py-1 rounded-pill fw-semibold small">-</span>
+                                </td>
+                            </tr>
+                            </table>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <!-- ======================================================= -->
                 <!-- AGGREGATE REPORTS PER BRANCH (Filtered) -->
                 <!-- ======================================================= -->
@@ -621,8 +642,12 @@ include '../../components/sidebar_offcanvas.php';
                                             'total_revenue' => 0, 'cash_revenue' => 0,
                                             'transfer_revenue' => 0, 'cod_revenue' => 0,
                                         ];
-                                        $periode_param = isset($_GET['periode']) ? '&periode=' . urlencode($_GET['periode']) : '';
-                                        $bulan_param = isset($_GET['bulan']) ? '&bulan=' . urlencode($_GET['bulan']) : '';
+                                        // Build export URL with new filter params
+                                        $export_params = 'cabang=' . urlencode($branch_name);
+                                        $export_params .= '&filter_type=' . urlencode($filter_type);
+                                        if (!empty($filter_value)) {
+                                            $export_params .= '&filter_value=' . urlencode($filter_value);
+                                        }
                                     ?>
                                         <tr>
                                             <td class="px-3"><?php echo $no++; ?></td>
@@ -631,11 +656,13 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="text-end"><?php echo format_rupiah($data['cash_revenue']); ?></td>
                                             <td class="text-end"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
                                             <td class="text-end"><?php echo format_rupiah($data['cod_revenue']); ?></td>
-                                            <td class="text-center">
-                                                <a href="export/export.php?cabang=<?php echo urlencode($branch_name) . $periode_param . $bulan_param; ?>" 
-                                                class="btn btn-sm btn-outline-success">
-                                                <i class="fa-solid fa-file-export me-1"></i> Ekspor
-                                                </a>
+                                            <td class="d-flex justify-content-center">
+                                                <div>
+                                                    <a href="export/export.php?<?php echo $export_params; ?>" 
+                                                    class="btn btn-sm btn-outline-success">
+                                                    <i class="fa-solid fa-file-export me-1"></i> 
+                                                    </a>
+                                                </div>
                                             </td>
                                         </tr>
                                     <?php } ?>
@@ -739,28 +766,55 @@ include '../../components/sidebar_offcanvas.php';
     </div>
 </div>
 
-<!-- JavaScript to handle choose-one-of-two behavior for periode/month picker -->
+<!-- Smart Filter Script -->
 <script>
-    document.getElementById('tampilkanBtn').addEventListener('click', function () {
-    const periode = document.getElementById('periode').value;
-    const bulan = document.getElementById('bulan').value;
-    let url = window.location.pathname + '?'; // ambil URL tanpa query sebelumnya
+// Smart Filter - Dynamic show/hide input based on filter type
+const filterTypeSelect = document.getElementById('filter_type');
+const filterValueContainer = document.getElementById('filter_value_container');
+const filterValueInput = document.getElementById('filter_value');
+const filterValueLabel = document.getElementById('filter_value_label');
+const resetFilterBtn = document.getElementById('resetFilterBtn');
 
-    if (periode) {
-        url += 'periode=' + encodeURIComponent(periode);
-    } else if (bulan) {
-        url += 'bulan=' + encodeURIComponent(bulan);
+// Handle filter type change
+filterTypeSelect.addEventListener('change', function() {
+    const selectedType = this.value;
+    
+    if (selectedType === 'tanggal_spesifik') {
+        filterValueContainer.style.display = 'block';
+        filterValueInput.type = 'date';
+        filterValueLabel.textContent = 'Pilih Tanggal';
+        filterValueInput.required = true;
+    } else if (selectedType === 'bulan_spesifik') {
+        filterValueContainer.style.display = 'block';
+        filterValueInput.type = 'month';
+        filterValueLabel.textContent = 'Pilih Bulan';
+        filterValueInput.required = true;
     } else {
-        url += 'filter=month'; // fallback ke bulan ini
+        // Hari ini atau Bulan ini - tidak perlu input tambahan
+        filterValueContainer.style.display = 'none';
+        filterValueInput.required = false;
+        filterValueInput.value = '';
     }
-
-    window.location.href = url; // redirect dengan parameter filter yang benar
 });
 
-document.getElementById('resetPeriodeBtn').addEventListener('click', function () {
-    // hapus query parameter dan reload default
+// Reset button
+resetFilterBtn.addEventListener('click', function() {
     window.location.href = window.location.pathname;
 });
+
+// Form validation
+document.getElementById('smartFilterForm').addEventListener('submit', function(e) {
+    const filterType = filterTypeSelect.value;
+    
+    if ((filterType === 'tanggal_spesifik' || filterType === 'bulan_spesifik') && !filterValueInput.value) {
+        e.preventDefault();
+        alert('Silakan pilih ' + (filterType === 'tanggal_spesifik' ? 'tanggal' : 'bulan') + ' terlebih dahulu!');
+    }
+});
+</script>
+
+<!-- Lacak Paket Script -->
+<script>
 // ===== Variabel =====
 const btnLacakSuper = document.getElementById('btnLacakSuper');
 const inputResiSuper = document.getElementById('resiSuper');
