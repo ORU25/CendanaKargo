@@ -50,6 +50,78 @@
   }
   $stmt_users->close();
 
+  // === AMBIL DATA SUPERSUPERADMIN UNTUK CABANG INI ===
+  $supersuperadmin_data = [
+      'id' => null,
+      'username' => 'SuperSuperAdmin',
+      'pendapatan' => ['cash' => 0, 'transfer' => 0, 'cod' => 0, 'total' => 0],
+      'pengiriman' => ['bkd' => 0, 'perjalanan' => 0, 'sampai' => 0, 'pod' => 0, 'batal' => 0, 'total' => 0],
+      'surat_jalan' => ['draft' => 0, 'perjalanan' => 0, 'sampai' => 0, 'batal' => 0, 'total' => 0]
+  ];
+
+  // Query untuk mengambil data pengiriman & pendapatan dari superSuperAdmin
+  $sql_supersuperadmin = "
+      SELECT 
+          SUM(CASE WHEN pembayaran = 'cash' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cash,
+          SUM(CASE WHEN pembayaran = 'transfer' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS transfer,
+          SUM(CASE WHEN pembayaran = 'bayar di tempat' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cod,
+          SUM(CASE WHEN $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS total,
+          SUM(CASE WHEN status = 'bkd' AND $where_clause THEN 1 ELSE 0 END) AS bkd,
+          SUM(CASE WHEN status = 'dalam pengiriman' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
+          SUM(CASE WHEN status = 'sampai tujuan' AND $where_clause THEN 1 ELSE 0 END) AS sampai,
+          SUM(CASE WHEN status = 'pod' AND $where_clause THEN 1 ELSE 0 END) AS pod,
+          SUM(CASE WHEN status = 'dibatalkan' AND $where_clause THEN 1 ELSE 0 END) AS batal,
+          COUNT(CASE WHEN $where_clause THEN 1 END) AS total_pengiriman
+      FROM pengiriman p
+      JOIN User u ON p.id_user = u.id
+      WHERE u.role = 'superSuperAdmin' 
+        AND p.cabang_pengirim = ?
+  ";
+  $stmt_supersuperadmin = $conn->prepare($sql_supersuperadmin);
+  $stmt_supersuperadmin->bind_param('s', $cabang_superadmin);
+  $stmt_supersuperadmin->execute();
+  $result_supersuperadmin = $stmt_supersuperadmin->get_result();
+  if ($row = $result_supersuperadmin->fetch_assoc()) {
+      $supersuperadmin_data['pendapatan']['cash'] = $row['cash'] ?? 0;
+      $supersuperadmin_data['pendapatan']['transfer'] = $row['transfer'] ?? 0;
+      $supersuperadmin_data['pendapatan']['cod'] = $row['cod'] ?? 0;
+      $supersuperadmin_data['pendapatan']['total'] = $row['total'] ?? 0;
+      $supersuperadmin_data['pengiriman']['bkd'] = $row['bkd'] ?? 0;
+      $supersuperadmin_data['pengiriman']['perjalanan'] = $row['perjalanan'] ?? 0;
+      $supersuperadmin_data['pengiriman']['sampai'] = $row['sampai'] ?? 0;
+      $supersuperadmin_data['pengiriman']['pod'] = $row['pod'] ?? 0;
+      $supersuperadmin_data['pengiriman']['batal'] = $row['batal'] ?? 0;
+      $supersuperadmin_data['pengiriman']['total'] = $row['total_pengiriman'] ?? 0;
+  }
+  $stmt_supersuperadmin->close();
+
+  // Query untuk surat jalan dari superSuperAdmin
+  $sql_sj_supersuperadmin = "
+      SELECT 
+          SUM(CASE WHEN s.status = 'draft' AND $where_clause THEN 1 ELSE 0 END) AS draft,
+          SUM(CASE WHEN s.status = 'dalam perjalanan' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
+          SUM(CASE WHEN s.status = 'sampai tujuan' AND $where_clause THEN 1 ELSE 0 END) AS sampai,
+          SUM(CASE WHEN s.status = 'dibatalkan' AND $where_clause THEN 1 ELSE 0 END) AS batal,
+          COUNT(CASE WHEN $where_clause THEN 1 END) AS total
+      FROM surat_jalan s
+      JOIN User u ON s.id_user = u.id
+      JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id
+      WHERE u.role = 'superSuperAdmin' 
+        AND kc.nama_cabang = ?
+  ";
+  $stmt_sj_supersuperadmin = $conn->prepare($sql_sj_supersuperadmin);
+  $stmt_sj_supersuperadmin->bind_param('s', $cabang_superadmin);
+  $stmt_sj_supersuperadmin->execute();
+  $result_sj_supersuperadmin = $stmt_sj_supersuperadmin->get_result();
+  if ($row = $result_sj_supersuperadmin->fetch_assoc()) {
+      $supersuperadmin_data['surat_jalan']['draft'] = $row['draft'] ?? 0;
+      $supersuperadmin_data['surat_jalan']['perjalanan'] = $row['perjalanan'] ?? 0;
+      $supersuperadmin_data['surat_jalan']['sampai'] = $row['sampai'] ?? 0;
+      $supersuperadmin_data['surat_jalan']['batal'] = $row['batal'] ?? 0;
+      $supersuperadmin_data['surat_jalan']['total'] = $row['total'] ?? 0;
+  }
+  $stmt_sj_supersuperadmin->close();
+
   // === PENDAPATAN PER ADMIN (dengan LEFT JOIN agar semua user muncul) ===
   $pendapatan_data = [];
 $sql_pendapatan = "
@@ -323,6 +395,19 @@ $sql_pendapatan = "
                       <td class="text-end"><?= format_rupiah($data['cod']); ?></td>
                     </tr>
                   <?php endforeach; ?>
+                  
+                  <?php if ($supersuperadmin_data['pendapatan']['total'] > 0): ?>
+                    <tr class="table-warning">
+                      <td class="px-3"><?= $no++; ?></td>
+                      <td class="fw-bold">
+                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                      </td>
+                      <td class="text-end fw-bold"><?= format_rupiah($supersuperadmin_data['pendapatan']['total']); ?></td>
+                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['cash']); ?></td>
+                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['transfer']); ?></td>
+                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['cod']); ?></td>
+                    </tr>
+                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -369,6 +454,21 @@ $sql_pendapatan = "
                       <td class="text-center"><?= $data['batal']; ?></td>
                     </tr>
                   <?php endforeach; ?>
+                  
+                  <?php if ($supersuperadmin_data['pengiriman']['total'] > 0): ?>
+                    <tr class="table-warning">
+                      <td class="px-3"><?= $no++; ?></td>
+                      <td class="fw-bold">
+                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                      </td>
+                      <td class="text-center fw-bold"><?= $supersuperadmin_data['pengiriman']['total']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['bkd']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['perjalanan']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['sampai']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['pod']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['batal']; ?></td>
+                    </tr>
+                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -413,6 +513,20 @@ $sql_pendapatan = "
                       <td class="text-center"><?= $data['batal']; ?></td>
                     </tr>
                   <?php endforeach; ?>
+                  
+                  <?php if ($supersuperadmin_data['surat_jalan']['total'] > 0): ?>
+                    <tr class="table-warning">
+                      <td class="px-3"><?= $no++; ?></td>
+                      <td class="fw-bold">
+                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                      </td>
+                      <td class="text-center fw-bold"><?= $supersuperadmin_data['surat_jalan']['total']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['draft']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['perjalanan']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['sampai']; ?></td>
+                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['batal']; ?></td>
+                    </tr>
+                  <?php endif; ?>
                 </tbody>
               </table>
             </div>

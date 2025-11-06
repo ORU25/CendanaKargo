@@ -114,10 +114,10 @@ $stmt = $conn->prepare("
     SELECT status, COUNT(*) AS jumlah
     FROM pengiriman
     WHERE id_cabang_pengirim = ? 
-      AND id_user = ?
+      AND $where_clause
     GROUP BY status
 ");
-$stmt->bind_param('ii', $id_cabang_admin, $id_admin);
+$stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
 $result_status = $stmt->get_result();
 while ($row = $result_status->fetch_assoc()) {
