@@ -42,6 +42,48 @@ $stmt_detail->bind_param("i", $id_surat_jalan);
 $stmt_detail->execute();
 $result_detail = $stmt_detail->get_result();
 $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI_ASSOC) : [];
+
+// Fungsi untuk kapitalisasi setiap kata
+function capitalizeWords($string) {
+    return mb_convert_case(mb_strtolower($string), MB_CASE_TITLE, "UTF-8");
+}
+
+// Fungsi untuk memotong teks panjang
+function truncateText($text, $maxLength = 30) {
+    $text = trim($text);
+    if (mb_strlen($text) <= $maxLength) {
+        return $text;
+    }
+    return mb_substr($text, 0, $maxLength - 3) . '...';
+}
+
+// Fungsi untuk menyingkat nama (khusus untuk nama orang)
+function abbreviateName($name) {
+    $name = trim($name);
+    $words = preg_split('/\s+/', $name);
+    $count = count($words);
+    
+    // Jika nama hanya 1-2 kata, kembalikan apa adanya
+    if ($count <= 2) {
+        return $name;
+    }
+    
+    // Jika nama 3 kata atau lebih
+    if ($count >= 3) {
+        // Ambil 2 kata pertama utuh
+        $result = $words[0] . ' ' . $words[1];
+        
+        // Sisanya disingkat dengan inisial + titik
+        for ($i = 2; $i < $count; $i++) {
+            $initial = mb_substr($words[$i], 0, 1);
+            $result .= ' ' . $initial . '.';
+        }
+        
+        return $result;
+    }
+    
+    return $name;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -158,6 +200,9 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
             border-bottom: 1px solid #333;
             padding: 2px;
             font-size: 10px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .table-section {
@@ -189,6 +234,9 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
             padding: 4px;
             vertical-align: middle;
             height: 32px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .surat-jalan thead {
@@ -210,18 +258,29 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
 
         .footer-item {
             text-align: center;
+            position: relative;
         }
 
         .footer-item label {
             display: block;
             font-weight: bold;
-            margin-bottom: 145px;
+            margin-bottom: 120px;
+        }
+
+        .footer-item .name {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: normal;
+            min-height: 12px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding: 0 5px;
         }
 
         .signature-line {
             border-bottom: 1px solid #333;
             margin: 0 12px;
-            margin-top: -20px;
         }
 
         @media print {
@@ -269,11 +328,11 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
                 </div>
                 <div>
                     <label>DARI :</label>
-                    <div class="value"><?= htmlspecialchars($sj['cabang_pengirim']); ?></div>
+                    <div class="value"><?= htmlspecialchars(capitalizeWords($sj['cabang_pengirim'])); ?></div>
                 </div>
                 <div>
                     <label>TUJUAN :</label>
-                    <div class="value"><?= htmlspecialchars($sj['cabang_penerima']); ?></div>
+                    <div class="value"><?= htmlspecialchars(capitalizeWords($sj['cabang_penerima'])); ?></div>
                 </div>
             </div>
 
@@ -295,7 +354,7 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
                             <tr>
                                 <td style="text-align: center;"><?= $no++; ?></td>
                                 <td><?= htmlspecialchars($p['no_resi']); ?></td>
-                                <td><?= htmlspecialchars($p['nama_barang']); ?></td>
+                                <td><?= htmlspecialchars(truncateText(capitalizeWords($p['nama_barang']), 60)); ?></td>
                                 <td><?= htmlspecialchars($p['jumlah']); ?></td>
                             </tr>
                         <?php endforeach; ?>
@@ -319,14 +378,17 @@ $pengirimens = ($result_detail->num_rows > 0) ? $result_detail->fetch_all(MYSQLI
             <div class="footer-section">
                 <div class="footer-item">
                     <label>PENGIRIM</label>
+                    <span class="name">&nbsp;</span>
                     <div class="signature-line"></div>
                 </div>
                 <div class="footer-item">
                     <label>SUPIR</label>
+                    <span class="name"><?= htmlspecialchars(abbreviateName(capitalizeWords($sj['driver']))); ?></span>
                     <div class="signature-line"></div>
                 </div>
                 <div class="footer-item">
                     <label>PENERIMA</label>
+                    <span class="name">&nbsp;</span>
                     <div class="signature-line"></div>
                 </div>
             </div>
