@@ -1,5 +1,5 @@
 <?php
-// File: dashboard/superSuperAdmin/export/export.php
+// File: dashboard/systemOwner/export/export.php
 include '../../../config/database.php';
 
 // Ambil parameter cabang & filter baru

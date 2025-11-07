@@ -6,8 +6,8 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
-// Pastikan hanya role superSuperAdmin yang bisa mengakses
-if (isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin') {
+// Pastikan hanya role systemOwner yang bisa mengakses
+if (isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner') {
     header('Location: ../../?error=unauthorized');
     exit;
 }
@@ -342,7 +342,7 @@ $stmt->close();
 ?>
 
 <?php
-$title = 'Dashboard SuperSuperAdmin - Cendana Kargo';
+$title = 'Dashboard systemOwner - Cendana Kargo';
 $page = 'dashboard';
 include '../../templates/header.php';
 include '../../components/navDashboard.php';
@@ -371,7 +371,7 @@ include '../../components/sidebar_offcanvas.php';
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h1 class="h3 mb-1 fw-bold">Dashboard SuperSuperAdmin</h1>
+                            <h1 class="h3 mb-1 fw-bold">Dashboard systemOwner</h1>
                             <p class="text-muted small mb-0">
                                 Selamat datang, <span class="fw-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!
                             </p>

@@ -40,7 +40,7 @@
   }
 
   // Ambil semua user di cabang ini
-  $stmt_users = $conn->prepare("SELECT id, username FROM User WHERE id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) AND role != 'superSuperAdmin' ORDER BY username ASC");
+  $stmt_users = $conn->prepare("SELECT id, username FROM User WHERE id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) AND role != 'systemOwner' ORDER BY username ASC");
   $stmt_users->bind_param('s', $cabang_superadmin);
   $stmt_users->execute();
   $all_users_result = $stmt_users->get_result();
@@ -50,17 +50,17 @@
   }
   $stmt_users->close();
 
-  // === AMBIL DATA SUPERSUPERADMIN UNTUK CABANG INI ===
-  $supersuperadmin_data = [
+  // === AMBIL DATA systemOwner UNTUK CABANG INI ===
+  $systemOwner_data = [
       'id' => null,
-      'username' => 'SuperSuperAdmin',
+      'username' => 'systemOwner',
       'pendapatan' => ['cash' => 0, 'transfer' => 0, 'cod' => 0, 'total' => 0],
       'pengiriman' => ['bkd' => 0, 'perjalanan' => 0, 'sampai' => 0, 'pod' => 0, 'batal' => 0, 'total' => 0],
       'surat_jalan' => ['draft' => 0, 'perjalanan' => 0, 'sampai' => 0, 'batal' => 0, 'total' => 0]
   ];
 
-  // Query untuk mengambil data pengiriman & pendapatan dari superSuperAdmin
-  $sql_supersuperadmin = "
+  // Query untuk mengambil data pengiriman & pendapatan dari systemOwner
+  $sql_systemOwner = "
       SELECT 
           SUM(CASE WHEN pembayaran = 'cash' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cash,
           SUM(CASE WHEN pembayaran = 'transfer' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS transfer,
@@ -74,29 +74,29 @@
           COUNT(CASE WHEN $where_clause THEN 1 END) AS total_pengiriman
       FROM pengiriman p
       JOIN User u ON p.id_user = u.id
-      WHERE u.role = 'superSuperAdmin' 
+      WHERE u.role = 'systemOwner' 
         AND p.cabang_pengirim = ?
   ";
-  $stmt_supersuperadmin = $conn->prepare($sql_supersuperadmin);
-  $stmt_supersuperadmin->bind_param('s', $cabang_superadmin);
-  $stmt_supersuperadmin->execute();
-  $result_supersuperadmin = $stmt_supersuperadmin->get_result();
-  if ($row = $result_supersuperadmin->fetch_assoc()) {
-      $supersuperadmin_data['pendapatan']['cash'] = $row['cash'] ?? 0;
-      $supersuperadmin_data['pendapatan']['transfer'] = $row['transfer'] ?? 0;
-      $supersuperadmin_data['pendapatan']['cod'] = $row['cod'] ?? 0;
-      $supersuperadmin_data['pendapatan']['total'] = $row['total'] ?? 0;
-      $supersuperadmin_data['pengiriman']['bkd'] = $row['bkd'] ?? 0;
-      $supersuperadmin_data['pengiriman']['perjalanan'] = $row['perjalanan'] ?? 0;
-      $supersuperadmin_data['pengiriman']['sampai'] = $row['sampai'] ?? 0;
-      $supersuperadmin_data['pengiriman']['pod'] = $row['pod'] ?? 0;
-      $supersuperadmin_data['pengiriman']['batal'] = $row['batal'] ?? 0;
-      $supersuperadmin_data['pengiriman']['total'] = $row['total_pengiriman'] ?? 0;
+  $stmt_systemOwner = $conn->prepare($sql_systemOwner);
+  $stmt_systemOwner->bind_param('s', $cabang_superadmin);
+  $stmt_systemOwner->execute();
+  $result_systemOwner = $stmt_systemOwner->get_result();
+  if ($row = $result_systemOwner->fetch_assoc()) {
+      $systemOwner_data['pendapatan']['cash'] = $row['cash'] ?? 0;
+      $systemOwner_data['pendapatan']['transfer'] = $row['transfer'] ?? 0;
+      $systemOwner_data['pendapatan']['cod'] = $row['cod'] ?? 0;
+      $systemOwner_data['pendapatan']['total'] = $row['total'] ?? 0;
+      $systemOwner_data['pengiriman']['bkd'] = $row['bkd'] ?? 0;
+      $systemOwner_data['pengiriman']['perjalanan'] = $row['perjalanan'] ?? 0;
+      $systemOwner_data['pengiriman']['sampai'] = $row['sampai'] ?? 0;
+      $systemOwner_data['pengiriman']['pod'] = $row['pod'] ?? 0;
+      $systemOwner_data['pengiriman']['batal'] = $row['batal'] ?? 0;
+      $systemOwner_data['pengiriman']['total'] = $row['total_pengiriman'] ?? 0;
   }
-  $stmt_supersuperadmin->close();
+  $stmt_systemOwner->close();
 
-  // Query untuk surat jalan dari superSuperAdmin
-  $sql_sj_supersuperadmin = "
+  // Query untuk surat jalan dari systemOwner
+  $sql_sj_systemOwner = "
       SELECT 
           SUM(CASE WHEN s.status = 'draft' AND $where_clause THEN 1 ELSE 0 END) AS draft,
           SUM(CASE WHEN s.status = 'dalam perjalanan' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
@@ -106,21 +106,21 @@
       FROM surat_jalan s
       JOIN User u ON s.id_user = u.id
       JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id
-      WHERE u.role = 'superSuperAdmin' 
+      WHERE u.role = 'systemOwner' 
         AND kc.nama_cabang = ?
   ";
-  $stmt_sj_supersuperadmin = $conn->prepare($sql_sj_supersuperadmin);
-  $stmt_sj_supersuperadmin->bind_param('s', $cabang_superadmin);
-  $stmt_sj_supersuperadmin->execute();
-  $result_sj_supersuperadmin = $stmt_sj_supersuperadmin->get_result();
-  if ($row = $result_sj_supersuperadmin->fetch_assoc()) {
-      $supersuperadmin_data['surat_jalan']['draft'] = $row['draft'] ?? 0;
-      $supersuperadmin_data['surat_jalan']['perjalanan'] = $row['perjalanan'] ?? 0;
-      $supersuperadmin_data['surat_jalan']['sampai'] = $row['sampai'] ?? 0;
-      $supersuperadmin_data['surat_jalan']['batal'] = $row['batal'] ?? 0;
-      $supersuperadmin_data['surat_jalan']['total'] = $row['total'] ?? 0;
+  $stmt_sj_systemOwner = $conn->prepare($sql_sj_systemOwner);
+  $stmt_sj_systemOwner->bind_param('s', $cabang_superadmin);
+  $stmt_sj_systemOwner->execute();
+  $result_sj_systemOwner = $stmt_sj_systemOwner->get_result();
+  if ($row = $result_sj_systemOwner->fetch_assoc()) {
+      $systemOwner_data['surat_jalan']['draft'] = $row['draft'] ?? 0;
+      $systemOwner_data['surat_jalan']['perjalanan'] = $row['perjalanan'] ?? 0;
+      $systemOwner_data['surat_jalan']['sampai'] = $row['sampai'] ?? 0;
+      $systemOwner_data['surat_jalan']['batal'] = $row['batal'] ?? 0;
+      $systemOwner_data['surat_jalan']['total'] = $row['total'] ?? 0;
   }
-  $stmt_sj_supersuperadmin->close();
+  $stmt_sj_systemOwner->close();
 
   // === PENDAPATAN PER ADMIN (dengan LEFT JOIN agar semua user muncul) ===
   $pendapatan_data = [];
@@ -152,7 +152,7 @@ $sql_pendapatan = "
     FROM User u
     LEFT JOIN pengiriman p ON u.id = p.id_user
     WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
-        AND u.role != 'superSuperAdmin'
+        AND u.role != 'systemOwner'
     GROUP BY u.id, u.username
     ORDER BY u.username
 ";
@@ -179,7 +179,7 @@ $sql_pendapatan = "
       FROM User u
       LEFT JOIN pengiriman p ON u.id = p.id_user
       WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
-          AND u.role != 'superSuperAdmin'
+          AND u.role != 'systemOwner'
       GROUP BY u.id, u.username
       ORDER BY u.username
   ";
@@ -204,7 +204,7 @@ $sql_pendapatan = "
       FROM User u
       LEFT JOIN surat_jalan s ON u.id = s.id_user
       WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
-          AND u.role != 'superSuperAdmin'
+          AND u.role != 'systemOwner'
       GROUP BY u.id, u.username
       ORDER BY u.username
   ";
@@ -396,16 +396,16 @@ $sql_pendapatan = "
                     </tr>
                   <?php endforeach; ?>
                   
-                  <?php if ($supersuperadmin_data['pendapatan']['total'] > 0): ?>
+                  <?php if ($systemOwner_data['pendapatan']['total'] > 0): ?>
                     <tr class="table-warning">
                       <td class="px-3"><?= $no++; ?></td>
                       <td class="fw-bold">
-                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                        <?= htmlspecialchars($systemOwner_data['username']); ?>
                       </td>
-                      <td class="text-end fw-bold"><?= format_rupiah($supersuperadmin_data['pendapatan']['total']); ?></td>
-                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['cash']); ?></td>
-                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['transfer']); ?></td>
-                      <td class="text-end"><?= format_rupiah($supersuperadmin_data['pendapatan']['cod']); ?></td>
+                      <td class="text-end fw-bold"><?= format_rupiah($systemOwner_data['pendapatan']['total']); ?></td>
+                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cash']); ?></td>
+                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['transfer']); ?></td>
+                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cod']); ?></td>
                     </tr>
                   <?php endif; ?>
                 </tbody>
@@ -455,18 +455,18 @@ $sql_pendapatan = "
                     </tr>
                   <?php endforeach; ?>
                   
-                  <?php if ($supersuperadmin_data['pengiriman']['total'] > 0): ?>
+                  <?php if ($systemOwner_data['pengiriman']['total'] > 0): ?>
                     <tr class="table-warning">
                       <td class="px-3"><?= $no++; ?></td>
                       <td class="fw-bold">
-                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                        <?= htmlspecialchars($systemOwner_data['username']); ?>
                       </td>
-                      <td class="text-center fw-bold"><?= $supersuperadmin_data['pengiriman']['total']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['bkd']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['perjalanan']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['sampai']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['pod']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['pengiriman']['batal']; ?></td>
+                      <td class="text-center fw-bold"><?= $systemOwner_data['pengiriman']['total']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['pengiriman']['bkd']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['pengiriman']['perjalanan']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['pengiriman']['sampai']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['pengiriman']['pod']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['pengiriman']['batal']; ?></td>
                     </tr>
                   <?php endif; ?>
                 </tbody>
@@ -514,17 +514,17 @@ $sql_pendapatan = "
                     </tr>
                   <?php endforeach; ?>
                   
-                  <?php if ($supersuperadmin_data['surat_jalan']['total'] > 0): ?>
+                  <?php if ($systemOwner_data['surat_jalan']['total'] > 0): ?>
                     <tr class="table-warning">
                       <td class="px-3"><?= $no++; ?></td>
                       <td class="fw-bold">
-                        <?= htmlspecialchars($supersuperadmin_data['username']); ?>
+                        <?= htmlspecialchars($systemOwner_data['username']); ?>
                       </td>
-                      <td class="text-center fw-bold"><?= $supersuperadmin_data['surat_jalan']['total']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['draft']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['perjalanan']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['sampai']; ?></td>
-                      <td class="text-center"><?= $supersuperadmin_data['surat_jalan']['batal']; ?></td>
+                      <td class="text-center fw-bold"><?= $systemOwner_data['surat_jalan']['total']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['draft']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['perjalanan']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['sampai']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['batal']; ?></td>
                     </tr>
                   <?php endif; ?>
                 </tbody>

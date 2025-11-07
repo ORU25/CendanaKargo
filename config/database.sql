@@ -13,7 +13,7 @@ CREATE TABLE User (
     id_cabang INT,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'superAdmin', 'superSuperAdmin') DEFAULT 'admin',
+    role ENUM('admin', 'superAdmin', 'systemOwner') DEFAULT 'admin',
     FOREIGN KEY (id_cabang) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
 );
 
@@ -104,10 +104,10 @@ CREATE TABLE log_status_pengiriman (
     FOREIGN KEY (diubah_oleh) REFERENCES User(id) ON DELETE SET NULL
 );
 
--- akun user superadmin dengan password 'supersuperadmin' (hashed)
+-- akun user systemOwner dengan password 'admin' (hashed)
 INSERT INTO User (username, password, role)
 VALUES (
-    'supersuperadmin',
-    '$2y$10$jmjSlyLplXCYwg0lGeUQReYm5ZG29DJSAz79PZIpessBjNx8sZfaa',
-    'supersuperadmin'
+    'systemOwner',
+    '$2y$10$HsH3nYMyOQtFYkIjtOkQ1O4Ip7IW71cNASjGqY8HQfqXGU5qZTl.u',
+    'systemOwner'
 );

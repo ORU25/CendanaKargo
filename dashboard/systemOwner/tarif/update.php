@@ -5,7 +5,7 @@ if(!isset($_SESSION['username'] )|| !isset($_SESSION['user_id'])){
     exit;
 }
 
-if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+if(isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner'){
     header("Location: ../../../?error=unauthorized");
     exit;
 }

@@ -3,9 +3,9 @@ session_start();
 include '../config/database.php';
 
 if (isset($_SESSION['user_id'])) {
-    // Kalau role superSuperAdmin
-    if ($_SESSION['role'] == 'superSuperAdmin') {
-        header("Location: ../dashboard/superSuperAdmin/?already_logined");
+    // Kalau role systemOwner
+    if ($_SESSION['role'] == 'systemOwner') {
+        header("Location: ../dashboard/systemOwner/?already_logined");
         exit;
     }
     // Kalau role superAdmin
@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if ($user['role'] == 'superSuperAdmin') {
-            header("Location: ../dashboard/superSuperAdmin/");
+        if ($user['role'] == 'systemOwner') {
+            header("Location: ../dashboard/systemOwner/");
             exit;
         } elseif ($user['role'] == 'superAdmin') {
             header("Location: ../dashboard/superAdmin/");

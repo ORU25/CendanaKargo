@@ -5,14 +5,17 @@
         exit;
     }
 
-    if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+    if(isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner'){
         header("Location: ../../../?error=unauthorized");
         exit;
     }
+    
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
 
     include '../../../config/database.php';
-    
-    $title = "Pengiriman - Cendana Kargo";
+    $title = "Dashboard - Cendana Kargo";
     
     // Pagination settings
     $limit = 10; // Data per halaman
@@ -24,15 +27,19 @@
     
     // Get total records
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?");
+        $stmt = $conn->prepare("
+            SELECT COUNT(*) as total 
+            FROM kantor_cabang 
+            WHERE nama_cabang LIKE ? OR kode_cabang LIKE ? OR alamat_cabang LIKE ?
+        ");
         $searchParam = "%$search%";
-        $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
+        $stmt->bind_param('sss', $searchParam, $searchParam, $searchParam);
         $stmt->execute();
         $result = $stmt->get_result();
         $total_records = $result->fetch_assoc()['total'];
         $stmt->close();
     } else {
-        $result = $conn->query("SELECT COUNT(*) as total FROM pengiriman");
+        $result = $conn->query("SELECT COUNT(*) as total FROM kantor_cabang");
         $total_records = $result->fetch_assoc()['total'];
     }
     
@@ -40,25 +47,36 @@
     
     // Get paginated data
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt = $conn->prepare("
+            SELECT * 
+            FROM kantor_cabang 
+            WHERE nama_cabang LIKE ? OR kode_cabang LIKE ? OR alamat_cabang LIKE ?
+            ORDER BY id ASC 
+            LIMIT ? OFFSET ?
+        ");
         $searchParam = "%$search%";
-        $stmt->bind_param('ssssii', $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
+        $stmt->bind_param('sssii', $searchParam, $searchParam, $searchParam, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
-        $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
+        $cabangs = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt = $conn->prepare("
+            SELECT * 
+            FROM kantor_cabang 
+            ORDER BY id ASC 
+            LIMIT ? OFFSET ?
+        ");
         $stmt->bind_param('ii', $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
-        $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
+        $cabangs = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     }
 ?>
 
 <?php
-    $page = "pengiriman";
+    $page = "kantor_cabang";
     include '../../../templates/header.php';
     include '../../../components/navDashboard.php';
     include '../../../components/sidebar_offcanvas.php';
@@ -71,43 +89,51 @@
     <!-- Konten utama -->
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">
-            <!-- Alerts -->
-            <?php if(isset($_GET['success']) && $_GET['success'] == 'created' && isset($_GET['resi'])){
+            <?php if(isset($_GET['success']) && $_GET['success'] == 'created'){
                 $type = "success";
-                $message = "Pengiriman berhasil ditambahkan. No Resi: " . htmlspecialchars($_GET['resi']);
+                $message = "Kantor cabang berhasil ditambahkan";
+                include '../../../components/alert.php';
+            }?>
+            <?php if(isset($_GET['success']) && $_GET['success'] == 'updated'){
+                $type = "success";
+                $message = "Kantor cabang berhasil diperbarui";
+                include '../../../components/alert.php';
+            }?>
+            <?php if(isset($_GET['success']) && $_GET['success'] == 'deleted'){
+                $type = "success";
+                $message = "Kantor cabang berhasil dihapus";
                 include '../../../components/alert.php';
             }?>
             <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
                 $type = "danger";
-                $message = "Pengiriman tidak ditemukan";
+                $message = "Kantor cabang tidak ditemukan";
                 include '../../../components/alert.php';
             }?>
-
             <!-- Header -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
                 <div>
-                    <h1 class="h4 mb-1 fw-bold">Daftar Pengiriman</h1>
+                    <h1 class="h4 mb-1 fw-bold">Daftar Kantor Cabang</h1>
                     <p class="text-muted small mb-0">
-                        Menampilkan <?= count($pengirimans); ?> dari <?= $total_records; ?> pengiriman
+                        Menampilkan <?= count($cabangs); ?> dari <?= $total_records; ?> kantor cabang
                         <?php if ($total_pages > 1): ?>
                             (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
                         <?php endif; ?>
                     </p>
                 </div>
                 <div class="d-flex gap-2 mt-2 mt-md-0">
-                    <a href="create.php" class="btn btn-success">
+                    <a href="create" class="btn btn-success mb-3">
                         <i class="fa-solid fa-plus"></i>
-                        Tambah Pengiriman
+                        Add New Cabang
                     </a>
                 </div>
             </div>
 
-            <!-- Search & Filter Card -->
+            <!-- Search Card -->
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-body p-3">
                     <form method="GET" action="" class="row g-2 align-items-center">
                         <div class="col-md-10">
-                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan No Resi, Nama Barang, Pengirim, atau Penerima..." value="<?= htmlspecialchars($search); ?>">
+                            <input type="text" name="search" class="form-control" placeholder="Cari berdasarkan Kode Cabang, Nama Cabang, atau Alamat..." value="<?= htmlspecialchars($search); ?>">
                         </div>
                         <div class="col-md-2">
                             <button type="submit" class="btn btn-primary w-100">
@@ -127,7 +153,6 @@
                 </div>
             </div>
 
-            <!-- Table Card -->
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -135,54 +160,68 @@
                             <thead class="table-light">
                                 <tr>
                                     <th class="px-4" style="width: 70px;">ID</th>
-                                    <th>No Resi</th>
-                                    <th>Nama Barang</th>
-                                    <th>Pengirim</th>
-                                    <th>Penerima</th>
-                                    <th>Tujuan</th>
-                                    <th class="text-end">Total Tarif</th>
-                                    <th>Tanggal</th>
-                                    <th>Status</th>
+                                    <th>Kode Cabang</th>
+                                    <th>Nama Cabang</th>
+                                    <th>Alamat</th>
+                                    <th>Telepon</th>
                                     <th class="text-center" style="width: 100px;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php if (empty($pengirimans)): ?>
+                                <?php foreach ($cabangs as $cabang): ?>
+                                <tr>
+                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($cabang['id']); ?></td>
+                                    <td><?= htmlspecialchars($cabang['kode_cabang']); ?></td>
+                                    <td><?= htmlspecialchars($cabang['nama_cabang']); ?></td>
+                                    <td><?= htmlspecialchars($cabang['alamat_cabang']); ?></td>
+                                    <td><?= htmlspecialchars($cabang['telp_cabang']); ?></td>
+                                    <td>
+                                        <a href="update?id=<?= $cabang['id']; ?>" class="btn btn-sm btn-primary ">
+                                            <i class="fa-solid fa-pen-to-square"></i>
+                                        </a>
+                                        <button type="button" data-bs-toggle="modal" data-bs-target="#delete<?= $cabang['id']; ?>" class="btn btn-sm btn-danger">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Delete Modal -->
+                                <div class="modal fade" id="delete<?= $cabang['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $cabang['id']; ?>" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title" id="deleteLabel<?= $cabang['id']; ?>">
+                                                    <i class="fa-solid fa-trash me-2"></i>Konfirmasi Hapus
+                                                </h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+
+                                            <div class="modal-body text-center">
+                                                <div class="text-center mb-3">
+                                                    <i class="fa-solid fa-triangle-exclamation fa-3x text-warning"></i>
+                                                </div>
+                                                <p>Apakah Anda yakin ingin menghapus cabang <strong><?= htmlspecialchars($cabang['nama_cabang']); ?></strong>?</p>
+                                                <p class="text-muted mb-0">Tindakan ini tidak dapat dibatalkan.</p>
+                                            </div>
+
+                                            <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                                    <form action="delete" method="POST" class="d-inline">
+                                                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                        <input type="hidden" name="id" value="<?= $cabang['id']; ?>">
+                                                        <button type="submit" name="delete" class="btn btn-danger"><i class="fa-solid fa-trash me-2"></i>Hapus</button>
+                                                    </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                                <?php if (empty($cabangs)): ?>
                                     <tr>
-                                        <td colspan="10" class="text-center py-5 text-muted">
+                                        <td colspan="6" class="text-center py-5 text-muted">
                                             <i class="fa-solid fa-box"></i>
-                                            <p class="mb-0">Tidak ada data pengiriman<?= $search ? ' yang cocok dengan pencarian' : '' ?>.</p>
+                                            <p class="mb-0">Tidak ada kantor cabang<?= $search ? ' yang cocok dengan pencarian' : '' ?></p>
                                         </td>
                                     </tr>
-                                <?php else: ?>
-                                    <?php foreach ($pengirimans as $p): 
-                                        // Tentukan warna badge
-                                        $badgeClass = 'secondary';
-                                        switch(strtolower($p['status'])) {
-                                            case 'bkd': $badgeClass = 'warning'; break;
-                                            case 'dalam pengiriman': $badgeClass = 'primary'; break;
-                                            case 'sampai tujuan': $badgeClass = 'info'; break;
-                                            case 'pod': $badgeClass = 'success'; break;
-                                            case 'dibatalkan': $badgeClass = 'danger'; break;
-                                        }
-                                    ?>
-                                    <tr class="text-capitalize">
-                                        <td class="px-4 fw-semibold"><?= (int)$p['id']; ?></td>
-                                        <td><span class="badge bg-dark"><?= htmlspecialchars($p['no_resi']); ?></span></td>
-                                        <td class="fw-semibold"><?= htmlspecialchars($p['nama_barang']); ?></td>
-                                        <td class="small"><?= htmlspecialchars($p['nama_pengirim']); ?></td>
-                                        <td class="small"><?= htmlspecialchars($p['nama_penerima']); ?></td>
-                                        <td class="small"><?= htmlspecialchars($p['cabang_penerima']); ?></td>
-                                        <td class="text-end fw-semibold">Rp <?= number_format($p['total_tarif'], 0, ',', '.'); ?></td>
-                                        <td class="small"><?= date('d/m/Y', strtotime($p['tanggal'])); ?></td>
-                                        <td><span class="text-uppercase badge text-bg-<?= $badgeClass; ?>"><?= htmlspecialchars($p['status']); ?></span></td>
-                                        <td class="text-center">
-                                            <a href="detail?id=<?= (int)$p['id']; ?>" class="btn btn-sm btn-outline-primary" title="Lihat Detail">
-                                                <i class="fa-solid fa-eye"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
                         </table>
@@ -238,11 +277,9 @@
                 </nav>
             </div>
             <?php endif; ?>
-
         </div>
     </div>
   </div>
-
 </div>
 <?php
     include '../../../templates/footer.php';

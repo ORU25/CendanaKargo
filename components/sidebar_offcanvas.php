@@ -8,28 +8,28 @@
 
     <div class="offcanvas-body p-0">
         <div class="list-group list-group-flush custom-sidebar">
-            <?php if($_SESSION['role'] == 'superSuperAdmin'): ?>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/" 
+            <?php if($_SESSION['role'] == 'systemOwner'): ?>
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/pengiriman/" 
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/pengiriman/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/surat_jalan/" 
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/surat_jalan/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/tarif/" 
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/tarif/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-tags me-2"></i> Tarif
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/kantor_cabang/" 
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/kantor_cabang/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-building me-2"></i> Kantor Cabang
             </a>
-            <a href="<?= BASE_URL; ?>dashboard/superSuperAdmin/user/" 
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/user/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-user-gear me-2"></i> User
             </a>

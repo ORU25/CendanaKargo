@@ -5,7 +5,7 @@
         exit;
     }
 
-    if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superSuperAdmin'){
+    if(isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner'){
         header("Location: ../../../?error=unauthorized");
         exit;
     }
@@ -19,7 +19,7 @@
         }
         $id = intval($_POST['id']);
         try {
-            $sql = "DELETE FROM tarif_pengiriman WHERE id = $id";
+            $sql = "DELETE FROM kantor_cabang WHERE id = $id";
             $conn->query($sql);
             header("Location: ./?success=deleted");
             exit;

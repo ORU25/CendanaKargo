@@ -13,7 +13,6 @@ INSERT INTO `kantor_cabang` (`id`, `kode_cabang`, `nama_cabang`, `alamat_cabang`
 (12, 'TGR', 'Tenggarong', 'Jl. tenggarong', '0822544545');
 
 INSERT INTO `user` (`id`, `id_cabang`, `username`, `password`, `role`) VALUES
-(1, NULL, 'supersuperadmin', '$2y$10$jmjSlyLplXCYwg0lGeUQReYm5ZG29DJSAz79PZIpessBjNx8sZfaa', 'superSuperAdmin'),
 (2, 1, 'sp_btg', '$2y$10$HsH3nYMyOQtFYkIjtOkQ1O4Ip7IW71cNASjGqY8HQfqXGU5qZTl.u', 'superAdmin'),
 (4, 2, 'sp_smd', '$2y$10$8Nmz2Pq20dFTkQhdPoSF8.kRQO7ODnFzmXjruYw6Fc26yCZ3u2J4K', 'superAdmin'),
 (5, 5, 'sp_bpp', '$2y$10$cIm.CzArpywoypXzSWl7ve2c7cDFiz88Tl8SnGBPfc2VLcQ/OD29q', 'superAdmin'),
