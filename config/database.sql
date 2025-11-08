@@ -17,6 +17,12 @@ CREATE TABLE User (
     FOREIGN KEY (id_cabang) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
 );
 
+CREATE TABLE driver (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nama_driver VARCHAR(100) NOT NULL,
+    telp_driver VARCHAR(20) NOT NULL
+);
+
 CREATE TABLE Tarif_pengiriman (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cabang_asal INT NOT NULL,
@@ -62,16 +68,18 @@ CREATE TABLE Surat_jalan (
     id_user INT,
     id_cabang_pengirim INT,
     id_cabang_penerima INT,
+    id_driver INT,
     no_surat_jalan VARCHAR(30) UNIQUE NOT NULL,
     user VARCHAR(50) NOT NULL,
+    driver VARCHAR(100) NOT NULL,
     cabang_pengirim VARCHAR(100) NOT NULL,
     cabang_penerima VARCHAR(100) NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
-    driver VARCHAR(100) NOT NULL,
     status ENUM('draft','diberangkatkan') DEFAULT 'draft',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL
+    FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_driver) REFERENCES driver(id) ON DELETE SET NULL
 );
 
 CREATE TABLE detail_surat_jalan (

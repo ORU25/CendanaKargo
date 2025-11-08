@@ -29,6 +29,10 @@
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-building me-2"></i> Kantor Cabang
             </a>
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/driver/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'driver' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-car me-2"></i> Driver
+            </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/user/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-user-gear me-2"></i> User

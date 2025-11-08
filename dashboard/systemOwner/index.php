@@ -371,7 +371,7 @@ include '../../components/sidebar_offcanvas.php';
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
-                            <h1 class="h3 mb-1 fw-bold">Dashboard systemOwner</h1>
+                            <h1 class="h3 mb-1 fw-bold">Dashboard System Owner</h1>
                             <p class="text-muted small mb-0">
                                 Selamat datang, <span class="fw-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!
                             </p>

@@ -1,7 +1,7 @@
 <?php
 session_start();
 if(!isset($_SESSION['username']) || !isset($_SESSION['user_id'])){
-    header("Location: ../../../auth/login.php");
+    header("Location: ../../../auth/login");
     exit;
 }
 
@@ -239,12 +239,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['berangkatkan_surat_ja
         exit;
     }
     
-    $driver = trim($_POST['driver'] ?? '');
+    $id_driver = (int)($_POST['id_driver'] ?? 0);
     
-    if (empty($driver)) {
+    if ($id_driver <= 0) {
         header("Location: create.php?id=$id_surat_jalan&error=driver_required");
         exit;
     }
+    
+    // Ambil nama driver dari database
+    $stmt_driver = $conn->prepare("SELECT nama_driver FROM driver WHERE id = ?");
+    $stmt_driver->bind_param('i', $id_driver);
+    $stmt_driver->execute();
+    $result_driver = $stmt_driver->get_result();
+    
+    if ($result_driver->num_rows === 0) {
+        $stmt_driver->close();
+        header("Location: create.php?id=$id_surat_jalan&error=driver_not_found");
+        exit;
+    }
+    
+    $driver_data = $result_driver->fetch_assoc();
+    $nama_driver = $driver_data['nama_driver'];
+    $stmt_driver->close();
     
     // Cek jumlah resi yang sudah ditambahkan
     $stmt_count = $conn->prepare("SELECT COUNT(*) as total FROM detail_surat_jalan WHERE id_surat_jalan = ?");
@@ -263,9 +279,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['berangkatkan_surat_ja
     $conn->begin_transaction();
     
     try {
-        // Update surat jalan: set driver dan ubah status jadi 'diberangkatkan'
-        $stmt_update_sj = $conn->prepare("UPDATE Surat_jalan SET driver = ?, status = 'diberangkatkan' WHERE id = ?");
-        $stmt_update_sj->bind_param('si', $driver, $id_surat_jalan);
+        // Update surat jalan: set id_driver, nama driver dan ubah status jadi 'diberangkatkan'
+        $stmt_update_sj = $conn->prepare("UPDATE Surat_jalan SET id_driver = ?, driver = ?, status = 'diberangkatkan' WHERE id = ?");
+        $stmt_update_sj->bind_param('isi', $id_driver, $nama_driver, $id_surat_jalan);
         $stmt_update_sj->execute();
         $stmt_update_sj->close();
         
@@ -422,6 +438,16 @@ while ($row = $result_available->fetch_assoc()) {
 }
 $stmt_available->close();
 
+// Ambil daftar driver dari database
+$stmt_drivers = $conn->prepare("SELECT id, nama_driver, telp_driver FROM driver ORDER BY nama_driver ASC");
+$stmt_drivers->execute();
+$result_drivers = $stmt_drivers->get_result();
+$drivers = [];
+while ($row = $result_drivers->fetch_assoc()) {
+    $drivers[] = $row;
+}
+$stmt_drivers->close();
+
 $page = "surat_jalan";
 $title = "Tambah Surat Jalan - Cendana Kargo";
 ?>
@@ -480,7 +506,12 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                 }?>
                 <?php if(isset($_GET['error']) && $_GET['error'] == 'driver_required'){
                     $type = "danger";
-                    $message = "Nama driver harus diisi";
+                    $message = "Driver harus dipilih";
+                    include '../../../components/alert.php';
+                }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'driver_not_found'){
+                    $type = "danger";
+                    $message = "Driver tidak ditemukan";
                     include '../../../components/alert.php';
                 }?>
                 <?php if(isset($_GET['error']) && $_GET['error'] == 'no_resi'){
@@ -736,18 +767,24 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                     </div>
                     
                     <div class="mb-3">
-                        <label for="driver" class="form-label fw-semibold">
-                            Nama Driver <span class="text-danger">*</span>
+                        <label for="id_driver" class="form-label fw-semibold">
+                            Pilih Driver <span class="text-danger">*</span>
                         </label>
-                        <input 
-                            type="text" 
-                            class="form-control" 
-                            id="driver" 
-                            name="driver" 
-                            placeholder="Masukkan nama driver" 
+                        <select 
+                            class="form-select" 
+                            id="id_driver" 
+                            name="id_driver" 
                             required
                             autofocus
                         >
+                            <option value="">-- Pilih Driver --</option>
+                            <?php foreach ($drivers as $driver): ?>
+                                <option value="<?= $driver['id']; ?>">
+                                    <?= htmlspecialchars($driver['nama_driver']); ?> 
+                                    (<?= htmlspecialchars($driver['telp_driver']); ?>)
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                         <small class="text-muted">Driver yang akan membawa surat jalan ini</small>
                     </div>
                     

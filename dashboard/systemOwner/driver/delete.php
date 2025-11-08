@@ -19,13 +19,10 @@
         }
         $id = intval($_POST['id']);
 
-        if($id === $_SESSION['user_id']){
-            header("Location: ./?error=cannot_delete_self");
-            exit;
-        }
-
-        $sql = "DELETE FROM user WHERE id = $id";
-        if($conn->query($sql) === TRUE){
+        $sql = "DELETE FROM driver WHERE id = ?";
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param('i', $id);
+        if($stmt->execute()){
             header("Location: ./?success=deleted");
             exit;
         } else {
