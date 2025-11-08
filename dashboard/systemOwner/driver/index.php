@@ -124,7 +124,7 @@ if ($search !== '') {
                 <div class="d-flex gap-2 mt-2 mt-md-0">
                     <a href="create" class="btn btn-success mb-3">
                         <i class="fa-solid fa-plus"></i>
-                        Add New Driver
+                        Tambah Driver
                     </a>
                 </div>
             </div>
