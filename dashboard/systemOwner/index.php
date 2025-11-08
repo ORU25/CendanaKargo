@@ -15,6 +15,36 @@ if (isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner') {
 include '../../config/database.php';
 
 // =======================================================
+// FUNGSI HELPER UNTUK BAHASA INDONESIA
+// =======================================================
+function format_tanggal_indonesia($timestamp) {
+    $bulan_indonesia = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+    ];
+    
+    $tanggal = date('d', $timestamp);
+    $bulan = $bulan_indonesia[(int)date('m', $timestamp)];
+    $tahun = date('Y', $timestamp);
+    
+    return "$tanggal $bulan $tahun";
+}
+
+function format_bulan_tahun_indonesia($timestamp) {
+    $bulan_indonesia = [
+        1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+        5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+        9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+    ];
+    
+    $bulan = $bulan_indonesia[(int)date('m', $timestamp)];
+    $tahun = date('Y', $timestamp);
+    
+    return "$bulan $tahun";
+}
+
+// =======================================================
 // FILTERING LOGIC - Single Smart Filter
 // =======================================================
 $filter_type = 'bulan_ini'; // default
@@ -36,26 +66,26 @@ switch ($filter_type) {
     case 'hari_ini':
         $date_condition = 'DATE(p.tanggal) = CURDATE()';
         $date_condition_sj = 'DATE(sj.tanggal) = CURDATE()';
-        $selected_date_display = 'Hari Ini - ' . date('d F Y');
+        $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
         break;
     
     case 'bulan_ini':
         $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
         $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-        $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         break;
     
     case 'tanggal_spesifik':
         if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
             $date_condition = "DATE(p.tanggal) = '" . $filter_value . "'";
             $date_condition_sj = "DATE(sj.tanggal) = '" . $filter_value . "'";
-            $selected_date_display = 'Tanggal - ' . date('d F Y', strtotime($filter_value));
+            $selected_date_display = 'Tanggal - ' . format_tanggal_indonesia(strtotime($filter_value));
         } else {
             // fallback ke bulan ini jika tanggal tidak valid
             $filter_type = 'bulan_ini';
             $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
             $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-            $selected_date_display = 'Bulan Ini - ' . date('F Y');
+            $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         }
         break;
     
@@ -63,13 +93,13 @@ switch ($filter_type) {
         if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
             $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $filter_value . "'";
             $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $filter_value . "'";
-            $selected_date_display = 'Bulan - ' . date('F Y', strtotime($filter_value . '-01'));
+            $selected_date_display = 'Bulan - ' . format_bulan_tahun_indonesia(strtotime($filter_value . '-01'));
         } else {
             // fallback ke bulan ini jika bulan tidak valid
             $filter_type = 'bulan_ini';
             $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
             $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-            $selected_date_display = 'Bulan Ini - ' . date('F Y');
+            $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         }
         break;
     
@@ -77,7 +107,7 @@ switch ($filter_type) {
         // Default: bulan ini
         $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
         $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-        $selected_date_display = 'Bulan Ini - ' . date('F Y');
+        $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         break;
 }
 
@@ -378,6 +408,14 @@ include '../../components/sidebar_offcanvas.php';
                         </div>
                     </div>
 
+                    <!-- Display Current Period -->
+                    <div class="col-12 mb-3">
+                        <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
+                            <i class="fa-solid fa-info-circle me-2"></i>
+                            <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
+                        </div>
+                    </div>
+
                     <!-- Smart Filter Card - Single Popup Concept -->
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-body p-3">
@@ -428,15 +466,6 @@ include '../../components/sidebar_offcanvas.php';
                                         <i class="fa-solid fa-rotate-left me-1"></i>Reset
                                     </button>
                                 </div>
-
-                                <!-- Display Current Period -->
-                                <div class="col-12">
-                                    <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
-                                        <i class="fa-solid fa-info-circle me-2"></i>
-                                        <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
-                                    </div>
-                                </div>
-
                             </form>
                         </div>
                     </div>

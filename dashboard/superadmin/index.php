@@ -12,18 +12,94 @@
 
   include '../../config/database.php';
 
-  $current_month = date('m');
-  $current_year = date('Y');
-  $current_date = date('Y-m-d');
+  // =======================================================
+  // FUNGSI HELPER UNTUK BAHASA INDONESIA
+  // =======================================================
+  function format_tanggal_indonesia($timestamp) {
+      $bulan_indonesia = [
+          1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+          5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+          9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+      ];
+      
+      $tanggal = date('d', $timestamp);
+      $bulan = $bulan_indonesia[(int)date('m', $timestamp)];
+      $tahun = date('Y', $timestamp);
+      
+      return "$tanggal $bulan $tahun";
+  }
 
-  $filter = isset($_GET['filter']) ? $_GET['filter'] : 'bulan';
-  $where_clause = ($filter === 'hari')
-      ? "tanggal >= CURDATE() AND tanggal < CURDATE() + INTERVAL 1 DAY"
-      : "MONTH(tanggal) = '$current_month' AND YEAR(tanggal) = '$current_year'";
+  function format_bulan_tahun_indonesia($timestamp) {
+      $bulan_indonesia = [
+          1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+          5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+          9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+      ];
+      
+      $bulan = $bulan_indonesia[(int)date('m', $timestamp)];
+      $tahun = date('Y', $timestamp);
+      
+      return "$bulan $tahun";
+  }
 
+  // =======================================================
+  // FILTERING LOGIC - Single Smart Filter
+  // =======================================================
+  $filter_type = 'bulan_ini'; // default
+  $filter_value = '';
+  $selected_date_display = '';
+  $where_clause = '';
 
-  // === variabel untuk ditampilkan di kotak info ===
-  $selected_date_display = ($filter === 'hari') ? " (" . date('d F Y') . ")" : " " . date('F Y');
+  // Cek parameter filter dari form
+  if (isset($_GET['filter_type'])) {
+      $filter_type = htmlspecialchars($_GET['filter_type']);
+  }
+  if (isset($_GET['filter_value'])) {
+      $filter_value = htmlspecialchars($_GET['filter_value']);
+  }
+
+  // Proses filter berdasarkan tipe
+  switch ($filter_type) {
+      case 'hari_ini':
+          $where_clause = 'tanggal >= CURDATE() AND tanggal < CURDATE() + INTERVAL 1 DAY';
+          $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
+          break;
+      
+      case 'bulan_ini':
+          $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+          $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
+          break;
+      
+      case 'tanggal_spesifik':
+          if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
+              $where_clause = "DATE(tanggal) = '" . $filter_value . "'";
+              $selected_date_display = 'Tanggal - ' . format_tanggal_indonesia(strtotime($filter_value));
+          } else {
+              // fallback ke bulan ini jika tanggal tidak valid
+              $filter_type = 'bulan_ini';
+              $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+              $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
+          }
+          break;
+      
+      case 'bulan_spesifik':
+          if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
+              $where_clause = "DATE_FORMAT(tanggal, '%Y-%m') = '" . $filter_value . "'";
+              $selected_date_display = 'Bulan - ' . format_bulan_tahun_indonesia(strtotime($filter_value . '-01'));
+          } else {
+              // fallback ke bulan ini jika bulan tidak valid
+              $filter_type = 'bulan_ini';
+              $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+              $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
+          }
+          break;
+      
+      default:
+          // Default: bulan ini
+          $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+          $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
+          break;
+  }
 
   // Ambil cabang user yang login
   $cabang_superadmin = $_SESSION['cabang'];
@@ -233,30 +309,90 @@ $sql_pendapatan = "
     <main class="col-lg-10 bg-light">
       <div class="container-fluid p-4">
 
+        <?php if (isset($_GET['already_logined'])){
+            $type = "info";
+            $message = "Anda sudah login sebelumnya";
+            include '../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'no_data'){
+            $type = "danger";
+            $message = "Data tidak ditemukan";
+            include '../../components/alert.php';
+        }?>
+
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h1 class="h3 fw-bold mb-1">Dashboard SuperAdmin</h1>
-            <p class="text-muted small mb-2">Selamat datang, <?= htmlspecialchars($_SESSION['username']); ?>! Kelola semua data sistem Cendana Kargo</p>
-            
-            <!-- Data Agregat Info Box (Tanpa Icon, Warna & Font Serasi) -->
-            <div class="px-3 py-2 rounded-3 d-inline-block" 
-                style="background-color: #d9f6fa; border: 1px solid #bde9ee;">
-                <span class="fw-normal text-secondary" style="font-size: 0.9rem;">
-                    Data untuk periode: 
-                    <strong class="text-dark"><?= $selected_date_display; ?></strong>
-                </span>
+        <div class="mb-4">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h1 class="h3 mb-1 fw-bold">Dashboard SuperAdmin</h1>
+              <p class="text-muted small mb-0">
+                Selamat datang, <span class="fw-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!
+              </p>
             </div>
           </div>
-          
-          <!-- Filter Tombol -->
-           <div>
-             <span class="badge text-bg-secondary me-2 align-self-center">Periode Data:</span>
-             <div class="btn-group" role="group" aria-label="Filter data">
-               <a href="?filter=bulan" class="btn btn-sm <?= $filter === 'bulan' ? 'btn-primary' : 'btn-outline-primary'; ?>">Bulan Ini</a>
-               <a href="?filter=hari" class="btn btn-sm <?= $filter === 'hari' ? 'btn-primary' : 'btn-outline-primary'; ?>">Hari Ini</a>
-             </div>
-           </div>
+
+
+          <!-- Display Current Period -->
+          <div class="col-12 mb-3">
+            <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
+              <i class="fa-solid fa-info-circle me-2"></i>
+              <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
+            </div>
+          </div>
+
+          <!-- Smart Filter Card - Single Popup Concept -->
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body p-3">
+              <form method="GET" id="smartFilterForm" class="row g-3 align-items-end">
+                
+                <!-- Tipe Filter - Dropdown -->
+                <div class="col-lg-3 col-md-4">
+                  <label for="filter_type" class="form-label small text-muted mb-2 fw-semibold">
+                    <i class="fa-solid fa-filter me-1"></i>Filter
+                  </label>
+                  <select class="form-select form-select-sm" id="filter_type" name="filter_type">
+                    <option value="hari_ini" <?php echo $filter_type === 'hari_ini' ? 'selected' : ''; ?>>
+                      📅 Hari Ini
+                    </option>
+                    <option value="bulan_ini" <?php echo $filter_type === 'bulan_ini' ? 'selected' : ''; ?>>
+                      📆 Bulan Ini
+                    </option>
+                    <option value="tanggal_spesifik" <?php echo $filter_type === 'tanggal_spesifik' ? 'selected' : ''; ?>>
+                      🗓️ Pilih Tanggal
+                    </option>
+                    <option value="bulan_spesifik" <?php echo $filter_type === 'bulan_spesifik' ? 'selected' : ''; ?>>
+                      🗓️ Pilih Bulan
+                    </option>
+                  </select>
+                </div>
+
+                <!-- Input Value - Conditional Display -->
+                <div class="col-lg-3 col-md-4" id="filter_value_container" style="<?php echo in_array($filter_type, ['tanggal_spesifik', 'bulan_spesifik']) ? '' : 'display:none;'; ?>">
+                  <label for="filter_value" class="form-label small text-muted mb-1 fw-semibold">
+                    <i class="fa-solid fa-calendar-check me-1"></i>
+                    <span id="filter_value_label">
+                      <?php echo $filter_type === 'bulan_spesifik' ? 'Pilih Bulan' : 'Pilih Tanggal'; ?>
+                    </span>
+                  </label>
+                  <input type="<?php echo $filter_type === 'bulan_spesifik' ? 'month' : 'date'; ?>" 
+                         class="form-control form-control-sm" 
+                         id="filter_value" 
+                         name="filter_value"
+                         value="<?php echo htmlspecialchars($filter_value); ?>">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="col-lg-auto col-md-4">
+                  <button type="submit" class="btn btn-sm btn-success me-1">
+                    <i class="fa-solid fa-check me-1"></i>Terapkan
+                  </button>
+                  <button type="button" id="resetFilterBtn" class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-rotate-left me-1"></i>Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
 
         <!-- KARTU STATISTIK -->
@@ -363,7 +499,7 @@ $sql_pendapatan = "
                 <!-- TABEL PENDAPATAN -->
         <div class="card border-0 shadow-sm mb-4">
           <div class="card-header bg-white border-0 py-3">
-            <h5 class="mb-0 fw-bold">Pendapatan per Admin</h5>
+            <h5 class="mb-0 fw-bold">Laporan Pendapatan per Admin</h5>
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
@@ -376,6 +512,7 @@ $sql_pendapatan = "
                     <th class="text-end">Cash</th>
                     <th class="text-end">Transfer</th>
                     <th class="text-end">Bayar di Tempat</th>
+                    <th class="text-center">Cetak Data</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -385,6 +522,12 @@ $sql_pendapatan = "
                     $data = $pendapatan_data[$user['id']] ?? [
                       'cash' => 0, 'transfer' => 0, 'cod' => 0, 'total' => 0
                     ];
+                    // Build export URL with filter params
+                    $export_params = 'username=' . urlencode($user['username']);
+                    $export_params .= '&filter_type=' . urlencode($filter_type);
+                    if (!empty($filter_value)) {
+                        $export_params .= '&filter_value=' . urlencode($filter_value);
+                    }
                   ?>
                     <tr>
                       <td class="px-3"><?= $no++; ?></td>
@@ -393,10 +536,24 @@ $sql_pendapatan = "
                       <td class="text-end"><?= format_rupiah($data['cash']); ?></td>
                       <td class="text-end"><?= format_rupiah($data['transfer']); ?></td>
                       <td class="text-end"><?= format_rupiah($data['cod']); ?></td>
+                      <td class="d-flex justify-content-center">
+                        <div>
+                          <a href="export/export.php?<?php echo $export_params; ?>" 
+                             class="btn btn-sm btn-outline-success">
+                            <i class="fa-solid fa-file-export me-1"></i> 
+                          </a>
+                        </div>
+                      </td>
                     </tr>
                   <?php endforeach; ?>
                   
-                  <?php if ($systemOwner_data['pendapatan']['total'] > 0): ?>
+                  <?php if ($systemOwner_data['pendapatan']['total'] > 0): 
+                    $export_params_so = 'username=systemOwner';
+                    $export_params_so .= '&filter_type=' . urlencode($filter_type);
+                    if (!empty($filter_value)) {
+                        $export_params_so .= '&filter_value=' . urlencode($filter_value);
+                    }
+                  ?>
                     <tr class="table-warning">
                       <td class="px-3"><?= $no++; ?></td>
                       <td class="fw-bold">
@@ -406,6 +563,14 @@ $sql_pendapatan = "
                       <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cash']); ?></td>
                       <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['transfer']); ?></td>
                       <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cod']); ?></td>
+                      <td class="d-flex justify-content-center">
+                        <div>
+                          <a href="export/export.php?<?php echo $export_params_so; ?>" 
+                             class="btn btn-sm btn-outline-success">
+                            <i class="fa-solid fa-file-export me-1"></i> 
+                          </a>
+                        </div>
+                      </td>
                     </tr>
                   <?php endif; ?>
                 </tbody>
@@ -648,6 +813,52 @@ btnHapusSuper.addEventListener('click', function() {
   spanStatus.style.backgroundColor = '';
   spanStatus.style.color = '';
 });
+
+// Smart Filter - Dynamic show/hide input based on filter type
+const filterTypeSelect = document.getElementById('filter_type');
+const filterValueContainer = document.getElementById('filter_value_container');
+const filterValueInput = document.getElementById('filter_value');
+const filterValueLabel = document.getElementById('filter_value_label');
+const resetFilterBtn = document.getElementById('resetFilterBtn');
+
+if (filterTypeSelect) {
+  // Handle filter type change
+  filterTypeSelect.addEventListener('change', function() {
+      const selectedType = this.value;
+      
+      if (selectedType === 'tanggal_spesifik') {
+          filterValueContainer.style.display = 'block';
+          filterValueInput.type = 'date';
+          filterValueLabel.textContent = 'Pilih Tanggal';
+          filterValueInput.required = true;
+      } else if (selectedType === 'bulan_spesifik') {
+          filterValueContainer.style.display = 'block';
+          filterValueInput.type = 'month';
+          filterValueLabel.textContent = 'Pilih Bulan';
+          filterValueInput.required = true;
+      } else {
+          // Hari ini atau Bulan ini - tidak perlu input tambahan
+          filterValueContainer.style.display = 'none';
+          filterValueInput.required = false;
+          filterValueInput.value = '';
+      }
+  });
+
+  // Reset button
+  resetFilterBtn.addEventListener('click', function() {
+      window.location.href = window.location.pathname;
+  });
+
+  // Form validation
+  document.getElementById('smartFilterForm').addEventListener('submit', function(e) {
+      const filterType = filterTypeSelect.value;
+      
+      if ((filterType === 'tanggal_spesifik' || filterType === 'bulan_spesifik') && !filterValueInput.value) {
+          e.preventDefault();
+          alert('Silakan pilih ' + (filterType === 'tanggal_spesifik' ? 'tanggal' : 'bulan') + ' terlebih dahulu!');
+      }
+  });
+}
 </script>
   </div>
 </div>

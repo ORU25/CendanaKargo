@@ -1,16 +1,26 @@
 <?php
-// File: dashboard/systemOwner/export/export.php
+// File: dashboard/admin/export/export.php
+session_start();
+
+if (!isset($_SESSION['username']) || !isset($_SESSION['user_id'])) {
+    header("Location: ../../../auth/login");
+    exit;
+}
+
+if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin') {
+    header("Location: ../../../?error=unauthorized");
+    exit;
+}
+
 include '../../../config/database.php';
 
-// Ambil parameter cabang & filter baru
-$cabang = isset($_GET['cabang']) ? trim($_GET['cabang']) : '';
+// Ambil data user yang login
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
+
+// Ambil parameter filter
 $filter_type = isset($_GET['filter_type']) ? trim($_GET['filter_type']) : 'bulan_ini';
 $filter_value = isset($_GET['filter_value']) ? trim($_GET['filter_value']) : '';
-
-if (empty($cabang)) {
-    header("Location: ../?error=no_data");
-    exit();
-}
 
 // Setup kondisi WHERE berdasarkan filter
 $date_condition = '';
@@ -23,7 +33,7 @@ switch ($filter_type) {
         break;
     
     case 'bulan_ini':
-        $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
         $periode_display = date('F Y');
         break;
     
@@ -32,7 +42,7 @@ switch ($filter_type) {
             $date_condition = "AND DATE(p.tanggal) = '" . $filter_value . "'";
             $periode_display = date('d F Y', strtotime($filter_value));
         } else {
-            $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
             $periode_display = date('F Y');
         }
         break;
@@ -42,18 +52,18 @@ switch ($filter_type) {
             $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $filter_value . "'";
             $periode_display = date('F Y', strtotime($filter_value . '-01'));
         } else {
-            $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
             $periode_display = date('F Y');
         }
         break;
     
     default:
-        $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
         $periode_display = date('F Y');
         break;
 }
 
-// Query utama: ambil data pengiriman untuk cabang tersebut + username pembuat + nama driver
+// Query utama: ambil data pengiriman berdasarkan user_id (admin yang login) + nama driver
 $query = "SELECT 
             p.id AS id,
             p.no_resi,
@@ -74,13 +84,13 @@ $query = "SELECT
           LEFT JOIN User u ON p.id_user = u.id
           LEFT JOIN detail_surat_jalan dsj ON p.id = dsj.id_pengiriman
           LEFT JOIN Surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
-          WHERE p.cabang_pengirim = ?
+          WHERE p.id_user = ?
             AND p.status != 'dibatalkan'
             $date_condition
           ORDER BY p.tanggal ASC";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param('s', $cabang);
+$stmt->bind_param('i', $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -90,7 +100,7 @@ if ($result->num_rows === 0) {
 }
 
 // === Header untuk file Excel ===
-$filename = "Laporan_Pendapatan_{$cabang}_" . date('Y-m-d_His') . ".xls";
+$filename = "Laporan_Pendapatan_{$username}_" . date('Y-m-d_His') . ".xls";
 header("Content-Type: application/vnd.ms-excel");
 header("Content-Disposition: attachment; filename={$filename}");
 header("Pragma: no-cache");
@@ -101,7 +111,7 @@ echo "<table border='1' cellspacing='0' cellpadding='5'>";
 
 // Judul laporan
 echo "<tr style='background:#dc3545; color:white; font-weight:bold;'>
-        <th colspan='15'>LAPORAN PENDAPATAN CABANG " . strtoupper($cabang) . "</th>
+        <th colspan='15'>LAPORAN PENDAPATAN ADMIN " . strtoupper($username) . "</th>
       </tr>";
 echo "<tr><td colspan='15' style='background:#f8d7da;'>Periode: " . htmlspecialchars($periode_display) . "</td></tr>";
 
@@ -119,7 +129,7 @@ echo "<tr style='background:#f2f2f2; font-weight:bold;'>
         <th>Tujuan</th>
         <th>Status</th>
         <th>Pembayaran</th>
-        <th>Dibuat Oleh</th>
+        <th>Dibuat</th>
         <th>Driver</th>
         <th>Total (Rp)</th>
       </tr>";
