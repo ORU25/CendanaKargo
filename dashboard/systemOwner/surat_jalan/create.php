@@ -781,7 +781,6 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                             <?php foreach ($drivers as $driver): ?>
                                 <option value="<?= $driver['id']; ?>">
                                     <?= htmlspecialchars($driver['nama_driver']); ?> 
-                                    (<?= htmlspecialchars($driver['telp_driver']); ?>)
                                 </option>
                             <?php endforeach; ?>
                         </select>
