@@ -191,6 +191,9 @@
       </p>
     </div>
 
+  </section>
+
+  <section class="why-us-cards-container">
     <div class="service-container">
       <div class="service-card">
         <div class="card-inner">
@@ -203,7 +206,7 @@
           </div>
         </div>
       </div>
-
+  
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
@@ -215,7 +218,7 @@
           </div>
         </div>
       </div>
-
+  
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
@@ -242,7 +245,7 @@
   <footer>
     <div class="footer-container">
       <div class="footer-brand">
-        <img src="assets/logo.jpg" alt="Logo Cendana Lintas Kargo" class="logo" />
+        <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
         <div>
           <h3>Cendana Lintas Kargo</h3>
           <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>

@@ -347,6 +347,11 @@ nav {
   gap: 28px;
 }
 
+.why-us-cards-container {
+  margin-top: 50px;
+  margin-bottom: 50px;
+}
+
 
 /* ========== SERVICES (FLIP CARD) ========== */
 .services {
@@ -435,7 +440,7 @@ footer {
   position: relative;
   background: #111;
   color: #ccc;
-  padding: 64px 60px 48px; 
+  padding: 64px 60px 0px; 
   width: 100%;
 }
 footer::before {
@@ -466,11 +471,10 @@ footer::before {
   min-width: 380px;
 }
 .footer-logo {
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   border-radius: 14px;
   object-fit: contain;
-  background: #fff;
   padding: 8px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.2);
 }
@@ -515,6 +519,7 @@ footer::before {
   font-size: 0.95rem;
   border-top: 1px solid rgba(255,255,255,0.1);
   padding-top: 18px;
+  padding-bottom: 18px;
   letter-spacing: 0.3px;
 }
 
