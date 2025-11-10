@@ -19,8 +19,6 @@
 </head>
 
 <body>
-  <!-- ===== PROGRESS BAR ===== -->
-  <div class="scroll-progress"></div>
 
   <!-- ===== HEADER ===== -->
   <header>
@@ -183,8 +181,8 @@
     </div>
   </section>
 
-  <!-- ===== WHY US ===== -->
-  <section class="why-us reveal">
+  <!-- ===== WHY US & LAYANAN ===== -->
+  <section id="layanan" class="why-us reveal">
     <div class="container-narrow">
       <h2 id="whyTitle">Mengapa Memilih Cendana Lintas Kargo?</h2>
       <p id="whyText">
@@ -192,11 +190,7 @@
         sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.
       </p>
     </div>
-  </section>
 
-  <!-- ===== LAYANAN ===== -->
-  <section id="layanan" class="services reveal">
-    <h2 id="layananTitle">Layanan Kami</h2>
     <div class="service-container">
       <div class="service-card">
         <div class="card-inner">
@@ -245,54 +239,30 @@
   </section>
 
   <!-- ===== FOOTER ===== -->
-  <footer id="kontak">
+  <footer>
     <div class="footer-container">
-      <div class="footer-about reveal">
-        <h3>Cendana Lintas Kargo</h3>
-        <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+      <div class="footer-brand">
+        <img src="assets/logo.jpg" alt="Logo Cendana Lintas Kargo" class="logo" />
+        <div>
+          <h3>Cendana Lintas Kargo</h3>
+          <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+        </div>
       </div>
-      <div class="footer-links reveal">
-        <h4>Navigasi</h4>
-        <ul>
-          <li><a href="#hero">Beranda</a></li>
-          <li><a href="#lacakOngkir">Lacak / Ongkir</a></li>
-          <li><a href="#layanan">Layanan</a></li>
-          <li><a href="#kontak">Kontak</a></li>
-        </ul>
-      </div>
-      <div class="footer-contact reveal">
+
+      <div class="footer-contact">
         <h4>Hubungi Kami</h4>
-        <p><i class="fa-solid fa-envelope"></i> info@cendanakargo.com</p>
-        <p><i class="fa-solid fa-phone"></i> (0541) 123456</p>
-        <p><i class="fa-solid fa-location-dot"></i> Jl. Cendana Raya No. 88, Samarinda</p>
+        <p>📧 info@cendanakargo.com</p>
+        <p>📞 (0541) 123456</p>
+        <p>📍Jl. Cendana No. 88, Samarinda</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.</p>
+      © 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.
     </div>
   </footer>
 
-  <!-- ===== BACK TO TOP ===== -->
-  <button id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
-
   <!-- ===== JAVASCRIPT ===== -->
   <script>
-    // Scroll progress bar
-    window.addEventListener('scroll', () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.body.scrollHeight - window.innerHeight;
-      const progress = (scrollTop / docHeight) * 100;
-      document.querySelector('.scroll-progress').style.width = progress + '%';
-    });
-
-    // Back to top
-    const backToTop = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) backToTop.classList.add('show');
-      else backToTop.classList.remove('show');
-    });
-    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
     // Reveal animation
     const reveals = document.querySelectorAll('.reveal');
     function revealOnScroll() {
@@ -799,7 +769,5 @@
       }
     });
   </script>
-  
 <?php
-    include 'templates/footer.php';
 ?>
