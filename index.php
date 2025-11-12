@@ -98,42 +98,70 @@
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
           
           <!-- Result display -->
-          <div id="resultLacak" style="display:none; margin-top:30px; background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
-            <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
-              <i class="fa-solid fa-circle-check"></i> <span id="infoLacak">Informasi Pengiriman</span>
-            </h4>
-            <table style="width:100%; border-collapse: collapse;">
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;" id="labelNoResi">No. Resi</td>
-                <td style="padding:12px 0; color:#212529;" id="displayResi">-</td>
-              </tr>
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPengirim">Nama Pengirim</td>
-                <td style="padding:12px 0; color:#212529;" id="displayPengirim">-</td>
-              </tr>
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPenerima">Nama Penerima</td>
-                <td style="padding:12px 0; color:#212529;" id="displayPenerima">-</td>
-              </tr>
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelAsal">Asal</td>
-                <td style="padding:12px 0; color:#212529;" id="displayAsal">-</td>
-              </tr>
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTujuan">Tujuan</td>
-                <td style="padding:12px 0; color:#212529;" id="displayTujuan">-</td>
-              </tr>
-              <tr style="border-bottom:1px solid #dee2e6;">
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTotalTarif">Total Tarif</td>
-                <td style="padding:12px 0; color:#212529; font-weight:600;" id="displayTarif">-</td>
-              </tr>
-              <tr>
-                <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelStatus">Status</td>
-                <td style="padding:12px 0;" id="displayStatus">
-                  <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600; text-transform: uppercase;">-</span>
-                </td>
-              </tr>
-            </table>
+          <div id="resultLacak" style="display:none; margin-top:30px;">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+              <!-- Detail Pengiriman -->
+              <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
+                <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
+                  <i class="fa-solid fa-circle-check"></i> <span id="infoLacak">Informasi Pengiriman</span>
+                </h4>
+                <table style="width:100%; border-collapse: collapse;">
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057; width:40%;" id="labelNoResi">No. Resi</td>
+                    <td style="padding:12px 0; color:#212529;" id="displayResi">-</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPengirim">Nama Pengirim</td>
+                    <td style="padding:12px 0; color:#212529;" id="displayPengirim">-</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelPenerima">Nama Penerima</td>
+                    <td style="padding:12px 0; color:#212529;" id="displayPenerima">-</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelAsal">Asal</td>
+                    <td style="padding:12px 0; color:#212529;" id="displayAsal">-</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTujuan">Tujuan</td>
+                    <td style="padding:12px 0; color:#212529;" id="displayTujuan">-</td>
+                  </tr>
+                  <tr style="border-bottom:1px solid #dee2e6;">
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelTotalTarif">Total Tarif</td>
+                    <td style="padding:12px 0; color:#212529; font-weight:600;" id="displayTarif">-</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:12px 0; font-weight:600; color:#495057;" id="labelStatus">Status</td>
+                    <td style="padding:12px 0;" id="displayStatus">
+                      <span style="padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600; text-transform: uppercase;">-</span>
+                    </td>
+                  </tr>
+                </table>
+              </div>
+              
+              <!-- Google Maps Lokasi Tujuan -->
+              <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
+                <h4 style="margin-bottom:15px; color:var(--primary-green); font-size:18px;">
+                  <i class="fa-solid fa-location-dot"></i> Lokasi Cabang Tujuan
+                </h4>
+                <div id="mapInfo" style="margin-bottom:10px; padding:10px; background:#fff; border-radius:8px; border:1px solid #dee2e6;">
+                  <p style="margin:0; font-size:14px; color:#495057;"><strong id="displayTujuanMap">-</strong></p>
+                  <p style="margin:5px 0 0 0; font-size:13px; color:#6c757d;" id="displayAlamatTujuan">-</p>
+                  <p style="margin:5px 0 0 0; font-size:13px; color:#6c757d;">
+                    <i class="fa-solid fa-phone"></i> <span id="displayTelpTujuan">-</span>
+                  </p>
+                </div>
+                <iframe 
+                  id="googleMap"
+                  width="100%" 
+                  height="300" 
+                  style="border:0; border-radius:8px;" 
+                  loading="lazy" 
+                  allowfullscreen
+                  referrerpolicy="no-referrer-when-downgrade">
+                </iframe>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -260,35 +288,27 @@
   </section>
 
   <!-- ===== FOOTER ===== -->
-  <footer id="kontak">
+  <footer>
     <div class="footer-container">
-      <div class="footer-about reveal">
-        <h3>Cendana Lintas Kargo</h3>
-        <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+      <div class="footer-brand">
+        <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
+        <div>
+          <h3>Cendana Lintas Kargo</h3>
+          <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+        </div>
       </div>
-      <div class="footer-links reveal">
-        <h4>Navigasi</h4>
-        <ul>
-          <li><a href="#hero">Beranda</a></li>
-          <li><a href="#lacakOngkir">Lacak / Ongkir</a></li>
-          <li><a href="#layanan">Layanan</a></li>
-          <li><a href="#kontak">Kontak</a></li>
-        </ul>
-      </div>
-      <div class="footer-contact reveal">
+
+      <div class="footer-contact">
         <h4>Hubungi Kami</h4>
-        <p><i class="fa-solid fa-envelope"></i> info@cendanakargo.com</p>
-        <p><i class="fa-solid fa-phone"></i> (0541) 123456</p>
-        <p><i class="fa-solid fa-location-dot"></i> Jl. Cendana Raya No. 88, Samarinda</p>
+        <p>📧 info@cendanakargo.com</p>
+        <p>📞 (0541) 123456</p>
+        <p>📍Jl. Cendana No. 88, Samarinda</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.</p>
+      © 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.
     </div>
   </footer>
-
-  <!-- ===== BACK TO TOP ===== -->
-  <button id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
 
   <!-- ===== JAVASCRIPT ===== -->
   <script>
@@ -299,14 +319,6 @@
       const progress = (scrollTop / docHeight) * 100;
       document.querySelector('.scroll-progress').style.width = progress + '%';
     });
-
-    // Back to top
-    const backToTop = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) backToTop.classList.add('show');
-      else backToTop.classList.remove('show');
-    });
-    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
     // Reveal animation
     const reveals = document.querySelectorAll('.reveal');
@@ -644,6 +656,20 @@
       statusElement.style.backgroundColor = backgroundColor;
       statusElement.style.color = textColor;
       
+      // Display destination branch info and map
+      document.getElementById('displayTujuanMap').textContent = data.tujuan;
+      document.getElementById('displayAlamatTujuan').textContent = data.alamat_tujuan || 'Alamat tidak tersedia';
+      document.getElementById('displayTelpTujuan').textContent = data.telp_tujuan || '-';
+      
+      // Set Google Maps iframe source
+      const alamatEncoded = encodeURIComponent(data.alamat_tujuan || data.tujuan);
+      const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${alamatEncoded}&zoom=15`;
+      
+      // Alternative: Using iframe
+      const mapUrlNoAPI = `https://maps.google.com/maps?q=${alamatEncoded}&output=embed`;
+      
+      document.getElementById('googleMap').src = mapUrlNoAPI;
+      
       resultLacak.style.display = 'block';
     }
 
@@ -851,7 +877,5 @@
       }
     });
   </script>
-  
-<?php
-    include 'templates/footer.php';
-?>
+</body>
+</html>

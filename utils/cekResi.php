@@ -71,17 +71,20 @@ if (!empty($captchaToken)) {
     }
 }
 
-// Query to get shipment data
+// Query to get shipment data with destination branch address
 $query = "SELECT 
-    no_resi,
-    nama_pengirim,
-    nama_penerima,
-    cabang_pengirim as asal,
-    cabang_penerima as tujuan,
-    total_tarif,
-    status
-FROM Pengiriman 
-WHERE no_resi = ?";
+    p.no_resi,
+    p.nama_pengirim,
+    p.nama_penerima,
+    p.cabang_pengirim as asal,
+    p.cabang_penerima as tujuan,
+    p.total_tarif,
+    p.status,
+    kc.alamat_cabang as alamat_tujuan,
+    kc.telp_cabang as telp_tujuan
+FROM Pengiriman p
+LEFT JOIN Kantor_cabang kc ON p.id_cabang_penerima = kc.id
+WHERE p.no_resi = ?";
 
 $stmt = mysqli_prepare($conn, $query);
 mysqli_stmt_bind_param($stmt, "s", $noResi);
@@ -98,7 +101,9 @@ if ($row = mysqli_fetch_assoc($result)) {
             'asal' => $row['asal'],
             'tujuan' => $row['tujuan'],
             'total_tarif' => number_format($row['total_tarif'], 0, ',', '.'),
-            'status' => $row['status']
+            'status' => $row['status'],
+            'alamat_tujuan' => $row['alamat_tujuan'] ?? '',
+            'telp_tujuan' => $row['telp_tujuan'] ?? ''
         ]
     ]);
 } else {
