@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json');
+require_once '../config/env.php';
 require_once '../config/database.php';
 
 // Get the resi number from request
@@ -11,6 +12,63 @@ if (empty($noResi)) {
         'message' => 'Nomor resi tidak boleh kosong'
     ]);
     exit;
+}
+
+// Verify CAPTCHA if token is provided (optional for backward compatibility)
+$captchaToken = isset($_GET['captcha_token']) ? trim($_GET['captcha_token']) : '';
+
+if (!empty($captchaToken)) {
+    // Get Cloudflare Turnstile Secret Key from environment variable
+    $secretKey = env('TURNSTILE_SECRET_KEY');
+    
+    if (empty($secretKey)) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Server configuration error: TURNSTILE_SECRET_KEY not set',
+            'error_code' => 'CONFIG_ERROR'
+        ]);
+        exit;
+    }
+    
+    // Verify with Cloudflare
+    $verifyUrl = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
+    $verifyData = [
+        'secret' => $secretKey,
+        'response' => $captchaToken,
+        'remoteip' => $_SERVER['REMOTE_ADDR'] ?? ''
+    ];
+    
+    $options = [
+        'http' => [
+            'method' => 'POST',
+            'header' => 'Content-Type: application/x-www-form-urlencoded',
+            'content' => http_build_query($verifyData),
+            'timeout' => 10
+        ]
+    ];
+    
+    $context = stream_context_create($options);
+    $response = @file_get_contents($verifyUrl, false, $context);
+    
+    if ($response === false) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Gagal memverifikasi CAPTCHA. Silakan coba lagi.',
+            'error_code' => 'CAPTCHA_VERIFY_ERROR'
+        ]);
+        exit;
+    }
+    
+    $result = json_decode($response);
+    
+    if (!$result->success) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Verifikasi CAPTCHA gagal. Silakan refresh halaman dan coba lagi.',
+            'error_code' => 'CAPTCHA_FAILED'
+        ]);
+        exit;
+    }
 }
 
 // Query to get shipment data

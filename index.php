@@ -16,9 +16,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="assets/favicon.ico" />
+  
+  <!-- Cloudflare Turnstile CAPTCHA -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
+  <!-- ===== PROGRESS BAR ===== -->
+  <div class="scroll-progress"></div>
 
   <!-- ===== HEADER ===== -->
   <header>
@@ -75,7 +80,19 @@
           <h3><i class="fa-solid fa-truck-fast"></i> <span id="headingLacak">Lacak Paket</span></h3>
           <label for="resi" id="labelResi">Nomor Resi</label>
           <input type="text" id="resi" placeholder="Masukkan nomor resi Anda..." />
-          <button id="btnLacak"><i class="fa-solid fa-magnifying-glass"></i> <span id="btnLacakText">Lacak Paket</span></button>
+          
+          <!-- Cloudflare Turnstile Widget -->
+          <div style="margin: 20px 0; display: flex; justify-content: center;">
+            <div class="cf-turnstile" 
+                 data-sitekey="0x4AAAAAACAg1S8rwiBokGwN" 
+                 data-callback="onTurnstileSuccess"
+                 data-theme="light"></div>
+          </div>
+          
+          <button id="btnLacak" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-magnifying-glass"></i> <span id="btnLacakText">Lacak Paket</span></button>
+          <p style="text-align: center; font-size: 12px; color: #666; margin-top: 10px;">
+            <i class="fa-solid fa-shield-halved"></i> Selesaikan verifikasi untuk melanjutkan
+          </p>
           
           <!-- Alert message -->
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
@@ -181,8 +198,8 @@
     </div>
   </section>
 
-  <!-- ===== WHY US & LAYANAN ===== -->
-  <section id="layanan" class="why-us reveal">
+  <!-- ===== WHY US ===== -->
+  <section class="why-us reveal">
     <div class="container-narrow">
       <h2 id="whyTitle">Mengapa Memilih Cendana Lintas Kargo?</h2>
       <p id="whyText">
@@ -190,10 +207,11 @@
         sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.
       </p>
     </div>
-
   </section>
 
-  <section class="why-us-cards-container">
+  <!-- ===== LAYANAN ===== -->
+  <section id="layanan" class="services reveal">
+    <h2 id="layananTitle">Layanan Kami</h2>
     <div class="service-container">
       <div class="service-card">
         <div class="card-inner">
@@ -206,7 +224,7 @@
           </div>
         </div>
       </div>
-  
+
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
@@ -218,7 +236,7 @@
           </div>
         </div>
       </div>
-  
+
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
@@ -242,30 +260,54 @@
   </section>
 
   <!-- ===== FOOTER ===== -->
-  <footer>
+  <footer id="kontak">
     <div class="footer-container">
-      <div class="footer-brand">
-        <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
-        <div>
-          <h3>Cendana Lintas Kargo</h3>
-          <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
-        </div>
+      <div class="footer-about reveal">
+        <h3>Cendana Lintas Kargo</h3>
+        <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
       </div>
-
-      <div class="footer-contact">
+      <div class="footer-links reveal">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="#hero">Beranda</a></li>
+          <li><a href="#lacakOngkir">Lacak / Ongkir</a></li>
+          <li><a href="#layanan">Layanan</a></li>
+          <li><a href="#kontak">Kontak</a></li>
+        </ul>
+      </div>
+      <div class="footer-contact reveal">
         <h4>Hubungi Kami</h4>
-        <p>📧 info@cendanakargo.com</p>
-        <p>📞 (0541) 123456</p>
-        <p>📍Jl. Cendana No. 88, Samarinda</p>
+        <p><i class="fa-solid fa-envelope"></i> info@cendanakargo.com</p>
+        <p><i class="fa-solid fa-phone"></i> (0541) 123456</p>
+        <p><i class="fa-solid fa-location-dot"></i> Jl. Cendana Raya No. 88, Samarinda</p>
       </div>
     </div>
     <div class="footer-bottom">
-      © 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.
+      <p>© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.</p>
     </div>
   </footer>
 
+  <!-- ===== BACK TO TOP ===== -->
+  <button id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
+
   <!-- ===== JAVASCRIPT ===== -->
   <script>
+    // Scroll progress bar
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.body.scrollHeight - window.innerHeight;
+      const progress = (scrollTop / docHeight) * 100;
+      document.querySelector('.scroll-progress').style.width = progress + '%';
+    });
+
+    // Back to top
+    const backToTop = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) backToTop.classList.add('show');
+      else backToTop.classList.remove('show');
+    });
+    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
     // Reveal animation
     const reveals = document.querySelectorAll('.reveal');
     function revealOnScroll() {
@@ -366,6 +408,7 @@
         ctaTitle: "Kirim Barang Sekarang Bersama Kami!",
         ctaText: "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
         // Alert Messages - Lacak Resi
+        alertCaptchaRequired: "Silakan selesaikan verifikasi CAPTCHA terlebih dahulu",
         alertResiKosong: "Nomor resi tidak boleh kosong",
         alertResiNotFound: "Nomor resi tidak ditemukan",
         alertResiError: "Terjadi kesalahan saat melacak paket. Silakan coba lagi.",
@@ -437,6 +480,7 @@
         ctaTitle: "Ship With Us Now!",
         ctaText: "Security, speed, and satisfaction are our top priorities.",
         // Alert Messages - Lacak Resi
+        alertCaptchaRequired: "Please complete the CAPTCHA verification first",
         alertResiKosong: "Tracking number cannot be empty",
         alertResiNotFound: "Tracking number not found",
         alertResiError: "An error occurred while tracking the package. Please try again.",
@@ -489,6 +533,25 @@
     const inputResi = document.getElementById('resi');
     const alertLacak = document.getElementById('alertLacak');
     const resultLacak = document.getElementById('resultLacak');
+    
+    // Cloudflare Turnstile verification
+    let isCaptchaVerified = false;
+    let captchaToken = '';
+    
+    // Callback when Turnstile verification succeeds
+    window.onTurnstileSuccess = function(token) {
+      isCaptchaVerified = true;
+      captchaToken = token;
+      btnLacak.disabled = false;
+      btnLacak.style.opacity = '1';
+      btnLacak.style.cursor = 'pointer';
+      
+      // Hide verification message
+      const verifyMsg = btnLacak.nextElementSibling;
+      if (verifyMsg && verifyMsg.tagName === 'P') {
+        verifyMsg.style.display = 'none';
+      }
+    };
 
     // Function to show alert
     function showAlert(message, type) {
@@ -592,6 +655,12 @@
       hideAlert();
       resultLacak.style.display = 'none';
       
+      // Check CAPTCHA verification
+      if (!isCaptchaVerified) {
+        showAlert(getCurrentTranslation('alertCaptchaRequired'), 'error');
+        return;
+      }
+      
       if (!noResi) {
         showAlert(getCurrentTranslation('alertResiKosong'), 'error');
         return;
@@ -601,8 +670,8 @@
       btnLacak.disabled = true;
       btnLacak.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + getCurrentTranslation('alertSearching');
       
-      // Send AJAX request
-      fetch('utils/cekResi.php?no_resi=' + encodeURIComponent(noResi))
+      // Send AJAX request with CAPTCHA token
+      fetch('utils/cekResi.php?no_resi=' + encodeURIComponent(noResi) + '&captcha_token=' + encodeURIComponent(captchaToken))
         .then(response => response.json())
         .then(data => {
           if (data.success) {
@@ -622,8 +691,18 @@
           console.error('Error:', error);
         })
         .finally(() => {
-          btnLacak.disabled = false;
+          // Reset CAPTCHA for next search
+          isCaptchaVerified = false;
+          captchaToken = '';
+          btnLacak.disabled = true;
+          btnLacak.style.opacity = '0.5';
+          btnLacak.style.cursor = 'not-allowed';
           btnLacak.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ' + getCurrentTranslation('btnLacakText');
+          
+          // Reset Cloudflare Turnstile widget
+          if (typeof turnstile !== 'undefined') {
+            turnstile.reset();
+          }
         });
     });
 
@@ -772,5 +851,7 @@
       }
     });
   </script>
+  
 <?php
+    include 'templates/footer.php';
 ?>
