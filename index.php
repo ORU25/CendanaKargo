@@ -90,9 +90,6 @@
           </div>
           
           <button id="btnLacak" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-magnifying-glass"></i> <span id="btnLacakText">Lacak Paket</span></button>
-          <p style="text-align: center; font-size: 12px; color: #666; margin-top: 10px;">
-            <i class="fa-solid fa-shield-halved"></i> Selesaikan verifikasi untuk melanjutkan
-          </p>
           
           <!-- Alert message -->
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
@@ -227,7 +224,7 @@
   </section>
 
   <!-- ===== WHY US ===== -->
-  <section class="why-us reveal">
+  <section class="why-us reveal" id="layanan">
     <div class="container-narrow">
       <h2 id="whyTitle">Mengapa Memilih Cendana Lintas Kargo?</h2>
       <p id="whyText">
@@ -239,7 +236,6 @@
 
   <!-- ===== LAYANAN ===== -->
   <section id="layanan" class="services reveal">
-    <h2 id="layananTitle">Layanan Kami</h2>
     <div class="service-container">
       <div class="service-card">
         <div class="card-inner">
@@ -294,19 +290,19 @@
         <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
         <div>
           <h3>Cendana Lintas Kargo</h3>
-          <p>Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+          <p id="footerDesc">Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
         </div>
       </div>
 
       <div class="footer-contact">
-        <h4>Hubungi Kami</h4>
+        <h4 id="footerContactTitle">Hubungi Kami</h4>
         <p>📧 info@cendanakargo.com</p>
         <p>📞 (0541) 123456</p>
-        <p>📍Jl. Cendana No. 88, Samarinda</p>
+        <p>📍<span id="footerAddress">Jl. Cendana No. 88, Samarinda</span></p>
       </div>
     </div>
     <div class="footer-bottom">
-      © 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.
+      <span id="footerCopyright">© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.</span>
     </div>
   </footer>
 
@@ -409,7 +405,6 @@
         whyTitle: "Mengapa Memilih Cendana Lintas Kargo?",
         whyText: "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
         // Layanan
-        layananTitle: "Layanan Kami",
         layanan1: "Pengiriman Cepat",
         layanan1desc: "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
         layanan2: "Aman & Terpercaya",
@@ -437,7 +432,12 @@
         statusDalamPengiriman: "Dalam Pengiriman",
         statusSampaiTujuan: "Sampai Tujuan",
         statusSelesai: "Selesai",
-        statusDibatalkan: "Dibatalkan"
+        statusDibatalkan: "Dibatalkan",
+        // Footer
+        footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
+        footerContactTitle: "Hubungi Kami",
+        footerAddress: "Jl. Cendana No. 88, Samarinda",
+        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi."
       },
       en: {
         // Navbar
@@ -481,7 +481,6 @@
         whyTitle: "Why Choose Cendana Lintas Kargo?",
         whyText: "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
         // Layanan
-        layananTitle: "Our Services",
         layanan1: "Fast Delivery",
         layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
         layanan2: "Secure & Trusted",
@@ -509,7 +508,12 @@
         statusDalamPengiriman: "In Transit",
         statusSampaiTujuan: "Arrived",
         statusSelesai: "Completed",
-        statusDibatalkan: "Cancelled"
+        statusDibatalkan: "Cancelled",
+        // Footer
+        footerDesc: "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
+        footerContactTitle: "Contact Us",
+        footerAddress: "Jl. Cendana No. 88, Samarinda",
+        footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved."
       }
     };
 

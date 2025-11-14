@@ -277,9 +277,7 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
                 kc.nama_cabang,
                 SUM(CASE WHEN sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS total_manifests,
                 SUM(CASE WHEN sj.status = 'draft' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_draft,
-                SUM(CASE WHEN sj.status = 'dalam perjalanan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_dalam_perjalanan,
-                SUM(CASE WHEN sj.status = 'sampai tujuan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_sampai_tujuan,
-                SUM(CASE WHEN sj.status = 'dibatalkan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_dibatalkan
+                SUM(CASE WHEN sj.status = 'diberangkatkan' AND sj.id IS NOT NULL AND $date_condition_sj THEN 1 ELSE 0 END) AS count_diberangkatkan
             FROM
                 kantor_cabang kc
             LEFT JOIN
@@ -301,10 +299,8 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
         $data[$row['nama_cabang']] = [
             'nama_cabang' => $row['nama_cabang'],
             'total_manifests' => $row['total_manifests'],
-            'count_dibuat' => $row['count_draft'],
-            'count_berangkat' => $row['count_dalam_perjalanan'],
-            'count_sampai_tujuan' => $row['count_sampai_tujuan'],
-            'count_dibatalkan' => $row['count_dibatalkan'],
+            'count_draft' => $row['count_draft'],
+            'count_diberangkatkan' => $row['count_diberangkatkan'],
         ];
     }
     $stmt->close();
@@ -760,9 +756,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th>Nama Cabang</th>
                                         <th class="text-center">Total SJ</th>
                                         <th class="text-center">Draft</th>
-                                        <th class="text-center">Dalam Perjalanan</th>
-                                        <th class="text-center">Sampai Tujuan</th>
-                                        <th class="text-center">Dibatalkan</th>
+                                        <th class="text-center">Diberangkatkan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -770,19 +764,16 @@ include '../../components/sidebar_offcanvas.php';
                                     $no = 1;
                                     foreach ($all_branches as $branch_name) {
                                     $data = $manifest_data[$branch_name] ?? [
-                                    'total_manifests' => 0, 'count_dibuat' => 0,
-                                    'count_berangkat' => 0, 'count_sampai_tujuan' => 0,
-                                    'count_dibatalkan' => 0,
+                                    'total_manifests' => 0, 'count_draft' => 0,
+                                    'count_diberangkatkan' => 0,
                                     ];
                                     ?>
                                         <tr>
                                             <td class="px-3"><?php echo $no++; ?></td>
                                             <td class="fw-bold"><?php echo htmlspecialchars($branch_name); ?></td>
                                             <td class="fw-bold text-center"><?php echo $data['total_manifests']; ?></td>
-                                            <td class="text-center"><?php echo $data['count_dibuat']; ?></td>
-                                            <td class="text-center"><?php echo $data['count_berangkat']; ?></td>
-                                            <td class="text-center"><?php echo $data['count_sampai_tujuan']; ?></td>
-                                            <td class="text-center"><?php echo $data['count_dibatalkan']; ?></td>
+                                            <td class="text-center"><?php echo $data['count_draft']; ?></td>
+                                            <td class="text-center"><?php echo $data['count_diberangkatkan']; ?></td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>

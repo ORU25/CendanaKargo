@@ -175,9 +175,7 @@
   $sql_sj_systemOwner = "
       SELECT 
           SUM(CASE WHEN s.status = 'draft' AND $where_clause THEN 1 ELSE 0 END) AS draft,
-          SUM(CASE WHEN s.status = 'dalam perjalanan' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
-          SUM(CASE WHEN s.status = 'sampai tujuan' AND $where_clause THEN 1 ELSE 0 END) AS sampai,
-          SUM(CASE WHEN s.status = 'dibatalkan' AND $where_clause THEN 1 ELSE 0 END) AS batal,
+          SUM(CASE WHEN s.status = 'diberangkatkan' AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
           COUNT(CASE WHEN $where_clause THEN 1 END) AS total
       FROM surat_jalan s
       JOIN User u ON s.id_user = u.id
@@ -191,9 +189,7 @@
   $result_sj_systemOwner = $stmt_sj_systemOwner->get_result();
   if ($row = $result_sj_systemOwner->fetch_assoc()) {
       $systemOwner_data['surat_jalan']['draft'] = $row['draft'] ?? 0;
-      $systemOwner_data['surat_jalan']['perjalanan'] = $row['perjalanan'] ?? 0;
-      $systemOwner_data['surat_jalan']['sampai'] = $row['sampai'] ?? 0;
-      $systemOwner_data['surat_jalan']['batal'] = $row['batal'] ?? 0;
+      $systemOwner_data['surat_jalan']['diberangkatkan'] = $row['diberangkatkan'] ?? 0;
       $systemOwner_data['surat_jalan']['total'] = $row['total'] ?? 0;
   }
   $stmt_sj_systemOwner->close();
@@ -273,9 +269,7 @@ $sql_pendapatan = "
   $sql_surat_jalan = "
       SELECT u.id, u.username,
           SUM(CASE WHEN s.status = 'draft' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS draft,
-          SUM(CASE WHEN s.status = 'dalam perjalanan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
-          SUM(CASE WHEN s.status = 'sampai tujuan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS sampai,
-          SUM(CASE WHEN s.status = 'dibatalkan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS batal,
+          SUM(CASE WHEN s.status = 'diberangkatkan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
           SUM(CASE WHEN s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS total
       FROM User u
       LEFT JOIN surat_jalan s ON u.id = s.id_user
@@ -654,9 +648,7 @@ $sql_pendapatan = "
                     <th>Username</th>
                     <th class="text-center">Total</th>
                     <th class="text-center">Draft</th>
-                    <th class="text-center">Dalam Perjalanan</th>
-                    <th class="text-center">Sampai Tujuan</th>
-                    <th class="text-center">Dibatalkan</th>
+                    <th class="text-center">Diberangkatkan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -664,8 +656,7 @@ $sql_pendapatan = "
                   $no = 1;
                   foreach ($all_users as $user):
                     $data = $surat_jalan_data[$user['id']] ?? [
-                      'total' => 0, 'draft' => 0, 'perjalanan' => 0, 
-                      'sampai' => 0, 'batal' => 0
+                      'total' => 0, 'draft' => 0, 'diberangkatkan' => 0
                     ];
                   ?>
                     <tr>
@@ -673,9 +664,7 @@ $sql_pendapatan = "
                       <td class="fw-bold"><?= htmlspecialchars($user['username']); ?></td>
                       <td class="text-center fw-bold"><?= $data['total']; ?></td>
                       <td class="text-center"><?= $data['draft']; ?></td>
-                      <td class="text-center"><?= $data['perjalanan']; ?></td>
-                      <td class="text-center"><?= $data['sampai']; ?></td>
-                      <td class="text-center"><?= $data['batal']; ?></td>
+                      <td class="text-center"><?= $data['diberangkatkan']; ?></td>
                     </tr>
                   <?php endforeach; ?>
                   
@@ -687,9 +676,7 @@ $sql_pendapatan = "
                       </td>
                       <td class="text-center fw-bold"><?= $systemOwner_data['surat_jalan']['total']; ?></td>
                       <td class="text-center"><?= $systemOwner_data['surat_jalan']['draft']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['perjalanan']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['sampai']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['batal']; ?></td>
+                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['diberangkatkan']; ?></td>
                     </tr>
                   <?php endif; ?>
                 </tbody>
