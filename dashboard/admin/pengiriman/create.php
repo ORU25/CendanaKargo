@@ -17,6 +17,21 @@ if (empty($_SESSION['csrf_token'])) {
 include '../../../config/database.php';
 $title = "Dashboard - Cendana Kargo";
 
+// =======================================================
+// CEK STATUS CLOSING HARI INI - BLOCK AKSES JIKA SUDAH CLOSING
+// =======================================================
+$today = date('Y-m-d');
+$stmt_closing = $conn->prepare("SELECT id FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing->bind_param('is', $_SESSION['user_id'], $today);
+$stmt_closing->execute();
+$is_closed_today = $stmt_closing->get_result()->num_rows > 0;
+$stmt_closing->close();
+
+if ($is_closed_today) {
+    header('Location: ../index.php?error=sudah_closing');
+    exit;
+}
+
 $sqlCabang = "SELECT * FROM kantor_cabang ORDER BY id ASC";
 $resultCabang = $conn->query($sqlCabang);
 $cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) : [];

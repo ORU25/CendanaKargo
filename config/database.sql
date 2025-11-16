@@ -112,6 +112,22 @@ CREATE TABLE log_status_pengiriman (
     FOREIGN KEY (diubah_oleh) REFERENCES User(id) ON DELETE SET NULL
 );
 
+CREATE TABLE Closing (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_cabang INT NOT NULL,
+    tanggal_closing DATE NOT NULL,
+    waktu_closing DATETIME DEFAULT CURRENT_TIMESTAMP,
+    total_pengiriman INT DEFAULT 0,
+    total_cash DECIMAL(10,2) DEFAULT 0,
+    total_transfer DECIMAL(10,2) DEFAULT 0,
+    total_cod DECIMAL(10,2) DEFAULT 0,
+    total_pendapatan DECIMAL(10,2) DEFAULT 0,
+    UNIQUE KEY unique_user_date (id_user, tanggal_closing),
+    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_cabang) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
+);
+
 -- akun user systemOwner dengan password 'admin' (hashed)
 INSERT INTO User (username, password, role)
 VALUES (

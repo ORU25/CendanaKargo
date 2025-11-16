@@ -18,50 +18,23 @@ include '../../../config/database.php';
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
 
-// Ambil parameter filter
-$filter_type = isset($_GET['filter_type']) ? trim($_GET['filter_type']) : 'bulan_ini';
-$filter_value = isset($_GET['filter_value']) ? trim($_GET['filter_value']) : '';
+// Cek apakah sudah closing hari ini
+$today = date('Y-m-d');
+$stmt_closing_check = $conn->prepare("SELECT id FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing_check->bind_param('is', $user_id, $today);
+$stmt_closing_check->execute();
+$is_closed = $stmt_closing_check->get_result()->num_rows > 0;
+$stmt_closing_check->close();
 
-// Setup kondisi WHERE berdasarkan filter
-$date_condition = '';
-$periode_display = '';
-
-switch ($filter_type) {
-    case 'hari_ini':
-        $date_condition = "AND DATE(p.tanggal) = CURDATE()";
-        $periode_display = date('d F Y');
-        break;
-    
-    case 'bulan_ini':
-        $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
-        $periode_display = date('F Y');
-        break;
-    
-    case 'tanggal_spesifik':
-        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
-            $date_condition = "AND DATE(p.tanggal) = '" . $filter_value . "'";
-            $periode_display = date('d F Y', strtotime($filter_value));
-        } else {
-            $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
-            $periode_display = date('F Y');
-        }
-        break;
-    
-    case 'bulan_spesifik':
-        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
-            $date_condition = "AND DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $filter_value . "'";
-            $periode_display = date('F Y', strtotime($filter_value . '-01'));
-        } else {
-            $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
-            $periode_display = date('F Y');
-        }
-        break;
-    
-    default:
-        $date_condition = "AND MONTH(p.tanggal) = MONTH(CURDATE()) AND YEAR(p.tanggal) = YEAR(CURDATE())";
-        $periode_display = date('F Y');
-        break;
+// Jika belum closing, redirect dengan error
+if (!$is_closed) {
+    header("Location: ../index.php?error=belum_closing");
+    exit;
 }
+
+// Export hanya data hari ini
+$date_condition = "AND DATE(p.tanggal) = CURDATE()";
+$periode_display = date('d F Y');
 
 // Query utama: ambil data pengiriman berdasarkan user_id (admin yang login) + nama driver
 $query = "SELECT 

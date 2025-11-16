@@ -58,63 +58,73 @@ $id_cabang_admin = $cabang_row['id'] ?? 0;
 $nama_cabang_admin = $cabang_row['nama_cabang'] ?? 'Tidak diketahui';
 
 // =======================================================
-// FILTERING LOGIC - Single Smart Filter
+// CEK STATUS CLOSING HARI INI
 // =======================================================
-$filter_type = 'hari_ini'; // default
-$filter_value = '';
-$selected_date_display = '';
-$where_clause = '';
+$today = date('Y-m-d');
+$stmt_closing = $conn->prepare("SELECT id, waktu_closing FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing->bind_param('is', $_SESSION['user_id'], $today);
+$stmt_closing->execute();
+$result_closing = $stmt_closing->get_result();
+$is_closed_today = $result_closing->num_rows > 0;
+$data_closing = $is_closed_today ? $result_closing->fetch_assoc() : null;
+$stmt_closing->close();
 
-// Cek parameter filter dari form
-if (isset($_GET['filter_type'])) {
-    $filter_type = htmlspecialchars($_GET['filter_type']);
-}
-if (isset($_GET['filter_value'])) {
-    $filter_value = htmlspecialchars($_GET['filter_value']);
+// =======================================================
+// PROSES CLOSING
+// =======================================================
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'closing') {
+    if (!$is_closed_today) {
+        // Hitung data hari ini untuk closing
+        $stmt_data_closing = $conn->prepare("
+            SELECT 
+                COUNT(*) as total_pengiriman,
+                SUM(CASE WHEN pembayaran = 'cash' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cash,
+                SUM(CASE WHEN pembayaran = 'transfer' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_transfer,
+                SUM(CASE WHEN pembayaran = 'bayar di tempat' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cod,
+                SUM(CASE WHEN status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_pendapatan
+            FROM Pengiriman
+            WHERE id_user = ? AND DATE(tanggal) = CURDATE()
+        ");
+        $stmt_data_closing->bind_param('i', $_SESSION['user_id']);
+        $stmt_data_closing->execute();
+        $data_hari_ini = $stmt_data_closing->get_result()->fetch_assoc();
+        $stmt_data_closing->close();
+        
+        // Insert data closing
+        $stmt_insert = $conn->prepare("
+            INSERT INTO Closing 
+            (id_user, id_cabang, tanggal_closing, total_pengiriman, total_cash, total_transfer, total_cod, total_pendapatan)
+            VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?)
+        ");
+        
+        $stmt_insert->bind_param(
+            'iiidddd',
+            $_SESSION['user_id'],
+            $id_cabang_admin,
+            $data_hari_ini['total_pengiriman'],
+            $data_hari_ini['total_cash'],
+            $data_hari_ini['total_transfer'],
+            $data_hari_ini['total_cod'],
+            $data_hari_ini['total_pendapatan'],
+        );
+        
+        if ($stmt_insert->execute()) {
+            $stmt_insert->close();
+            header('Location: ?success=closing');
+            exit;
+        } else {
+            $stmt_insert->close();
+            header('Location: ?error=closing_failed');
+            exit;
+        }
+    }
 }
 
-// Proses filter berdasarkan tipe
-switch ($filter_type) {
-    case 'hari_ini':
-        $where_clause = 'tanggal >= CURDATE() AND tanggal < CURDATE() + INTERVAL 1 DAY';
-        $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
-        break;
-    
-    case 'bulan_ini':
-        $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
-        $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
-        break;
-    
-    case 'tanggal_spesifik':
-        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
-            $where_clause = "DATE(tanggal) = '" . $filter_value . "'";
-            $selected_date_display = 'Tanggal - ' . format_tanggal_indonesia(strtotime($filter_value));
-        } else {
-            // fallback ke bulan ini jika tanggal tidak valid
-            $filter_type = 'bulan_ini';
-            $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
-            $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
-        }
-        break;
-    
-    case 'bulan_spesifik':
-        if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
-            $where_clause = "DATE_FORMAT(tanggal, '%Y-%m') = '" . $filter_value . "'";
-            $selected_date_display = 'Bulan - ' . format_bulan_tahun_indonesia(strtotime($filter_value . '-01'));
-        } else {
-            // fallback ke bulan ini jika bulan tidak valid
-            $filter_type = 'bulan_ini';
-            $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
-            $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
-        }
-        break;
-    
-    default:
-        // Default: bulan ini
-        $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
-        $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
-        break;
-}
+// =======================================================
+// DATA HARI INI SAJA (TIDAK ADA FILTER)
+// =======================================================
+$where_clause = 'DATE(tanggal) = CURDATE()';
+$selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
 
 // === Hitung total pengiriman, surat jalan, dan pendapatan (berdasarkan filter) ===
 $total_pengiriman = $conn->query("
@@ -255,6 +265,38 @@ include '../../components/sidebar_offcanvas.php';
             $message = "Data tidak ditemukan";
             include '../../components/alert.php';
         }?>
+        <?php if(isset($_GET['success']) && $_GET['success'] == 'closing'){
+            $type = "success";
+            $message = "Closing berhasil! Anda tidak dapat membuat pengiriman baru sampai besok.";
+            include '../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'closing_failed'){
+            $type = "danger";
+            $message = "Gagal melakukan closing. Silakan coba lagi.";
+            include '../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'sudah_closing'){
+            $type = "warning";
+            $message = "Anda sudah melakukan closing hari ini. Tidak dapat membuat pengiriman baru sampai besok.";
+            include '../../components/alert.php';
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'belum_closing'){
+            $type = "warning";
+            $message = "Anda harus melakukan closing terlebih dahulu sebelum export data.";
+            include '../../components/alert.php';
+        }?>
+        <?php if($is_closed_today): ?>
+        <div class="alert alert-info border-0 shadow-sm alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fa-solid fa-lock fs-4 me-3"></i>
+                <div>
+                    <strong>Status Closing:</strong> Anda sudah melakukan closing hari ini (<?php echo date('H:i', strtotime($data_closing['waktu_closing'])); ?> WIB).<br>
+                    <small>Tidak dapat membuat pengiriman baru sampai besok.</small>
+                </div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <?php endif; ?>
 
         <!-- Header -->
         <div class="mb-4">
@@ -271,65 +313,20 @@ include '../../components/sidebar_offcanvas.php';
           </div>
 
           <!-- Display Current Period -->
-          <div class="col-12 mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
               <i class="fa-solid fa-info-circle me-2"></i>
               <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
             </div>
-          </div>
-
-          <!-- Smart Filter Card -->  
-          <div class="card border-0 shadow-sm mb-3">
-            <div class="card-body p-3">
-              <form method="GET" id="smartFilterForm" class="row g-3 align-items-end">
-                
-                <!-- Tipe Filter - Dropdown -->
-                <div class="col-lg-3 col-md-4">
-                  <label for="filter_type" class="form-label small text-muted mb-2 fw-semibold">
-                    <i class="fa-solid fa-filter me-1"></i>Filter
-                  </label>
-                  <select class="form-select form-select-sm" id="filter_type" name="filter_type">
-                    <option value="hari_ini" <?php echo $filter_type === 'hari_ini' ? 'selected' : ''; ?>>
-                      📅 Hari Ini
-                    </option>
-                    <option value="bulan_ini" <?php echo $filter_type === 'bulan_ini' ? 'selected' : ''; ?>>
-                      📆 Bulan Ini
-                    </option>
-                    <option value="tanggal_spesifik" <?php echo $filter_type === 'tanggal_spesifik' ? 'selected' : ''; ?>>
-                      🗓️ Pilih Tanggal
-                    </option>
-                    <option value="bulan_spesifik" <?php echo $filter_type === 'bulan_spesifik' ? 'selected' : ''; ?>>
-                      🗓️ Pilih Bulan
-                    </option>
-                  </select>
-                </div>
-
-                <!-- Input Value - Conditional Display -->
-                <div class="col-lg-3 col-md-4" id="filter_value_container" style="<?php echo in_array($filter_type, ['tanggal_spesifik', 'bulan_spesifik']) ? '' : 'display:none;'; ?>">
-                  <label for="filter_value" class="form-label small text-muted mb-1 fw-semibold">
-                    <i class="fa-solid fa-calendar-check me-1"></i>
-                    <span id="filter_value_label">
-                      <?php echo $filter_type === 'bulan_spesifik' ? 'Pilih Bulan' : 'Pilih Tanggal'; ?>
-                    </span>
-                  </label>
-                  <input type="<?php echo $filter_type === 'bulan_spesifik' ? 'month' : 'date'; ?>" 
-                         class="form-control form-control-sm" 
-                         id="filter_value" 
-                         name="filter_value"
-                         value="<?php echo htmlspecialchars($filter_value); ?>">
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="col-lg-auto col-md-4">
-                  <button type="submit" class="btn btn-sm btn-success me-1">
-                    <i class="fa-solid fa-check me-1"></i>Terapkan
-                  </button>
-                  <button type="button" id="resetFilterBtn" class="btn btn-sm btn-outline-secondary">
-                    <i class="fa-solid fa-rotate-left me-1"></i>Reset
-                  </button>
-                </div>
-              </form>
+            
+            <!-- Tombol Closing -->
+            <?php if(!$is_closed_today): ?>
+            <div>
+              <button type="button" class="btn btn-danger fw-semibold" data-bs-toggle="modal" data-bs-target="#modalClosing">
+                <i class="fa-solid fa-lock me-2"></i>Lakukan Closing
+              </button>
             </div>
+            <?php endif; ?>
           </div>
         </div>
 
@@ -405,16 +402,15 @@ include '../../components/sidebar_offcanvas.php';
         </div>
 
         <div class="text-end">
-            <?php
-              // Build export URL with filter params
-              $export_params = 'filter_type=' . urlencode($filter_type);
-              if (!empty($filter_value)) {
-                  $export_params .= '&filter_value=' . urlencode($filter_value);
-              }
-            ?>
-            <a href="export/export.php?<?php echo $export_params; ?>" class="btn btn-sm btn-outline-success">
-              <i class="fa-solid fa-file-export me-1"></i> Export Data
+            <?php if($is_closed_today): ?>
+            <a href="export/export.php" class="btn btn-sm btn-outline-success">
+              <i class="fa-solid fa-file-export me-1"></i> Export Data Hari Ini
             </a>
+            <?php else: ?>
+            <button class="btn btn-sm btn-outline-secondary" disabled title="Lakukan closing terlebih dahulu">
+              <i class="fa-solid fa-lock me-1"></i> Export Data (Belum Closing)
+            </button>
+            <?php endif; ?>
         </div>
 
 
@@ -664,6 +660,71 @@ include '../../components/sidebar_offcanvas.php';
 
       </div><!-- end row -->
     </div>
+
+<!-- Modal Konfirmasi Closing -->
+<div class="modal fade" id="modalClosing" tabindex="-1" aria-labelledby="modalClosingLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalClosingLabel">
+          <i class="fa-solid fa-lock me-2"></i>Konfirmasi Closing
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="POST" action="index.php" id="formClosing">
+        <input type="hidden" name="action" value="closing">
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert">
+            <i class="fa-solid fa-exclamation-triangle me-2"></i>
+            <strong>Perhatian!</strong> Setelah closing, Anda tidak dapat membuat pengiriman baru sampai besok.
+          </div>
+          
+          <div class="mb-3">
+            <h6 class="fw-bold mb-3">Ringkasan Hari Ini:</h6>
+            <div class="row g-2">
+              <div class="col-6">
+                <small class="text-muted d-block">Total Pendapatan</small>
+                <strong class="text-success"><?= format_rupiah($total_pendapatan ?? 0); ?></strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Total Pengiriman</small>
+                <strong><?= $total_pengiriman ?? 0; ?> kiriman</strong>
+              </div>
+              <div class="col-4">
+                <small class="text-muted d-block">Cash</small>
+                <strong><?= format_rupiah($total_cash ?? 0); ?></strong>
+              </div>
+              <div class="col-4">
+                <small class="text-muted d-block">Transfer</small>
+                <strong><?= format_rupiah($total_transfer ?? 0); ?></strong>
+              </div>
+              <div class="col-4">
+                <small class="text-muted d-block">COD</small>
+                <strong><?= format_rupiah($total_cod ?? 0); ?></strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-check mt-4">
+            <input class="form-check-input" type="checkbox" id="konfirmasi" required>
+            <label class="form-check-label" for="konfirmasi">
+              Saya memastikan semua data sudah benar dan ingin melakukan closing hari ini.
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fa-solid fa-times me-2"></i>Batal
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fa-solid fa-lock me-2"></i>Ya, Lakukan Closing
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
 const btnLacakAdmin = document.getElementById('btnLacakAdmin');
 const inputResiAdmin = document.getElementById('resiAdmin');
@@ -780,51 +841,6 @@ btnHapusPencarian.addEventListener('click', function() {
   spanStatus.style.color = '';
 });
 
-// Smart Filter - Dynamic show/hide input based on filter type
-const filterTypeSelect = document.getElementById('filter_type');
-const filterValueContainer = document.getElementById('filter_value_container');
-const filterValueInput = document.getElementById('filter_value');
-const filterValueLabel = document.getElementById('filter_value_label');
-const resetFilterBtn = document.getElementById('resetFilterBtn');
-
-if (filterTypeSelect) {
-  // Handle filter type change
-  filterTypeSelect.addEventListener('change', function() {
-      const selectedType = this.value;
-      
-      if (selectedType === 'tanggal_spesifik') {
-          filterValueContainer.style.display = 'block';
-          filterValueInput.type = 'date';
-          filterValueLabel.textContent = 'Pilih Tanggal';
-          filterValueInput.required = true;
-      } else if (selectedType === 'bulan_spesifik') {
-          filterValueContainer.style.display = 'block';
-          filterValueInput.type = 'month';
-          filterValueLabel.textContent = 'Pilih Bulan';
-          filterValueInput.required = true;
-      } else {
-          // Hari ini atau Bulan ini - tidak perlu input tambahan
-          filterValueContainer.style.display = 'none';
-          filterValueInput.required = false;
-          filterValueInput.value = '';
-      }
-  });
-
-  // Reset button
-  resetFilterBtn.addEventListener('click', function() {
-      window.location.href = window.location.pathname;
-  });
-
-  // Form validation
-  document.getElementById('smartFilterForm').addEventListener('submit', function(e) {
-      const filterType = filterTypeSelect.value;
-      
-      if ((filterType === 'tanggal_spesifik' || filterType === 'bulan_spesifik') && !filterValueInput.value) {
-          e.preventDefault();
-          alert('Silakan pilih ' + (filterType === 'tanggal_spesifik' ? 'tanggal' : 'bulan') + ' terlebih dahulu!');
-      }
-  });
-}
 </script>
     </main>
   </div>
