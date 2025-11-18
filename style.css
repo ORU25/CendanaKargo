@@ -239,8 +239,10 @@ nav {
   margin-bottom: 25px;
   display: flex;
   align-items: center;
+  min-width: 300px;
   gap: 10px;
 }
+
 .form-inline {
   display: flex;
   flex-wrap: wrap;

@@ -204,9 +204,6 @@ include '../templates/header.php';
                     Login
                 </button>
             </div>
-            <p class="text-center text-muted mt-2" style="font-size: 12px;">
-                <i class="fa-solid fa-shield-halved"></i> Selesaikan verifikasi untuk melanjutkan
-            </p>
         </form>
     </div>
 </div>
