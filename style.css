@@ -226,10 +226,10 @@ nav {
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   padding: 40px 45px;
-  max-width: 900px;
+  /* Hapus max-width: 900px; di sini */
   padding: 40px 45px;
   border-radius: 20px;
-  margin: 0 auto;
+  margin: 0 auto; /* Ini penting agar dia di tengah di HP */
   text-align: left;
 }
 .form-card h3 {
@@ -543,23 +543,21 @@ footer::before {
 }
 
 /* ========== RESPONSIVE ========== */
-@media (max-width: 768px) {
+
+@media (max-width: 900px) {
+
+  header {
+    padding: 10px 20px;
+  }
+  
+  nav {
+    display: none;
+  }
   .hero {
     padding: 120px 20px 80px;
   }
   .hero-text h2 {
-    font-size: 30px;
-  }
-  .hero-text h2::after {
-    width: 60px;
-  }
-  .hero-text p {
-    font-size: 1rem;
-  }
-}
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
+    font-size: clamp(30px, 4vw, 56px); 
   }
   .service-container {
     flex-direction: column;
@@ -571,12 +569,11 @@ footer::before {
   }
   .form-card {
     width: 90%;
+    max-width: 600px; 
   }
   .cta-content h2 {
-    font-size: 22px;
+    font-size: 28px;
   }
-}
-@media (max-width: 900px) {
   .footer-container {
     flex-direction: column;
     align-items: center;
@@ -584,20 +581,110 @@ footer::before {
     gap: 28px;
   }
 
-  .footer-contact {
-    text-align: center;
-  }
-
   .footer-brand {
     justify-content: center;
+    flex-direction: column; 
+    align-items: center;
+    text-align: center;
+    min-width: unset;
   }
-
-  /* Responsive untuk result lacak dengan map */
+  .footer-contact {
+    text-align: center;
+    min-width: unset;
+  }
+  .footer-brand p {
+      text-align: center;
+  }
   #resultLacak > div {
     grid-template-columns: 1fr !important;
   }
-
   #googleMap {
     height: 250px !important;
   }
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 10px 16px;
+  }
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+  .logo-section h1 {
+    font-size: 16px;
+  }
+  .hero {
+    padding: 100px 20px 60px;
+    min-height: 70vh; 
+  }
+  .hero-text h2 {
+    font-size: 26px !important;
+    letter-spacing: 0;
+  }
+  .hero-text p {
+    font-size: 0.95rem;
+  }
+  .tab-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .form-card {
+    padding: 24px;
+    width: 100%; 
+  }
+  
+  .form-card h3 {
+      font-size: 1.3rem; 
+  }
+
+  .form-inline {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-inline input,
+  .form-inline button {
+    width: 100%;
+    min-width: unset; 
+  }
+  .service-card {
+    width: 95%;
+    height: 240px;
+    max-width: 320px; 
+  }
+  .cta-content h2 {
+    font-size: 22px;
+  }
+  footer {
+    padding: 40px 20px 0px;
+  }
+  
+  .footer-logo {
+    width: 80px;
+    height: 80px;
+  }
+  .footer-brand,
+  .footer-contact {
+    text-align: center;
+  }
+}
+@media (max-width: 768px) {
+    .hero-text h2 {
+      font-size: 30px;
+    }
+    .hero-text h2::before {
+      width: 60px;
+      margin-bottom: 15px;
+    }
+    .hero-text p {
+      font-size: 1rem;
+    }
+    .hero-text p::after {
+        margin-top: 15px;
+    }
+    .nav-links {
+      display: none;
+    }
 }
