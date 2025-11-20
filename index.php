@@ -54,12 +54,12 @@
 
   <!-- ===== HERO ===== -->
   <section id="hero" class="hero">
-    <div class="hero-overlay">
+      <div class="hero-overlay"></div>
       <div class="hero-text reveal">
-        <h2 id="heroTitle">Solusi Pengiriman Cepat, Aman, dan Terpercaya</h2>
-        <p id="heroText">Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.</p>
+          <h2 id="heroTitle">Solusi Pengiriman Cepat, Aman, dan Terpercaya</h2>
+          <p id="heroText">Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.
+          </p>
       </div>
-    </div>
   </section>
 
   <!-- ===== LACAK & CEK ONGKIR ===== -->
@@ -235,7 +235,7 @@
   </section>
 
   <!-- ===== LAYANAN ===== -->
-  <section id="layanan" class="services reveal">
+  <section class="services reveal">
     <div class="service-container">
       <div class="service-card">
         <div class="card-inner">
@@ -283,8 +283,8 @@
     </div>
   </section>
 
-  <!-- ===== FOOTER ===== -->
-  <footer>
+  <!-- ===== FOOTER / KONTAK ===== -->
+  <footer id="kontak">
     <div class="footer-container">
       <div class="footer-brand">
         <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
@@ -308,7 +308,7 @@
 
   <!-- ===== JAVASCRIPT ===== -->
   <script>
-    // Scroll progress bar
+    // ========== SCROLL PROGRESS BAR ==========
     window.addEventListener('scroll', () => {
       const scrollTop = window.scrollY;
       const docHeight = document.body.scrollHeight - window.innerHeight;
@@ -316,7 +316,7 @@
       document.querySelector('.scroll-progress').style.width = progress + '%';
     });
 
-    // Reveal animation
+    // ========== REVEAL ANIMATION ==========
     const reveals = document.querySelectorAll('.reveal');
     function revealOnScroll() {
       const windowH = window.innerHeight;
@@ -329,26 +329,99 @@
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
-    // Navbar shrink
+    // ========== NAVBAR SHRINK ==========
     window.addEventListener('scroll', () => {
       const header = document.querySelector('header');
       if (window.scrollY > 60) header.classList.add('scrolled');
       else header.classList.remove('scrolled');
     });
 
-    // Ambil semua link navbar
+    // ========== NAVBAR ACTIVE & SCROLL SPY ==========
     const navLinks = document.querySelectorAll('.nav-links a');
 
+    // Click handler
     navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        // Hapus active di semua
+      link.addEventListener('click', (e) => {
         navLinks.forEach(l => l.classList.remove('active'));
-        // Tambah active di yang diklik
         link.classList.add('active');
       });
     });
 
-    // Tab switch (Lacak Paket / Cek Ongkir)
+// ========== NAVBAR ACTIVE & SCROLL SPY ==========
+    // Pastikan navLinks sudah diambil di atas: const navLinks = document.querySelectorAll('.nav-links a');
+
+    // Click handler (Tinggalkan ini, tapi kita akan prioritaskan ScrollSpy)
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        // Kode ini memastikan link aktif saat diklik (walaupun sebentar)
+        navLinks.forEach(l => l.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+
+    // Scroll spy - auto update active nav
+function updateActiveNav() {
+        // 1. Ambil semua section DAN footer yang punya ID
+        // Pastikan Anda menangkap ID section layanan yang bergerak: #layanan-slider
+        const allSections = document.querySelectorAll('section[id], footer[id]'); 
+        const scrollY = window.scrollY;
+        
+        // Offset penyesuaian (tinggi header/nav)
+        const offset = 120; 
+        
+        // Hapus kelas 'active' dari semua link di awal
+        navLinks.forEach(link => link.classList.remove('active'));
+
+        // Dapatkan total tinggi yang dapat di-scroll
+        const scrollHeight = document.body.scrollHeight - window.innerHeight;
+
+        // 2. Cek jika user di paling bawah (untuk #kontak)
+        if (scrollY >= scrollHeight - 10) {
+            // Asumsi tautan ke kontak punya ID 'navKontak'
+            const kontakLink = document.querySelector(`.nav-links a[href="#kontak"]`);
+            if (kontakLink) kontakLink.classList.add('active');
+            return; 
+        }
+        
+        let foundActive = false;
+
+        // 3. Cek semua section
+        allSections.forEach(section => {
+            const sectionTop = section.offsetTop - offset;
+            const sectionHeight = section.offsetHeight;
+            let sectionId = section.getAttribute('id'); // ID asli section
+            
+            // Perbaiki ID untuk tautan navbar (Layanan Kami)
+            // Jika ID section adalah 'layanan-slider' atau 'layanan', gunakan ID '#layanan' untuk navigasi
+            if (sectionId === 'layanan-slider' || sectionId === 'layanan') {
+                sectionId = 'layanan'; 
+            }
+            // Catatan: Asumsi ID section Hero Anda adalah 'hero' atau 'beranda'
+
+            // Jika scroll berada di dalam jangkauan section
+            if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
+                // Cari tautan navbar yang sesuai dengan ID yang sudah disesuaikan
+                const activeLink = document.querySelector(`.nav-links a[href="#${sectionId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                    foundActive = true;
+                }
+            }
+        });
+        
+        // 4. Jika di paling atas dan belum ada yang aktif, aktifkan Beranda
+        if (scrollY < offset || !foundActive) {
+            // Asumsi tautan ke beranda punya ID 'navBeranda' atau href="#beranda"
+            const berandaLink = document.querySelector(`.nav-links a[href="#beranda"]`);
+            if (berandaLink) berandaLink.classList.add('active');
+        }
+    }
+
+    // Listener
+    window.addEventListener('scroll', updateActiveNav);
+    updateActiveNav();
+
+    // ========== TAB SWITCH (LACAK/ONGKIR) ==========
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     tabBtns.forEach(btn => {
@@ -361,21 +434,17 @@
       });
     });
 
-    // Bilingual system
+    // ========== BILINGUAL SYSTEM ==========
     const translations = {
       id: {
-        // Navbar
         navBeranda: "Beranda",
         navLacakOngkir: "Lacak / Ongkir",
         navLayanan: "Layanan Kami",
         navKontak: "Kontak",
-        // Hero
         heroTitle: "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         heroText: "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
-        // Tab
         tabLacak: "Lacak Paket",
         tabOngkir: "Cek Ongkir",
-        // Form Lacak Paket
         headingLacak: "Lacak Paket",
         labelResi: "Nomor Resi",
         btnLacakText: "Lacak Paket",
@@ -387,7 +456,6 @@
         labelTujuan: "Tujuan",
         labelTotalTarif: "Total Tarif",
         labelStatus: "Status",
-        // Form Cek Ongkir
         headingOngkir: "Cek Ongkir",
         labelCabangAsal: "Cabang Asal",
         labelCabangTujuan: "Cabang Tujuan",
@@ -401,22 +469,84 @@
         labelBatasBerat: "Batas Berat Dasar",
         labelTarifTambahan: "Tarif Tambahan/Kg",
         labelTotalOngkir: "Total Ongkir",
-        // Why Us
         whyTitle: "Mengapa Memilih Cendana Lintas Kargo?",
         whyText: "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
-        // Layanan
         layanan1: "Pengiriman Cepat",
         layanan1desc: "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
         layanan2: "Aman & Terpercaya",
         layanan2desc: "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
         layanan3: "Tarif Terjangkau",
         layanan3desc: "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
-        // CTA
         ctaTitle: "Kirim Barang Sekarang Bersama Kami!",
         ctaText: "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
-        // Alert Messages - Lacak Resi
         alertCaptchaRequired: "Silakan selesaikan verifikasi CAPTCHA terlebih dahulu",
         alertResiKosong: "Nomor resi tidak boleh kosong",
+        alertResiNotFound: "Nomor resi tidak ditemukan",
+        alertResiError: "Terjadi kesalahan saat melacak paket. Silakan coba lagi.",
+        alertSearching: "Mencari...",
+        alertAsalKosong: "Silakan pilih cabang asal",
+        alertTujuanKosong: "Silakan pilih cabang tujuan",
+        alertCabangSama: "Cabang asal dan tujuan tidak boleh sama",
+        alertBeratKosong: "Berat harus lebih dari 0 kg",
+        alertOngkirError: "Terjadi kesalahan saat menghitung ongkir. Silakan coba lagi.",
+        alertCalculating: "Menghitung...",
+        statusDalamProses: "Dalam Proses",
+        statusDalamPengiriman: "Dalam Pengiriman",
+        statusSampaiTujuan: "Sampai Tujuan",
+        statusSelesai: "Selesai",
+        statusDibatalkan: "Dibatalkan",
+        footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
+        footerContactTitle: "Hubungi Kami",
+        footerAddress: "Jl. Cendana No. 88, Samarinda",
+        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi."
+      },
+      en: {
+        navBeranda: "Home",
+        navLacakOngkir: "Track / Shipping Cost",
+        navLayanan: "Our Services",
+        navKontak: "Contact",
+        heroTitle: "Fast, Safe, and Reliable Shipping Solutions",
+        heroText: "We deliver goods across Indonesia with affordable rates and trusted service.",
+        tabLacak: "Track Package",
+        tabOngkir: "Shipping Cost",
+        headingLacak: "Track Package",
+        labelResi: "Tracking Number",
+        btnLacakText: "Track Package",
+        infoLacak: "Shipment Information",
+        labelNoResi: "Tracking No.",
+        labelPengirim: "Sender Name",
+        labelPenerima: "Receiver Name",
+        labelAsal: "Origin",
+        labelTujuan: "Destination",
+        labelTotalTarif: "Total Cost",
+        labelStatus: "Status",
+        headingOngkir: "Shipping Cost",
+        labelCabangAsal: "Origin Branch",
+        labelCabangTujuan: "Destination Branch",
+        labelBerat: "Weight (Kg)",
+        btnHitungText: "Calculate Cost",
+        infoOngkir: "Shipping Cost Result",
+        labelDari: "From",
+        labelKe: "To",
+        labelBeratBarang: "Package Weight",
+        labelTarifDasar: "Base Rate",
+        labelBatasBerat: "Base Weight Limit",
+        labelTarifTambahan: "Additional Rate/Kg",
+        labelTotalOngkir: "Total Cost",
+        whyTitle: "Why Choose Cendana Lintas Kargo?",
+        whyText: "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        layanan1: "Fast Delivery",
+        layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
+        layanan2: "Secure & Trusted",
+        layanan2desc: "Your package safety is our top priority with real-time tracking.",
+        layanan3: "Affordable Rates",
+        layanan3desc: "Enjoy low-cost delivery without sacrificing quality.",
+        ctaTitle: "Ship With Us Now!",
+        ctaText: "Security, speed, and satisfaction are our top priorities.",
+        alertCaptchaRequired: "Please complete the CAPTCHA verification first",
+        alertResiKosong: "Tracking number cannot be empty",
+        alertResiNotFound: "Tracking number not found",
+        alertResiError: "An error occurred while tracking the package. Please try again.",
         alertResiNotFound: "Nomor resi tidak ditemukan",
         alertResiError: "Terjadi kesalahan saat melacak paket. Silakan coba lagi.",
         alertSearching: "Mencari...",
