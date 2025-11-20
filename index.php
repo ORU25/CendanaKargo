@@ -95,7 +95,7 @@
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
           
           <!-- Result display -->
-          <div id="resultLacak" style="display:none; margin-top:30px;">
+          <div id="resultLacak" style="display:none; margin-top:30px; max-width:900px; margin-left:auto; margin-right:auto;">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
               <!-- Detail Pengiriman -->
               <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
