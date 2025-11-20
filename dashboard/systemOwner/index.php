@@ -675,13 +675,13 @@ include '../../components/sidebar_offcanvas.php';
                                         }
                                     ?>
                                         <tr>
-                                            <td class="px-3"><?php echo $no++; ?></td>
-                                            <td class="fw-bold"><?php echo htmlspecialchars($branch_name); ?></td>
-                                            <td class="text-end fw-bold"><?php echo format_rupiah($data['total_revenue']); ?></td>
-                                            <td class="text-end"><?php echo format_rupiah($data['cash_revenue']); ?></td>
-                                            <td class="text-end"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
-                                            <td class="text-end"><?php echo format_rupiah($data['cod_revenue']); ?></td>
-                                            <td class="d-flex justify-content-center">
+                                            <td class="px-3" style="white-space: nowrap;"><?php echo $no++; ?></td>
+                                            <td class="fw-bold" style="white-space: nowrap;"><?php echo htmlspecialchars($branch_name); ?></td>
+                                            <td class="text-end fw-bold" style="white-space: nowrap;"><?php echo format_rupiah($data['total_revenue']); ?></td>
+                                            <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['cash_revenue']); ?></td>
+                                            <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
+                                            <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="d-flex justify-content-center" style="white-space: nowrap;">
                                                 <div>
                                                     <a href="export/export.php?<?php echo $export_params; ?>" 
                                                     class="btn btn-sm btn-outline-success">

@@ -228,7 +228,7 @@
                                             </td>
                                             <td class="text-center">
                                                 <?php if($user['is_closing'] > 0): ?>
-                                                    <span class="badge bg-danger">Tutup</span>
+                                                    <span class="badge bg-danger">Closed</span>
                                                     <br>
                                                     <small class="text-muted" style="font-size: 0.75rem;">
                                                         <?php 

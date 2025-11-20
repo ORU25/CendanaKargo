@@ -497,16 +497,16 @@ $sql_pendapatan = "
           </div>
           <div class="card-body p-0">
             <div class="table-responsive">
-              <table class="table table-striped table-hover align-middle mb-0 small">
+              <table class="table table-striped table-hover align-middle mb-0 small" style="font-size: 0.8rem;">
                 <thead class="table-light">
                   <tr>
-                    <th class="px-3">No.</th>
-                    <th>Username</th>
-                    <th class="text-end">Total</th>
-                    <th class="text-end">Cash</th>
-                    <th class="text-end">Transfer</th>
-                    <th class="text-end">Bayar di Tempat</th>
-                    <th class="text-center">Cetak Data</th>
+                    <th class="px-3" style="white-space: nowrap;">No.</th>
+                    <th style="white-space: nowrap;">Username</th>
+                    <th class="text-end" style="white-space: nowrap;">Total</th>
+                    <th class="text-end" style="white-space: nowrap;">Cash</th>
+                    <th class="text-end" style="white-space: nowrap;">Transfer</th>
+                    <th class="text-end" style="white-space: nowrap;">Bayar di Tempat</th>
+                    <th class="text-center" style="white-space: nowrap;">Cetak Data</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -524,19 +524,17 @@ $sql_pendapatan = "
                     }
                   ?>
                     <tr>
-                      <td class="px-3"><?= $no++; ?></td>
-                      <td class="fw-bold"><?= htmlspecialchars($user['username']); ?></td>
-                      <td class="text-end fw-bold"><?= format_rupiah($data['total']); ?></td>
-                      <td class="text-end"><?= format_rupiah($data['cash']); ?></td>
-                      <td class="text-end"><?= format_rupiah($data['transfer']); ?></td>
-                      <td class="text-end"><?= format_rupiah($data['cod']); ?></td>
-                      <td class="d-flex justify-content-center">
-                        <div>
-                          <a href="export/export.php?<?php echo $export_params; ?>" 
-                             class="btn btn-sm btn-outline-success">
-                            <i class="fa-solid fa-file-export me-1"></i> 
-                          </a>
-                        </div>
+                      <td class="px-3" style="white-space: nowrap;"><?= $no++; ?></td>
+                      <td class="fw-bold" style="white-space: nowrap;"><?= htmlspecialchars($user['username']); ?></td>
+                      <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($data['total']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cash']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['transfer']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cod']); ?></td>
+                      <td class="d-flex justify-content-center" style="white-space: nowrap;">
+                        <a href="export/export.php?<?php echo $export_params; ?>" 
+                           class="btn btn-sm btn-outline-success">
+                          <i class="fa-solid fa-file-export me-1"></i> 
+                        </a>
                       </td>
                     </tr>
                   <?php endforeach; ?>
@@ -549,21 +547,19 @@ $sql_pendapatan = "
                     }
                   ?>
                     <tr class="table-warning">
-                      <td class="px-3"><?= $no++; ?></td>
-                      <td class="fw-bold">
+                      <td class="px-3" style="white-space: nowrap;"><?= $no++; ?></td>
+                      <td class="fw-bold" style="white-space: nowrap;">
                         <?= htmlspecialchars($systemOwner_data['username']); ?>
                       </td>
-                      <td class="text-end fw-bold"><?= format_rupiah($systemOwner_data['pendapatan']['total']); ?></td>
-                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cash']); ?></td>
-                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['transfer']); ?></td>
-                      <td class="text-end"><?= format_rupiah($systemOwner_data['pendapatan']['cod']); ?></td>
-                      <td class="d-flex justify-content-center">
-                        <div>
-                          <a href="export/export.php?<?php echo $export_params_so; ?>" 
-                             class="btn btn-sm btn-outline-success">
-                            <i class="fa-solid fa-file-export me-1"></i> 
-                          </a>
-                        </div>
+                      <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['total']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['cash']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['transfer']); ?></td>
+                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['cod']); ?></td>
+                      <td class="d-flex justify-content-center" style="white-space: nowrap;">
+                        <a href="export/export.php?<?php echo $export_params_so; ?>" 
+                           class="btn btn-sm btn-outline-success">
+                          <i class="fa-solid fa-file-export me-1"></i> 
+                        </a>
                       </td>
                     </tr>
                   <?php endif; ?>

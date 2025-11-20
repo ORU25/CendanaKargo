@@ -294,7 +294,6 @@ include '../../components/sidebar_offcanvas.php';
                     <small>Tidak dapat membuat pengiriman baru sampai besok.</small>
                 </div>
             </div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
         <?php endif; ?>
 
@@ -313,7 +312,7 @@ include '../../components/sidebar_offcanvas.php';
           </div>
 
           <!-- Display Current Period -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex flex-column flex-md-row justify-content-between align-items-stretch align-items-md-center gap-3 mb-3">
             <div class="alert alert-info mb-0 py-2 px-3 d-inline-flex align-items-center" style="font-size: 0.9rem;">
               <i class="fa-solid fa-info-circle me-2"></i>
               <span>Menampilkan data: <strong><?php echo htmlspecialchars($selected_date_display); ?></strong></span>
