@@ -87,7 +87,7 @@
     </div>
 
     <div class="text-start mt-3 mb-3 ms-3">
-        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger btn-sm w-60 rounded-1 px-3 fw-bold">
+        <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger btn-sm w-60 rounded-2 px-3 fw-bold">
             <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
         </a>
     </div>
