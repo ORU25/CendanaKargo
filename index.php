@@ -478,6 +478,10 @@
     }
 
     function startAutoSlide() {
+      // Clear any existing interval first to prevent multiple intervals
+      if (autoSlideInterval) {
+        clearInterval(autoSlideInterval);
+      }
       autoSlideInterval = setInterval(autoSlide, 5000); // Change slide every 5 seconds
     }
 
@@ -486,17 +490,20 @@
       startAutoSlide();
     }
 
+    function stopAutoSlide() {
+      if (autoSlideInterval) {
+        clearInterval(autoSlideInterval);
+        autoSlideInterval = null;
+      }
+    }
+
     // Start auto-slide on page load
     startAutoSlide();
 
     // Pause auto-slide on hover
     const heroSlider = document.querySelector('.hero-slider');
-    heroSlider.addEventListener('mouseenter', () => {
-      clearInterval(autoSlideInterval);
-    });
-    heroSlider.addEventListener('mouseleave', () => {
-      startAutoSlide();
-    });
+    heroSlider.addEventListener('mouseenter', stopAutoSlide);
+    heroSlider.addEventListener('mouseleave', startAutoSlide);
 
     // ========== BILINGUAL SYSTEM ==========
     const translations = {
