@@ -52,14 +52,30 @@
     </div>
   </header>
 
-  <!-- ===== HERO ===== -->
-  <section id="hero" class="hero">
-      <div class="hero-overlay"></div>
-      <div class="hero-text reveal">
-          <h2 id="heroTitle">Solusi Pengiriman Cepat, Aman, dan Terpercaya</h2>
-          <p id="heroText">Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.
-          </p>
-      </div>
+  <!-- ===== HERO SLIDER ===== -->
+  <section id="hero" class="hero-slider">
+    <!-- Background Slider -->
+    <div class="slider-container">
+      <div class="slide active"></div>
+      <div class="slide"></div>
+      <div class="slide"></div>
+    </div>
+    
+    <!-- Static Overlay -->
+    <div class="hero-overlay"></div>
+    
+    <!-- Static Content -->
+    <div class="hero-content">
+      <h2 id="heroTitle">Solusi Pengiriman Cepat, Aman, dan Terpercaya</h2>
+      <p id="heroText">Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.</p>
+    </div>
+    
+    <!-- Dots Indicator -->
+    <div class="slider-dots">
+      <span class="dot active" onclick="currentSlide(0)"></span>
+      <span class="dot" onclick="currentSlide(1)"></span>
+      <span class="dot" onclick="currentSlide(2)"></span>
+    </div>
   </section>
 
   <!-- ===== LACAK & CEK ONGKIR ===== -->
@@ -434,6 +450,65 @@ function updateActiveNav() {
       });
     });
 
+    // ========== HERO SLIDER ==========
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+    let autoSlideInterval;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active');
+        dots[i].classList.remove('active');
+      });
+      
+      if (index >= slides.length) {
+        currentSlideIndex = 0;
+      } else if (index < 0) {
+        currentSlideIndex = slides.length - 1;
+      } else {
+        currentSlideIndex = index;
+      }
+      
+      slides[currentSlideIndex].classList.add('active');
+      dots[currentSlideIndex].classList.add('active');
+    }
+
+    function changeSlide(direction) {
+      showSlide(currentSlideIndex + direction);
+      resetAutoSlide();
+    }
+
+    function currentSlide(index) {
+      showSlide(index);
+      resetAutoSlide();
+    }
+
+    function autoSlide() {
+      showSlide(currentSlideIndex + 1);
+    }
+
+    function startAutoSlide() {
+      autoSlideInterval = setInterval(autoSlide, 5000); // Change slide every 5 seconds
+    }
+
+    function resetAutoSlide() {
+      clearInterval(autoSlideInterval);
+      startAutoSlide();
+    }
+
+    // Start auto-slide on page load
+    startAutoSlide();
+
+    // Pause auto-slide on hover
+    const heroSlider = document.querySelector('.hero-slider');
+    heroSlider.addEventListener('mouseenter', () => {
+      clearInterval(autoSlideInterval);
+    });
+    heroSlider.addEventListener('mouseleave', () => {
+      startAutoSlide();
+    });
+
     // ========== BILINGUAL SYSTEM ==========
     const translations = {
       id: {
@@ -498,7 +573,8 @@ function updateActiveNav() {
         footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
         footerContactTitle: "Hubungi Kami",
         footerAddress: "Jl. Cendana No. 88, Samarinda",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi."
+        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
+        btnWhatsApp: "Chat Admin"
       },
       en: {
         navBeranda: "Home",
@@ -567,7 +643,8 @@ function updateActiveNav() {
         footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
         footerContactTitle: "Hubungi Kami",
         footerAddress: "Jl. Cendana No. 88, Samarinda",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi."
+        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
+        btnWhatsApp: "Chat Admin"
       },
       en: {
         // Navbar
@@ -643,7 +720,8 @@ function updateActiveNav() {
         footerDesc: "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
         footerContactTitle: "Contact Us",
         footerAddress: "Jl. Cendana No. 88, Samarinda",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved."
+        footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved.",
+        btnWhatsApp: "Chat Admin"
       }
     };
 
