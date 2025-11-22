@@ -22,9 +22,6 @@
 </head>
 
 <body>
-  <!-- ===== PROGRESS BAR ===== -->
-  <div class="scroll-progress"></div>
-
   <!-- ===== HEADER ===== -->
   <header>
     <div class="container header-content">
@@ -324,14 +321,6 @@
 
   <!-- ===== JAVASCRIPT ===== -->
   <script>
-    // ========== SCROLL PROGRESS BAR ==========
-    window.addEventListener('scroll', () => {
-      const scrollTop = window.scrollY;
-      const docHeight = document.body.scrollHeight - window.innerHeight;
-      const progress = (scrollTop / docHeight) * 100;
-      document.querySelector('.scroll-progress').style.width = progress + '%';
-    });
-
     // ========== REVEAL ANIMATION ==========
     const reveals = document.querySelectorAll('.reveal');
     function revealOnScroll() {
@@ -376,7 +365,7 @@
     });
 
     // Scroll spy - auto update active nav
-function updateActiveNav() {
+    function updateActiveNav() {
         // 1. Ambil semua section DAN footer yang punya ID
         // Pastikan Anda menangkap ID section layanan yang bergerak: #layanan-slider
         const allSections = document.querySelectorAll('section[id], footer[id]'); 
@@ -875,8 +864,6 @@ function updateActiveNav() {
       
       // Set Google Maps iframe source
       const alamatEncoded = encodeURIComponent(data.alamat_tujuan || data.tujuan);
-      const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${alamatEncoded}&zoom=15`;
-      
       // Alternative: Using iframe
       const mapUrlNoAPI = `https://maps.google.com/maps?q=${alamatEncoded}&output=embed`;
       

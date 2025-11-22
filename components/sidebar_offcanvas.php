@@ -10,83 +10,83 @@
         <div class="list-group list-group-flush custom-sidebar">
             <?php if($_SESSION['role'] == 'systemOwner'): ?>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/pengiriman/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/surat_jalan/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/tarif/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-tags me-2"></i> Tarif
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/kantor_cabang/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'kantor_cabang' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-building me-2"></i> Kantor Cabang
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/driver/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'driver' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'driver' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-car me-2"></i> Driver
             </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/user/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-user-gear me-2"></i> User
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-user-gear me-2"></i> Pengguna
             </a>
 
             <?php elseif($_SESSION['role'] == 'superAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/pengiriman/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/barang_masuk/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/pengambilan_barang/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-box-archive me-2"></i> Pengambilan Barang
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/surat_jalan/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/tarif/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'tarif' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-tags me-2"></i> Tarif
             </a>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/user/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
-               <i class="fa-solid fa-user-gear me-2"></i> User
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-user-gear me-2"></i> Pengguna
             </a>
 
             <?php elseif($_SESSION['role'] == 'admin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/admin/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'dashboard' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-gauge-high me-2"></i> Dashboard
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/pengiriman/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/barang_masuk/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'barang_masuk' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-box-open me-2"></i> Barang Masuk
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/pengambilan_barang/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-box-archive"></i> Pengambilan Barang
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" 
-               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-2 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan
             </a>
             <?php endif; ?>

@@ -26,7 +26,7 @@ header {
   left: 0;
   width: 100%;
   z-index: 1200;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   display: flex;
@@ -35,6 +35,11 @@ header {
   padding: 10px 40px;
   transition: all 0.3s ease;
 }
+
+header.scrolled {
+  background: rgba(255, 255, 255, 0.6);
+}
+
 .container {
   width: 100%;
   display: flex;
@@ -167,7 +172,7 @@ nav {
       rgba(220, 38, 38, 0.6),
       rgba(153, 27, 27, 0.7)
     ),
-    url("assets/slider/chuttersnap-BNBA1h-NgdY-unsplash.jpg");
+    url("assets/slider/slider1.jpg");
 }
 
 .slide:nth-child(2) {
@@ -176,7 +181,7 @@ nav {
       rgba(153, 27, 27, 0.6),
       rgba(220, 38, 38, 0.7)
     ),
-    url("assets/slider/mildlee-7KKy7-TeeVs-unsplash.jpg");
+    url("assets/slider/slider2.jpg");
 }
 
 .slide:nth-child(3) {
@@ -185,7 +190,7 @@ nav {
       rgba(220, 38, 38, 0.7),
       rgba(153, 27, 27, 0.6)
     ),
-    url("assets/slider/rosebox-BFdSCxmqvYc-unsplash.jpg");
+    url("assets/slider/slider3.jpg");
 }
 
 .slide.active {
