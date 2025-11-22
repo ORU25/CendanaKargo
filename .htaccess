@@ -5,6 +5,12 @@ RewriteEngine On
 # Base path project
 RewriteBase /CendanaKargo/
 
+# Blokir akses ke file .env
+<FilesMatch "^\.env">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 # Hapus ekstensi .php dari URL
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\.php -f
