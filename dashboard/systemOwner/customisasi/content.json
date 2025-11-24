@@ -1,0 +1,31 @@
+{
+    "sliders": {
+        "slider1": "assets\/slider\/slider1_1763992828.jpg",
+        "slider2": "assets\/slider\/slider2.jpg",
+        "slider3": "assets\/slider\/slider3.jpg"
+    },
+    "id": {
+        "heroTitle": "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
+        "heroText": "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
+        "whyTitle": "Mengapa Memilih Cendana Lintas Kargo?",
+        "whyText": "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
+        "ctaTitle": "Kirim Barang Sekarang Bersama Kami!",
+        "ctaText": "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
+        "footerDesc": "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
+        "footerAddress": "Jl. Cendana No. 88, Samarinda",
+        "footerPhone": "(0541) 123456",
+        "footerEmail": "info@cendanakargo.com"
+    },
+    "en": {
+        "heroTitle": "Fast, Safe, and Reliable Shipping Solutions",
+        "heroText": "We deliver goods across Indonesia with affordable rates and trusted service.",
+        "whyTitle": "Why Choose Cendana Lintas Kargo?",
+        "whyText": "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        "ctaTitle": "Ship With Us Now!",
+        "ctaText": "Security, speed, and satisfaction are our top priorities.",
+        "footerDesc": "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
+        "footerAddress": "Jl. Cendana No. 88, Samarinda",
+        "footerPhone": "(0541) 123456",
+        "footerEmail": "info@cendanakargo.com"
+    }
+}

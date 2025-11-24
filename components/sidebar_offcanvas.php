@@ -37,6 +37,10 @@
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'user' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-user-gear me-2"></i> Pengguna
             </a>
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/customisasi/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'customisasi' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-pen-to-square me-2"></i> Kustomisasi Web
+            </a>
 
             <?php elseif($_SESSION['role'] == 'superAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/" 

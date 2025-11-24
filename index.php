@@ -1,8 +1,48 @@
-<?php if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
+<?php 
+$dataFile = 'dashboard/systemOwner/customisasi/content.json';
+$content = [];
+
+$defaultData = [
+    'id' => [
+        'heroTitle' => "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
+        'heroText' => "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
+        'whyTitle' => "Mengapa Memilih Cendana Lintas Kargo?",
+        'whyText' => "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
+        'ctaTitle' => "Kirim Barang Sekarang Bersama Kami!",
+        'ctaText' => "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
+        'footerDesc' => "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
+        'footerAddress' => "Jl. Cendana No. 88, Samarinda"
+    ],
+    'en' => [
+        'heroTitle' => "Fast, Safe, and Reliable Shipping Solutions",
+        'heroText' => "We deliver goods across Indonesia with affordable rates and trusted service.",
+        'whyTitle' => "Why Choose Cendana Lintas Kargo?",
+        'whyText' => "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        'ctaTitle' => "Ship With Us Now!",
+        'ctaText' => "Security, speed, and satisfaction are our top priorities.",
+        'footerDesc' => "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
+        'footerAddress' => "Jl. Cendana No. 88, Samarinda"
+    ]
+];
+
+if (file_exists($dataFile)) {
+    $content = json_decode(file_get_contents($dataFile), true);
+} else {
+    $content = $defaultData;
+}
+
+function t($key, $lang='id') {
+    global $content, $defaultData;
+    $val = isset($content[$lang][$key]) ? $content[$lang][$key] : (isset($defaultData[$lang][$key]) ? $defaultData[$lang][$key] : '');
+    return htmlspecialchars($val);
+}
+
+if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
     $type = "danger";
     $message = "You are not authorized to access that page. Please log in with appropriate credentials.";
     include 'components/alert.php';
-}?>
+}
+?>
 
 
 <!DOCTYPE html>
@@ -17,12 +57,10 @@
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="assets/favicon.ico" />
   
-  <!-- Cloudflare Turnstile CAPTCHA -->
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 
 <body>
-  <!-- ===== HEADER ===== -->
   <header>
     <div class="container header-content">
       <div class="logo-section">
@@ -41,7 +79,6 @@
         </ul>
       </nav>
 
-      <!-- Tombol Bahasa -->
       <div class="lang-switch">
         <button id="lang-id" class="active">🇮🇩</button>
         <button id="lang-en">EN</button>
@@ -49,25 +86,26 @@
     </div>
   </header>
 
-  <!-- ===== HERO SLIDER ===== -->
-  <section id="hero" class="hero-slider">
-    <!-- Background Slider -->
+<section id="hero" class="hero-slider">
     <div class="slider-container">
-      <div class="slide active"></div>
-      <div class="slide"></div>
-      <div class="slide"></div>
+        <?php 
+            $s1 = isset($content['sliders']['slider1']) ? $content['sliders']['slider1'] : 'assets/slider/slider1.jpg';
+            $s2 = isset($content['sliders']['slider2']) ? $content['sliders']['slider2'] : 'assets/slider/slider2.jpg';
+            $s3 = isset($content['sliders']['slider3']) ? $content['sliders']['slider3'] : 'assets/slider/slider3.jpg';
+        ?>
+        
+        <div class="slide active" style="background-image: linear-gradient(135deg, rgba(220, 38, 38, 0.6), rgba(153, 27, 27, 0.7)), url('<?php echo $s1; ?>');"></div>
+        <div class="slide" style="background-image: linear-gradient(135deg, rgba(153, 27, 27, 0.6), rgba(220, 38, 38, 0.7)), url('<?php echo $s2; ?>');"></div>
+        <div class="slide" style="background-image: linear-gradient(135deg, rgba(220, 38, 38, 0.7), rgba(153, 27, 27, 0.6)), url('<?php echo $s3; ?>');"></div>
     </div>
     
-    <!-- Static Overlay -->
     <div class="hero-overlay"></div>
     
-    <!-- Static Content -->
     <div class="hero-content">
-      <h2 id="heroTitle">Solusi Pengiriman Cepat, Aman, dan Terpercaya</h2>
-      <p id="heroText">Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.</p>
+      <h2 id="heroTitle"><?php echo t('heroTitle', 'id'); ?></h2>
+      <p id="heroText"><?php echo t('heroText', 'id'); ?></p>
     </div>
     
-    <!-- Dots Indicator -->
     <div class="slider-dots">
       <span class="dot active" onclick="currentSlide(0)"></span>
       <span class="dot" onclick="currentSlide(1)"></span>
@@ -75,7 +113,6 @@
     </div>
   </section>
 
-  <!-- ===== LACAK & CEK ONGKIR ===== -->
   <section id="lacakOngkir" class="reveal" style="background:#fff;padding:80px 20px;">
     <div class="container" style="flex-direction:column;align-items:center;">
       <div class="tab-header" style="display:flex;gap:10px;margin-bottom:30px;flex-wrap:wrap;justify-content:center;">
@@ -87,14 +124,12 @@
         </button>
       </div>
 
-      <!-- Form Lacak Paket -->
       <div class="tab-content active" id="tab-lacak">
         <div class="form-card">
           <h3><i class="fa-solid fa-truck-fast"></i> <span id="headingLacak">Lacak Paket</span></h3>
           <label for="resi" id="labelResi">Nomor Resi</label>
           <input type="text" id="resi" placeholder="Masukkan nomor resi Anda..." />
           
-          <!-- Cloudflare Turnstile Widget -->
           <div style="margin: 20px 0; display: flex; justify-content: center;">
             <div class="cf-turnstile" 
                  data-sitekey="0x4AAAAAACAg1S8rwiBokGwN" 
@@ -104,13 +139,10 @@
           
           <button id="btnLacak" disabled style="opacity: 0.5; cursor: not-allowed;"><i class="fa-solid fa-magnifying-glass"></i> <span id="btnLacakText">Lacak Paket</span></button>
           
-          <!-- Alert message -->
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
           
-          <!-- Result display -->
           <div id="resultLacak" style="display:none; margin-top:30px; max-width:900px; margin-left:auto; margin-right:auto;">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
-              <!-- Detail Pengiriman -->
               <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
                 <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
                   <i class="fa-solid fa-circle-check"></i> <span id="infoLacak">Informasi Pengiriman</span>
@@ -149,7 +181,6 @@
                 </table>
               </div>
               
-              <!-- Google Maps Lokasi Tujuan -->
               <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
                 <h4 style="margin-bottom:15px; color:var(--primary-green); font-size:18px;">
                   <i class="fa-solid fa-location-dot"></i> Lokasi Cabang Tujuan
@@ -176,7 +207,6 @@
         </div>
       </div>
 
-      <!-- Form Cek Ongkir -->
       <div class="tab-content" id="tab-ongkir">
         <div class="form-card">
           <h3><i class="fa-solid fa-calculator"></i> <span id="headingOngkir">Cek Ongkir</span></h3>
@@ -192,10 +222,8 @@
           <input type="number" id="beratBarang" placeholder="Contoh: 2" step="0.1" min="0.1" />
           <button id="btnHitungOngkir"><i class="fa-solid fa-calculator"></i> <span id="btnHitungText">Hitung Ongkir</span></button>
           
-          <!-- Alert message -->
           <div id="alertOngkir" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
           
-          <!-- Result display -->
           <div id="resultOngkir" style="display:none; margin-top:30px; background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
             <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
               <i class="fa-solid fa-circle-check"></i> <span id="infoOngkir">Hasil Perhitungan Ongkir</span>
@@ -236,18 +264,13 @@
     </div>
   </section>
 
-  <!-- ===== WHY US ===== -->
   <section class="why-us reveal" id="layanan">
     <div class="container-narrow">
-      <h2 id="whyTitle">Mengapa Memilih Cendana Lintas Kargo?</h2>
-      <p id="whyText">
-        Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu,
-        sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.
-      </p>
+      <h2 id="whyTitle"><?php echo t('whyTitle', 'id'); ?></h2>
+      <p id="whyText"><?php echo t('whyText', 'id'); ?></p>
     </div>
   </section>
 
-  <!-- ===== LAYANAN ===== -->
   <section class="services reveal">
     <div class="service-container">
       <div class="service-card">
@@ -288,22 +311,20 @@
     </div>
   </section>
 
-  <!-- ===== CTA ===== -->
   <section class="cta">
     <div class="cta-content">
-      <h2 id="ctaTitle">Kirim Barang Sekarang Bersama Kami!</h2>
-      <p id="ctaText">Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.</p>
+      <h2 id="ctaTitle"><?php echo t('ctaTitle', 'id'); ?></h2>
+      <p id="ctaText"><?php echo t('ctaText', 'id'); ?></p>
     </div>
   </section>
 
-  <!-- ===== FOOTER / KONTAK ===== -->
   <footer id="kontak">
     <div class="footer-container">
       <div class="footer-brand">
         <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
         <div>
           <h3>Cendana Lintas Kargo</h3>
-          <p id="footerDesc">Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.</p>
+          <p id="footerDesc"><?php echo t('footerDesc', 'id'); ?></p>
         </div>
       </div>
 
@@ -311,7 +332,7 @@
         <h4 id="footerContactTitle">Hubungi Kami</h4>
         <p>📧 info@cendanakargo.com</p>
         <p>📞 (0541) 123456</p>
-        <p>📍<span id="footerAddress">Jl. Cendana No. 88, Samarinda</span></p>
+        <p>📍<span id="footerAddress"><?php echo t('footerAddress', 'id'); ?></span></p>
       </div>
     </div>
     <div class="footer-bottom">
@@ -319,7 +340,6 @@
     </div>
   </footer>
 
-  <!-- ===== JAVASCRIPT ===== -->
   <script>
     // ========== REVEAL ANIMATION ==========
     const reveals = document.querySelectorAll('.reveal');
@@ -352,10 +372,6 @@
       });
     });
 
-// ========== NAVBAR ACTIVE & SCROLL SPY ==========
-    // Pastikan navLinks sudah diambil di atas: const navLinks = document.querySelectorAll('.nav-links a');
-
-    // Click handler (Tinggalkan ini, tapi kita akan prioritaskan ScrollSpy)
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         // Kode ini memastikan link aktif saat diklik (walaupun sebentar)
@@ -506,14 +522,25 @@
     heroSlider.addEventListener('mouseleave', startAutoSlide);
 
     // ========== BILINGUAL SYSTEM ==========
+// ========== BILINGUAL SYSTEM (DYNAMIC FROM PHP) ==========
     const translations = {
       id: {
         navBeranda: "Beranda",
         navLacakOngkir: "Lacak / Ongkir",
         navLayanan: "Layanan Kami",
         navKontak: "Kontak",
-        heroTitle: "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
-        heroText: "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
+        
+        // Dynamic Content from PHP
+        heroTitle: `<?php echo t('heroTitle', 'id'); ?>`,
+        heroText: `<?php echo t('heroText', 'id'); ?>`,
+        whyTitle: `<?php echo t('whyTitle', 'id'); ?>`,
+        whyText: `<?php echo t('whyText', 'id'); ?>`,
+        ctaTitle: `<?php echo t('ctaTitle', 'id'); ?>`,
+        ctaText: `<?php echo t('ctaText', 'id'); ?>`,
+        footerDesc: `<?php echo t('footerDesc', 'id'); ?>`,
+        footerAddress: `📍 <?php echo t('footerAddress', 'id'); ?>`,
+        
+        // Static UI Elements (Form Labels etc)
         tabLacak: "Lacak Paket",
         tabOngkir: "Cek Ongkir",
         headingLacak: "Lacak Paket",
@@ -540,16 +567,12 @@
         labelBatasBerat: "Batas Berat Dasar",
         labelTarifTambahan: "Tarif Tambahan/Kg",
         labelTotalOngkir: "Total Ongkir",
-        whyTitle: "Mengapa Memilih Cendana Lintas Kargo?",
-        whyText: "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
         layanan1: "Pengiriman Cepat",
         layanan1desc: "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
         layanan2: "Aman & Terpercaya",
         layanan2desc: "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
         layanan3: "Tarif Terjangkau",
         layanan3desc: "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
-        ctaTitle: "Kirim Barang Sekarang Bersama Kami!",
-        ctaText: "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
         alertCaptchaRequired: "Silakan selesaikan verifikasi CAPTCHA terlebih dahulu",
         alertResiKosong: "Nomor resi tidak boleh kosong",
         alertResiNotFound: "Nomor resi tidak ditemukan",
@@ -566,9 +589,7 @@
         statusSampaiTujuan: "Sampai Tujuan",
         statusSelesai: "Selesai",
         statusDibatalkan: "Dibatalkan",
-        footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
         footerContactTitle: "Hubungi Kami",
-        footerAddress: "Jl. Cendana No. 88, Samarinda",
         footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
         btnWhatsApp: "Chat Admin"
       },
@@ -577,8 +598,18 @@
         navLacakOngkir: "Track / Shipping Cost",
         navLayanan: "Our Services",
         navKontak: "Contact",
-        heroTitle: "Fast, Safe, and Reliable Shipping Solutions",
-        heroText: "We deliver goods across Indonesia with affordable rates and trusted service.",
+
+        // Dynamic Content from PHP
+        heroTitle: `<?php echo t('heroTitle', 'en'); ?>`,
+        heroText: `<?php echo t('heroText', 'en'); ?>`,
+        whyTitle: `<?php echo t('whyTitle', 'en'); ?>`,
+        whyText: `<?php echo t('whyText', 'en'); ?>`,
+        ctaTitle: `<?php echo t('ctaTitle', 'en'); ?>`,
+        ctaText: `<?php echo t('ctaText', 'en'); ?>`,
+        footerDesc: `<?php echo t('footerDesc', 'en'); ?>`,
+        footerAddress: `📍 <?php echo t('footerAddress', 'en'); ?>`,
+
+        // Static UI Elements
         tabLacak: "Track Package",
         tabOngkir: "Shipping Cost",
         headingLacak: "Track Package",
@@ -605,117 +636,29 @@
         labelBatasBerat: "Base Weight Limit",
         labelTarifTambahan: "Additional Rate/Kg",
         labelTotalOngkir: "Total Cost",
-        whyTitle: "Why Choose Cendana Lintas Kargo?",
-        whyText: "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
         layanan1: "Fast Delivery",
         layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
         layanan2: "Secure & Trusted",
         layanan2desc: "Your package safety is our top priority with real-time tracking.",
         layanan3: "Affordable Rates",
         layanan3desc: "Enjoy low-cost delivery without sacrificing quality.",
-        ctaTitle: "Ship With Us Now!",
-        ctaText: "Security, speed, and satisfaction are our top priorities.",
-        alertCaptchaRequired: "Please complete the CAPTCHA verification first",
-        alertResiKosong: "Tracking number cannot be empty",
-        alertResiNotFound: "Tracking number not found",
-        alertResiError: "An error occurred while tracking the package. Please try again.",
-        alertResiNotFound: "Nomor resi tidak ditemukan",
-        alertResiError: "Terjadi kesalahan saat melacak paket. Silakan coba lagi.",
-        alertSearching: "Mencari...",
-        // Alert Messages - Cek Ongkir
-        alertAsalKosong: "Silakan pilih cabang asal",
-        alertTujuanKosong: "Silakan pilih cabang tujuan",
-        alertCabangSama: "Cabang asal dan tujuan tidak boleh sama",
-        alertBeratKosong: "Berat harus lebih dari 0 kg",
-        alertOngkirError: "Terjadi kesalahan saat menghitung ongkir. Silakan coba lagi.",
-        alertCalculating: "Menghitung...",
-        // Status Tracking
-        statusDalamProses: "Dalam Proses",
-        statusDalamPengiriman: "Dalam Pengiriman",
-        statusSampaiTujuan: "Sampai Tujuan",
-        statusSelesai: "Selesai",
-        statusDibatalkan: "Dibatalkan",
-        // Footer
-        footerDesc: "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
-        footerContactTitle: "Hubungi Kami",
-        footerAddress: "Jl. Cendana No. 88, Samarinda",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
-        btnWhatsApp: "Chat Admin"
-      },
-      en: {
-        // Navbar
-        navBeranda: "Home",
-        navLacakOngkir: "Track / Shipping Cost",
-        navLayanan: "Our Services",
-        navKontak: "Contact",
-        // Hero
-        heroTitle: "Fast, Safe, and Reliable Shipping Solutions",
-        heroText: "We deliver goods across Indonesia with affordable rates and trusted service.",
-        // Tab
-        tabLacak: "Track Package",
-        tabOngkir: "Shipping Cost",
-        // Form Lacak Paket
-        headingLacak: "Track Package",
-        labelResi: "Tracking Number",
-        btnLacakText: "Track Package",
-        infoLacak: "Shipment Information",
-        labelNoResi: "Tracking No.",
-        labelPengirim: "Sender Name",
-        labelPenerima: "Receiver Name",
-        labelAsal: "Origin",
-        labelTujuan: "Destination",
-        labelTotalTarif: "Total Cost",
-        labelStatus: "Status",
-        // Form Cek Ongkir
-        headingOngkir: "Shipping Cost",
-        labelCabangAsal: "Origin Branch",
-        labelCabangTujuan: "Destination Branch",
-        labelBerat: "Weight (Kg)",
-        btnHitungText: "Calculate Cost",
-        infoOngkir: "Shipping Cost Result",
-        labelDari: "From",
-        labelKe: "To",
-        labelBeratBarang: "Package Weight",
-        labelTarifDasar: "Base Rate",
-        labelBatasBerat: "Base Weight Limit",
-        labelTarifTambahan: "Additional Rate/Kg",
-        labelTotalOngkir: "Total Cost",
-        // Why Us
-        whyTitle: "Why Choose Cendana Lintas Kargo?",
-        whyText: "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
-        // Layanan
-        layanan1: "Fast Delivery",
-        layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
-        layanan2: "Secure & Trusted",
-        layanan2desc: "Your package safety is our top priority with real-time tracking.",
-        layanan3: "Affordable Rates",
-        layanan3desc: "Enjoy low-cost delivery without sacrificing quality.",
-        // CTA
-        ctaTitle: "Ship With Us Now!",
-        ctaText: "Security, speed, and satisfaction are our top priorities.",
-        // Alert Messages - Lacak Resi
         alertCaptchaRequired: "Please complete the CAPTCHA verification first",
         alertResiKosong: "Tracking number cannot be empty",
         alertResiNotFound: "Tracking number not found",
         alertResiError: "An error occurred while tracking the package. Please try again.",
         alertSearching: "Searching...",
-        // Alert Messages - Cek Ongkir
         alertAsalKosong: "Please select origin branch",
         alertTujuanKosong: "Please select destination branch",
         alertCabangSama: "Origin and destination branches cannot be the same",
         alertBeratKosong: "Weight must be greater than 0 kg",
         alertOngkirError: "An error occurred while calculating shipping cost. Please try again.",
         alertCalculating: "Calculating...",
-        // Status Tracking
         statusDalamProses: "In Process",
         statusDalamPengiriman: "In Transit",
         statusSampaiTujuan: "Arrived",
         statusSelesai: "Completed",
         statusDibatalkan: "Cancelled",
-        // Footer
-        footerDesc: "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
         footerContactTitle: "Contact Us",
-        footerAddress: "Jl. Cendana No. 88, Samarinda",
         footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved.",
         btnWhatsApp: "Chat Admin"
       }
