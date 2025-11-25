@@ -281,10 +281,9 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
           <div class="card-front">
             <i class="fa-solid fa-bolt fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
               <h3 id="layanan1"><?php echo t('layanan1', 'id'); ?></h3>
-              <p id="layanan1desc"><?php echo t('layanan1desc', 'id'); ?></p>
           </div>
           <div class="card-back">
-            <p id="layanan1desc">Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.</p>
+            <p id="layanan1desc"><?php echo t('layanan1desc', 'id'); ?></p>
           </div>
         </div>
       </div>
@@ -294,10 +293,9 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
           <div class="card-front">
             <i class="fa-solid fa-shield-halved fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
               <h3 id="layanan2"><?php echo t('layanan2', 'id'); ?></h3>
-              <p id="layanan2desc"><?php echo t('layanan2desc', 'id'); ?></p>
           </div>
           <div class="card-back">
-            <p id="layanan2desc">Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.</p>
+            <p id="layanan2desc"><?php echo t('layanan2desc', 'id'); ?></p>
           </div>
         </div>
       </div>
@@ -307,10 +305,9 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
           <div class="card-front">
             <i class="fa-solid fa-coins fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
               <h3 id="layanan3"><?php echo t('layanan3', 'id'); ?></h3>
-              <p id="layanan3desc"><?php echo t('layanan3desc', 'id'); ?></p>
           </div>
           <div class="card-back">
-            <p id="layanan3desc">Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.</p>
+            <p id="layanan3desc"><?php echo t('layanan3desc', 'id'); ?></p>
           </div>
         </div>
       </div>
