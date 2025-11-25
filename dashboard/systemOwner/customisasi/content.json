@@ -1,14 +1,24 @@
 {
+    "settings": {
+        "navLogo": "assets/logo.jpg",
+        "footerLogo": "assets/clk.png"
+    },
     "sliders": {
-        "slider1": "assets\/slider\/slider1_1763992828.jpg",
-        "slider2": "assets\/slider\/slider2.jpg",
-        "slider3": "assets\/slider\/slider3.jpg"
+        "slider1": "assets/slider/slider1.jpg",
+        "slider2": "assets/slider/slider2.jpg",
+        "slider3": "assets/slider/slider3.jpg"
     },
     "id": {
         "heroTitle": "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         "heroText": "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
         "whyTitle": "Mengapa Memilih Cendana Lintas Kargo?",
         "whyText": "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
+        "layanan1": "Pengiriman Cepat",
+        "layanan1desc": "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
+        "layanan2": "Aman & Terpercaya",
+        "layanan2desc": "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
+        "layanan3": "Tarif Terjangkau",
+        "layanan3desc": "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
         "ctaTitle": "Kirim Barang Sekarang Bersama Kami!",
         "ctaText": "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
         "footerDesc": "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
@@ -21,6 +31,12 @@
         "heroText": "We deliver goods across Indonesia with affordable rates and trusted service.",
         "whyTitle": "Why Choose Cendana Lintas Kargo?",
         "whyText": "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        "layanan1": "Fast Delivery",
+        "layanan1desc": "Your goods are shipped quickly and safely with accurate estimates.",
+        "layanan2": "Secure & Trusted",
+        "layanan2desc": "Your package safety is our top priority with real-time tracking.",
+        "layanan3": "Affordable Rates",
+        "layanan3desc": "Enjoy low-cost delivery without sacrificing quality.",
         "ctaTitle": "Ship With Us Now!",
         "ctaText": "Security, speed, and satisfaction are our top priorities.",
         "footerDesc": "Your trusted logistics partner for every delivery, fast, safe, and affordable.",

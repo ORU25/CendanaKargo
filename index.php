@@ -65,7 +65,10 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
     <div class="container header-content">
       <div class="logo-section">
         <a href="auth/login">
-          <img src="assets/logo.jpg" alt="Logo Cendana Lintas Kargo" class="logo" />
+        <?php
+            $navLogo = isset($content['settings']['navLogo']) ? $content['settings']['navLogo'] : 'assets/logo.jpg';
+        ?>
+        <img src="<?php echo $navLogo; ?>" alt="Logo Cendana Lintas Kargo" class="logo" />
         </a>
         <h1>Cendana Lintas Kargo</h1>
       </div>
@@ -277,7 +280,8 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         <div class="card-inner">
           <div class="card-front">
             <i class="fa-solid fa-bolt fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
-            <h3 id="layanan1">Pengiriman Cepat</h3>
+              <h3 id="layanan1"><?php echo t('layanan1', 'id'); ?></h3>
+              <p id="layanan1desc"><?php echo t('layanan1desc', 'id'); ?></p>
           </div>
           <div class="card-back">
             <p id="layanan1desc">Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.</p>
@@ -289,7 +293,8 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         <div class="card-inner">
           <div class="card-front">
             <i class="fa-solid fa-shield-halved fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
-            <h3 id="layanan2">Aman & Terpercaya</h3>
+              <h3 id="layanan2"><?php echo t('layanan2', 'id'); ?></h3>
+              <p id="layanan2desc"><?php echo t('layanan2desc', 'id'); ?></p>
           </div>
           <div class="card-back">
             <p id="layanan2desc">Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.</p>
@@ -301,7 +306,8 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         <div class="card-inner">
           <div class="card-front">
             <i class="fa-solid fa-coins fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
-            <h3 id="layanan3">Tarif Terjangkau</h3>
+              <h3 id="layanan3"><?php echo t('layanan3', 'id'); ?></h3>
+              <p id="layanan3desc"><?php echo t('layanan3desc', 'id'); ?></p>
           </div>
           <div class="card-back">
             <p id="layanan3desc">Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.</p>
@@ -321,7 +327,10 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
   <footer id="kontak">
     <div class="footer-container">
       <div class="footer-brand">
-        <img src="assets/clk.png" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
+        <?php
+            $footerLogo = isset($content['settings']['footerLogo']) ? $content['settings']['footerLogo'] : 'assets/clk.png';
+        ?>
+        <img src="<?php echo $footerLogo; ?>" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
         <div>
           <h3>Cendana Lintas Kargo</h3>
           <p id="footerDesc"><?php echo t('footerDesc', 'id'); ?></p>
@@ -523,7 +532,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
 
     // ========== BILINGUAL SYSTEM ==========
 // ========== BILINGUAL SYSTEM (DYNAMIC FROM PHP) ==========
-    const translations = {
+const translations = {
       id: {
         navBeranda: "Beranda",
         navLacakOngkir: "Lacak / Ongkir",
@@ -539,7 +548,14 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         ctaText: `<?php echo t('ctaText', 'id'); ?>`,
         footerDesc: `<?php echo t('footerDesc', 'id'); ?>`,
         footerAddress: `📍 <?php echo t('footerAddress', 'id'); ?>`,
-        
+
+        layanan1: `<?php echo t('layanan1', 'id'); ?>`,
+        layanan1desc: `<?php echo t('layanan1desc', 'id'); ?>`,
+        layanan2: `<?php echo t('layanan2', 'id'); ?>`,
+        layanan2desc: `<?php echo t('layanan2desc', 'id'); ?>`,
+        layanan3: `<?php echo t('layanan3', 'id'); ?>`,
+        layanan3desc: `<?php echo t('layanan3desc', 'id'); ?>`,
+
         // Static UI Elements (Form Labels etc)
         tabLacak: "Lacak Paket",
         tabOngkir: "Cek Ongkir",
@@ -567,12 +583,6 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         labelBatasBerat: "Batas Berat Dasar",
         labelTarifTambahan: "Tarif Tambahan/Kg",
         labelTotalOngkir: "Total Ongkir",
-        layanan1: "Pengiriman Cepat",
-        layanan1desc: "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
-        layanan2: "Aman & Terpercaya",
-        layanan2desc: "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
-        layanan3: "Tarif Terjangkau",
-        layanan3desc: "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
         alertCaptchaRequired: "Silakan selesaikan verifikasi CAPTCHA terlebih dahulu",
         alertResiKosong: "Nomor resi tidak boleh kosong",
         alertResiNotFound: "Nomor resi tidak ditemukan",
@@ -609,6 +619,13 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         footerDesc: `<?php echo t('footerDesc', 'en'); ?>`,
         footerAddress: `📍 <?php echo t('footerAddress', 'en'); ?>`,
 
+        layanan1: `<?php echo t('layanan1', 'en'); ?>`,
+        layanan1desc: `<?php echo t('layanan1desc', 'en'); ?>`,
+        layanan2: `<?php echo t('layanan2', 'en'); ?>`,
+        layanan2desc: `<?php echo t('layanan2desc', 'en'); ?>`,
+        layanan3: `<?php echo t('layanan3', 'en'); ?>`,
+        layanan3desc: `<?php echo t('layanan3desc', 'en'); ?>`,
+
         // Static UI Elements
         tabLacak: "Track Package",
         tabOngkir: "Shipping Cost",
@@ -636,12 +653,6 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         labelBatasBerat: "Base Weight Limit",
         labelTarifTambahan: "Additional Rate/Kg",
         labelTotalOngkir: "Total Cost",
-        layanan1: "Fast Delivery",
-        layanan1desc: "Your goods are shipped quickly and safely with accurate estimates.",
-        layanan2: "Secure & Trusted",
-        layanan2desc: "Your package safety is our top priority with real-time tracking.",
-        layanan3: "Affordable Rates",
-        layanan3desc: "Enjoy low-cost delivery without sacrificing quality.",
         alertCaptchaRequired: "Please complete the CAPTCHA verification first",
         alertResiKosong: "Tracking number cannot be empty",
         alertResiNotFound: "Tracking number not found",
