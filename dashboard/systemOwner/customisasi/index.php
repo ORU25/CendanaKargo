@@ -103,16 +103,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         function handleUpload($fileInputName, $targetDir, &$dataRef, $jsonKey, &$updatedFlag) {
-            global $message, $messageType; // Akses variabel global untuk error message
+            global $message, $messageType;
 
             if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === 0) {
                 
-                // 1. CEK UKURAN FILE (Max 1 MB = 1048576 Bytes)
-                $maxSize = 1048576; // 1MB dalam bytes
+                $maxSize = 1048576; // 1MB
                 if ($_FILES[$fileInputName]['size'] > $maxSize) {
                     $message = "Gagal: Gambar <strong>" . $_FILES[$fileInputName]['name'] . "</strong> terlalu besar! (Maksimal 1 MB)";
                     $messageType = "danger";
-                    return; // Batalkan proses upload file ini
+                    return;
                 }
 
                 $fileTmp = $_FILES[$fileInputName]['tmp_name'];
@@ -159,12 +158,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($isUpdated) {
         if (file_put_contents($dataFile, json_encode($currentData, JSON_PRETTY_PRINT))) {
-            // Hanya set pesan sukses JIKA tidak ada error upload gambar sebelumnya
             if ($messageType !== 'danger') {
                 $message = "Bagian <strong>" . strtoupper(str_replace('_', ' ', $section)) . "</strong> berhasil diperbarui!";
                 $messageType = "success";
             } else {
-                // Jika ada error (misal gambar > 1MB)
                 $message .= " <br>(Data teks tersimpan, namun gambar gagal diupload)";
             }
         } else {
@@ -217,7 +214,7 @@ include '../../../components/sidebar_offcanvas.php';
 
                 <div class="card border-0 shadow-sm mb-5">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-gear me-2"></i>Pengaturan Umum (Logo)</h5>
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-gear me-2"></i>Bagian Pengaturan Logo</h5>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="" enctype="multipart/form-data">
@@ -300,7 +297,7 @@ include '../../../components/sidebar_offcanvas.php';
 
                 <div class="card border-0 shadow-sm mb-5">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-hand-holding-heart me-2"></i>Layanan (Services & Why Us)</h5>
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-hand-holding-heart me-2"></i>Bagian Layanan</h5>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="">
@@ -308,7 +305,7 @@ include '../../../components/sidebar_offcanvas.php';
                             
                             <div class="d-flex align-items-center mb-3">
                                 <i class="fa-solid fa-circle-question text-muted me-2"></i>
-                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Bagian Mengapa Kami</h6>
+                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Mengapa Kami</h6>
                             </div>
                             
                             <div class="row g-3 mb-4">
@@ -424,7 +421,7 @@ include '../../../components/sidebar_offcanvas.php';
 
                 <div class="card border-0 shadow-sm mb-5">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-bullhorn me-2"></i>Call to Action & Kontak</h5>
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-bullhorn me-2"></i>Bagian Call to Action & Kontak</h5>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="">
@@ -440,7 +437,9 @@ include '../../../components/sidebar_offcanvas.php';
                                         <input type="text" class="form-control form-control-sm" name="id_ctaText" value="<?= getVal($currentData, 'id', 'ctaText') ?>">
                                     </div>
                                     
-                                    <h6 class="fw-bold mt-4 mb-2 small text-uppercase text-muted border-bottom pb-1">Kontak Footer (ID)</h6>
+                                    <hr class="mt-5 mb-4" style="border-top: 2px dashed #e9ecef;">
+                                    
+                                    <h6 class="fw-bold small text-uppercase text-muted border-bottom pb-2 mb-3">Kontak Footer (ID)</h6>
                                     
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Deskripsi Footer (ID)</label>
@@ -472,7 +471,9 @@ include '../../../components/sidebar_offcanvas.php';
                                         <input type="text" class="form-control form-control-sm" name="en_ctaText" value="<?= getVal($currentData, 'en', 'ctaText') ?>">
                                     </div>
 
-                                    <h6 class="fw-bold mt-4 mb-2 small text-uppercase text-muted border-bottom pb-1">Footer Contact (EN)</h6>
+                                    <hr class="mt-5 mb-4" style="border-top: 2px dashed #e9ecef;">
+
+                                    <h6 class="fw-bold small text-uppercase text-muted border-bottom pb-2 mb-3">Footer Contact (EN)</h6>
 
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Footer Description (EN)</label>
