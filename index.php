@@ -2,31 +2,59 @@
 $dataFile = 'dashboard/systemOwner/customisasi/content.json';
 $content = [];
 
+// 1. UPDATE DEFAULT DATA (Agar tidak error jika JSON terhapus)
 $defaultData = [
+    'settings' => [
+        'navLogo' => 'assets/logo.jpg',
+        'footerLogo' => 'assets/clk.png'
+    ],
+    'sliders' => [
+        'slider1' => 'assets/slider/slider1.jpg',
+        'slider2' => 'assets/slider/slider2.jpg',
+        'slider3' => 'assets/slider/slider3.jpg'
+    ],
     'id' => [
         'heroTitle' => "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         'heroText' => "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
         'whyTitle' => "Mengapa Memilih Cendana Lintas Kargo?",
         'whyText' => "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
+        'layanan1' => "Pengiriman Cepat",
+        'layanan1desc' => "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
+        'layanan2' => "Aman & Terpercaya",
+        'layanan2desc' => "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
+        'layanan3' => "Tarif Terjangkau",
+        'layanan3desc' => "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
         'ctaTitle' => "Kirim Barang Sekarang Bersama Kami!",
         'ctaText' => "Keamanan, kecepatan, dan kepuasan pelanggan adalah prioritas utama kami.",
         'footerDesc' => "Partner logistik terpercaya untuk setiap pengiriman Anda, cepat, aman, dan hemat.",
-        'footerAddress' => "Jl. Cendana No. 88, Samarinda"
+        'footerAddress' => "Jl. Cendana No. 88, Samarinda",
+        'footerPhone' => "(0541) 123456",        // NEW
+        'footerEmail' => "info@cendanakargo.com" // NEW
     ],
     'en' => [
         'heroTitle' => "Fast, Safe, and Reliable Shipping Solutions",
         'heroText' => "We deliver goods across Indonesia with affordable rates and trusted service.",
         'whyTitle' => "Why Choose Cendana Lintas Kargo?",
         'whyText' => "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
+        'layanan1' => "Fast Delivery",
+        'layanan1desc' => "Your goods are shipped quickly and safely with accurate estimates.",
+        'layanan2' => "Secure & Trusted",
+        'layanan2desc' => "Your package safety is our top priority with real-time tracking.",
+        'layanan3' => "Affordable Rates",
+        'layanan3desc' => "Enjoy low-cost delivery without sacrificing quality.",
         'ctaTitle' => "Ship With Us Now!",
         'ctaText' => "Security, speed, and satisfaction are our top priorities.",
         'footerDesc' => "Your trusted logistics partner for every delivery, fast, safe, and affordable.",
-        'footerAddress' => "Jl. Cendana No. 88, Samarinda"
+        'footerAddress' => "Jl. Cendana No. 88, Samarinda",
+        'footerPhone' => "(0541) 123456",        // NEW
+        'footerEmail' => "info@cendanakargo.com" // NEW
     ]
 ];
 
 if (file_exists($dataFile)) {
     $content = json_decode(file_get_contents($dataFile), true);
+    // Merge untuk memastikan key baru terbaca jika file json lama
+    $content = array_replace_recursive($defaultData, $content); 
 } else {
     $content = $defaultData;
 }
@@ -43,7 +71,6 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
     include 'components/alert.php';
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="id">
@@ -145,7 +172,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
           <div id="alertLacak" style="display:none; margin-top:20px; padding:15px; border-radius:8px; font-size:14px;"></div>
           
           <div id="resultLacak" style="display:none; margin-top:30px; max-width:900px; margin-left:auto; margin-right:auto;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
               <div style="background:#f8f9fa; padding:25px; border-radius:12px; border-left:4px solid var(--primary-green);">
                 <h4 style="margin-bottom:20px; color:var(--primary-green); font-size:18px;">
                   <i class="fa-solid fa-circle-check"></i> <span id="infoLacak">Informasi Pengiriman</span>
@@ -211,7 +238,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       </div>
 
       <div class="tab-content" id="tab-ongkir">
-        <div class="form-card">
+         <div class="form-card">
           <h3><i class="fa-solid fa-calculator"></i> <span id="headingOngkir">Cek Ongkir</span></h3>
           <label for="cabangAsal" id="labelCabangAsal">Cabang Asal</label>
           <select id="cabangAsal" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:8px; font-size:14px; margin-bottom:15px;">
@@ -336,8 +363,8 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
 
       <div class="footer-contact">
         <h4 id="footerContactTitle">Hubungi Kami</h4>
-        <p>📧 info@cendanakargo.com</p>
-        <p>📞 (0541) 123456</p>
+        <p>📧 <span id="footerEmail"><?php echo t('footerEmail', 'id'); ?></span></p>
+        <p>📞 <span id="footerPhone"><?php echo t('footerPhone', 'id'); ?></span></p>
         <p>📍<span id="footerAddress"><?php echo t('footerAddress', 'id'); ?></span></p>
       </div>
     </div>
@@ -347,7 +374,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
   </footer>
 
   <script>
-    // ========== REVEAL ANIMATION ==========
+    // ========== REVEAL ANIMATION, NAVBAR, DLL SAMA SEPERTI SEBELUMNYA ==========
     const reveals = document.querySelectorAll('.reveal');
     function revealOnScroll() {
       const windowH = window.innerHeight;
@@ -360,17 +387,13 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
     window.addEventListener('scroll', revealOnScroll);
     revealOnScroll();
 
-    // ========== NAVBAR SHRINK ==========
     window.addEventListener('scroll', () => {
       const header = document.querySelector('header');
       if (window.scrollY > 60) header.classList.add('scrolled');
       else header.classList.remove('scrolled');
     });
 
-    // ========== NAVBAR ACTIVE & SCROLL SPY ==========
     const navLinks = document.querySelectorAll('.nav-links a');
-
-    // Click handler
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         navLinks.forEach(l => l.classList.remove('active'));
@@ -378,56 +401,30 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       });
     });
 
-    navLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        // Kode ini memastikan link aktif saat diklik (walaupun sebentar)
-        navLinks.forEach(l => l.classList.remove('active'));
-        link.classList.add('active');
-      });
-    });
-
-    // Scroll spy - auto update active nav
     function updateActiveNav() {
-        // 1. Ambil semua section DAN footer yang punya ID
-        // Pastikan Anda menangkap ID section layanan yang bergerak: #layanan-slider
         const allSections = document.querySelectorAll('section[id], footer[id]'); 
         const scrollY = window.scrollY;
-        
-        // Offset penyesuaian (tinggi header/nav)
         const offset = 120; 
         
-        // Hapus kelas 'active' dari semua link di awal
         navLinks.forEach(link => link.classList.remove('active'));
-
-        // Dapatkan total tinggi yang dapat di-scroll
         const scrollHeight = document.body.scrollHeight - window.innerHeight;
 
-        // 2. Cek jika user di paling bawah (untuk #kontak)
         if (scrollY >= scrollHeight - 10) {
-            // Asumsi tautan ke kontak punya ID 'navKontak'
             const kontakLink = document.querySelector(`.nav-links a[href="#kontak"]`);
             if (kontakLink) kontakLink.classList.add('active');
             return; 
         }
         
         let foundActive = false;
-
-        // 3. Cek semua section
         allSections.forEach(section => {
             const sectionTop = section.offsetTop - offset;
             const sectionHeight = section.offsetHeight;
-            let sectionId = section.getAttribute('id'); // ID asli section
-            
-            // Perbaiki ID untuk tautan navbar (Layanan Kami)
-            // Jika ID section adalah 'layanan-slider' atau 'layanan', gunakan ID '#layanan' untuk navigasi
+            let sectionId = section.getAttribute('id');
             if (sectionId === 'layanan-slider' || sectionId === 'layanan') {
                 sectionId = 'layanan'; 
             }
-            // Catatan: Asumsi ID section Hero Anda adalah 'hero' atau 'beranda'
 
-            // Jika scroll berada di dalam jangkauan section
             if (scrollY >= sectionTop && scrollY < sectionTop + sectionHeight) {
-                // Cari tautan navbar yang sesuai dengan ID yang sudah disesuaikan
                 const activeLink = document.querySelector(`.nav-links a[href="#${sectionId}"]`);
                 if (activeLink) {
                     activeLink.classList.add('active');
@@ -436,19 +433,15 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
             }
         });
         
-        // 4. Jika di paling atas dan belum ada yang aktif, aktifkan Beranda
         if (scrollY < offset || !foundActive) {
-            // Asumsi tautan ke beranda punya ID 'navBeranda' atau href="#beranda"
             const berandaLink = document.querySelector(`.nav-links a[href="#beranda"]`);
             if (berandaLink) berandaLink.classList.add('active');
         }
     }
 
-    // Listener
     window.addEventListener('scroll', updateActiveNav);
     updateActiveNav();
 
-    // ========== TAB SWITCH (LACAK/ONGKIR) ==========
     const tabBtns = document.querySelectorAll('.tab-btn');
     const tabContents = document.querySelectorAll('.tab-content');
     tabBtns.forEach(btn => {
@@ -461,7 +454,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       });
     });
 
-    // ========== HERO SLIDER ==========
+    // Slider Script
     let currentSlideIndex = 0;
     const slides = document.querySelectorAll('.slide');
     const dots = document.querySelectorAll('.dot');
@@ -472,71 +465,47 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         slide.classList.remove('active');
         dots[i].classList.remove('active');
       });
-      
-      if (index >= slides.length) {
-        currentSlideIndex = 0;
-      } else if (index < 0) {
-        currentSlideIndex = slides.length - 1;
-      } else {
-        currentSlideIndex = index;
-      }
+      if (index >= slides.length) currentSlideIndex = 0;
+      else if (index < 0) currentSlideIndex = slides.length - 1;
+      else currentSlideIndex = index;
       
       slides[currentSlideIndex].classList.add('active');
       dots[currentSlideIndex].classList.add('active');
-    }
-
-    function changeSlide(direction) {
-      showSlide(currentSlideIndex + direction);
-      resetAutoSlide();
     }
 
     function currentSlide(index) {
       showSlide(index);
       resetAutoSlide();
     }
-
-    function autoSlide() {
-      showSlide(currentSlideIndex + 1);
-    }
-
+    function autoSlide() { showSlide(currentSlideIndex + 1); }
     function startAutoSlide() {
-      // Clear any existing interval first to prevent multiple intervals
-      if (autoSlideInterval) {
-        clearInterval(autoSlideInterval);
-      }
-      autoSlideInterval = setInterval(autoSlide, 5000); // Change slide every 5 seconds
+      if (autoSlideInterval) clearInterval(autoSlideInterval);
+      autoSlideInterval = setInterval(autoSlide, 5000);
     }
-
     function resetAutoSlide() {
       clearInterval(autoSlideInterval);
       startAutoSlide();
     }
-
     function stopAutoSlide() {
       if (autoSlideInterval) {
         clearInterval(autoSlideInterval);
         autoSlideInterval = null;
       }
     }
-
-    // Start auto-slide on page load
     startAutoSlide();
-
-    // Pause auto-slide on hover
     const heroSlider = document.querySelector('.hero-slider');
     heroSlider.addEventListener('mouseenter', stopAutoSlide);
     heroSlider.addEventListener('mouseleave', startAutoSlide);
 
-    // ========== BILINGUAL SYSTEM ==========
-// ========== BILINGUAL SYSTEM (DYNAMIC FROM PHP) ==========
-const translations = {
+    // ========== 3. UPDATE JAVASCRIPT TRANSLATION (Tambah Key Baru) ==========
+    const translations = {
       id: {
         navBeranda: "Beranda",
         navLacakOngkir: "Lacak / Ongkir",
         navLayanan: "Layanan Kami",
         navKontak: "Kontak",
         
-        // Dynamic Content from PHP
+        // Dynamic Content
         heroTitle: `<?php echo t('heroTitle', 'id'); ?>`,
         heroText: `<?php echo t('heroText', 'id'); ?>`,
         whyTitle: `<?php echo t('whyTitle', 'id'); ?>`,
@@ -545,6 +514,9 @@ const translations = {
         ctaText: `<?php echo t('ctaText', 'id'); ?>`,
         footerDesc: `<?php echo t('footerDesc', 'id'); ?>`,
         footerAddress: `📍 <?php echo t('footerAddress', 'id'); ?>`,
+        // TAMBAHAN BARU
+        footerPhone: `<?php echo t('footerPhone', 'id'); ?>`,
+        footerEmail: `<?php echo t('footerEmail', 'id'); ?>`,
 
         layanan1: `<?php echo t('layanan1', 'id'); ?>`,
         layanan1desc: `<?php echo t('layanan1desc', 'id'); ?>`,
@@ -553,7 +525,7 @@ const translations = {
         layanan3: `<?php echo t('layanan3', 'id'); ?>`,
         layanan3desc: `<?php echo t('layanan3desc', 'id'); ?>`,
 
-        // Static UI Elements (Form Labels etc)
+        // Static UI
         tabLacak: "Lacak Paket",
         tabOngkir: "Cek Ongkir",
         headingLacak: "Lacak Paket",
@@ -598,7 +570,6 @@ const translations = {
         statusDibatalkan: "Dibatalkan",
         footerContactTitle: "Hubungi Kami",
         footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
-        btnWhatsApp: "Chat Admin"
       },
       en: {
         navBeranda: "Home",
@@ -606,7 +577,7 @@ const translations = {
         navLayanan: "Our Services",
         navKontak: "Contact",
 
-        // Dynamic Content from PHP
+        // Dynamic Content
         heroTitle: `<?php echo t('heroTitle', 'en'); ?>`,
         heroText: `<?php echo t('heroText', 'en'); ?>`,
         whyTitle: `<?php echo t('whyTitle', 'en'); ?>`,
@@ -615,6 +586,9 @@ const translations = {
         ctaText: `<?php echo t('ctaText', 'en'); ?>`,
         footerDesc: `<?php echo t('footerDesc', 'en'); ?>`,
         footerAddress: `📍 <?php echo t('footerAddress', 'en'); ?>`,
+        // TAMBAHAN BARU
+        footerPhone: `<?php echo t('footerPhone', 'en'); ?>`,
+        footerEmail: `<?php echo t('footerEmail', 'en'); ?>`,
 
         layanan1: `<?php echo t('layanan1', 'en'); ?>`,
         layanan1desc: `<?php echo t('layanan1desc', 'en'); ?>`,
@@ -623,7 +597,7 @@ const translations = {
         layanan3: `<?php echo t('layanan3', 'en'); ?>`,
         layanan3desc: `<?php echo t('layanan3desc', 'en'); ?>`,
 
-        // Static UI Elements
+        // Static UI
         tabLacak: "Track Package",
         tabOngkir: "Shipping Cost",
         headingLacak: "Track Package",
@@ -668,11 +642,9 @@ const translations = {
         statusDibatalkan: "Cancelled",
         footerContactTitle: "Contact Us",
         footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved.",
-        btnWhatsApp: "Chat Admin"
       }
     };
 
-    // Current language
     let currentLang = 'id';
 
     function changeLanguage(lang) {
@@ -682,10 +654,6 @@ const translations = {
         const el = document.getElementById(key);
         if (el) el.textContent = t[key];
       }
-    }
-
-    function getCurrentTranslation(key) {
-      return translations[currentLang][key] || key;
     }
 
     document.getElementById("lang-id").addEventListener("click", () => {
@@ -699,32 +667,24 @@ const translations = {
       document.getElementById("lang-id").classList.remove("active");
     });
 
-    // Track package functionality
+    // Lacak & Ongkir Logic (Tidak Berubah)
     const btnLacak = document.getElementById('btnLacak');
     const inputResi = document.getElementById('resi');
     const alertLacak = document.getElementById('alertLacak');
     const resultLacak = document.getElementById('resultLacak');
-    
-    // Cloudflare Turnstile verification
     let isCaptchaVerified = false;
     let captchaToken = '';
     
-    // Callback when Turnstile verification succeeds
     window.onTurnstileSuccess = function(token) {
       isCaptchaVerified = true;
       captchaToken = token;
       btnLacak.disabled = false;
       btnLacak.style.opacity = '1';
       btnLacak.style.cursor = 'pointer';
-      
-      // Hide verification message
       const verifyMsg = btnLacak.nextElementSibling;
-      if (verifyMsg && verifyMsg.tagName === 'P') {
-        verifyMsg.style.display = 'none';
-      }
+      if (verifyMsg && verifyMsg.tagName === 'P') verifyMsg.style.display = 'none';
     };
 
-    // Function to show alert
     function showAlert(message, type) {
       alertLacak.style.display = 'block';
       alertLacak.textContent = message;
@@ -738,13 +698,8 @@ const translations = {
         alertLacak.style.border = '1px solid #c3e6cb';
       }
     }
+    function hideAlert() { alertLacak.style.display = 'none'; }
 
-    // Function to hide alert
-    function hideAlert() {
-      alertLacak.style.display = 'none';
-    }
-
-    // Function to display result
     function displayResult(data) {
       document.getElementById('displayResi').textContent = data.no_resi;
       document.getElementById('displayPengirim').textContent = data.nama_pengirim;
@@ -754,106 +709,48 @@ const translations = {
       document.getElementById('displayTarif').textContent = 'Rp ' + data.total_tarif;
       
       const statusElement = document.getElementById('displayStatus').querySelector('span');
-      
-      // Translate status based on current language
       let translatedStatus = data.status;
       switch(data.status.toLowerCase()) {
-        case 'bkd':
-          translatedStatus = getCurrentTranslation('statusDalamProses');
-          break;
-        case 'dalam pengiriman':
-          translatedStatus = getCurrentTranslation('statusDalamPengiriman');
-          break;
-        case 'sampai tujuan':
-          translatedStatus = getCurrentTranslation('statusSampaiTujuan');
-          break;
-        case 'pod':
-          translatedStatus = getCurrentTranslation('statusSelesai');
-          break;
-        case 'dibatalkan':
-          translatedStatus = getCurrentTranslation('statusDibatalkan');
-          break;
+        case 'bkd': translatedStatus = translations[currentLang]['statusDalamProses']; break;
+        case 'dalam pengiriman': translatedStatus = translations[currentLang]['statusDalamPengiriman']; break;
+        case 'sampai tujuan': translatedStatus = translations[currentLang]['statusSampaiTujuan']; break;
+        case 'pod': translatedStatus = translations[currentLang]['statusSelesai']; break;
+        case 'dibatalkan': translatedStatus = translations[currentLang]['statusDibatalkan']; break;
       }
-      
       statusElement.textContent = translatedStatus;
       
-      // Set status color based on status value using switch case
       let backgroundColor, textColor;
-      
       switch(data.status.toLowerCase()) {
-        case 'bkd':
-          // warning - kuning
-          backgroundColor = '#fff3cd';
-          textColor = '#856404';
-          break;
-        case 'dalam pengiriman':
-          // primary - biru
-          backgroundColor = '#cce5ff';
-          textColor = '#004085';
-          break;
-        case 'sampai tujuan':
-          // info - cyan/biru muda
-          backgroundColor = '#d1ecf1';
-          textColor = '#0c5460';
-          break;
-        case 'pod':
-          // success - hijau
-          backgroundColor = '#d4edda';
-          textColor = '#155724';
-          break;
-        case 'dibatalkan':
-          // danger - merah
-          backgroundColor = '#f8d7da';
-          textColor = '#721c24';
-          break;
-        default:
-          // default - abu-abu
-          backgroundColor = '#e2e3e5';
-          textColor = '#383d41';
+        case 'bkd': backgroundColor = '#fff3cd'; textColor = '#856404'; break;
+        case 'dalam pengiriman': backgroundColor = '#cce5ff'; textColor = '#004085'; break;
+        case 'sampai tujuan': backgroundColor = '#d1ecf1'; textColor = '#0c5460'; break;
+        case 'pod': backgroundColor = '#d4edda'; textColor = '#155724'; break;
+        case 'dibatalkan': backgroundColor = '#f8d7da'; textColor = '#721c24'; break;
+        default: backgroundColor = '#e2e3e5'; textColor = '#383d41';
       }
-      
       statusElement.style.backgroundColor = backgroundColor;
       statusElement.style.color = textColor;
       
-      // Display destination branch info and map
       document.getElementById('displayTujuanMap').textContent = data.tujuan;
       document.getElementById('displayAlamatTujuan').textContent = data.alamat_tujuan || 'Alamat tidak tersedia';
       document.getElementById('displayTelpTujuan').textContent = data.telp_tujuan || '-';
       
-      // Set Google Maps iframe source
       const alamatEncoded = encodeURIComponent(data.alamat_tujuan || data.tujuan);
-      // Alternative: Using iframe
-      const mapUrlNoAPI = `https://maps.google.com/maps?q=${alamatEncoded}&output=embed`;
-      
-      document.getElementById('googleMap').src = mapUrlNoAPI;
-      
+      document.getElementById('googleMap').src = `https://maps.google.com/maps?q=${alamatEncoded}&output=embed`;
       resultLacak.style.display = 'block';
     }
 
-    // Track button click event
     btnLacak.addEventListener('click', function() {
       const noResi = inputResi.value.trim();
-      
-      // Hide previous results
       hideAlert();
       resultLacak.style.display = 'none';
       
-      // Check CAPTCHA verification
-      if (!isCaptchaVerified) {
-        showAlert(getCurrentTranslation('alertCaptchaRequired'), 'error');
-        return;
-      }
+      if (!isCaptchaVerified) { showAlert(translations[currentLang]['alertCaptchaRequired'], 'error'); return; }
+      if (!noResi) { showAlert(translations[currentLang]['alertResiKosong'], 'error'); return; }
       
-      if (!noResi) {
-        showAlert(getCurrentTranslation('alertResiKosong'), 'error');
-        return;
-      }
-      
-      // Show loading state
       btnLacak.disabled = true;
-      btnLacak.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + getCurrentTranslation('alertSearching');
+      btnLacak.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + translations[currentLang]['alertSearching'];
       
-      // Send AJAX request with CAPTCHA token
       fetch('utils/cekResi.php?no_resi=' + encodeURIComponent(noResi) + '&captcha_token=' + encodeURIComponent(captchaToken))
         .then(response => response.json())
         .then(data => {
@@ -861,42 +758,29 @@ const translations = {
             hideAlert();
             displayResult(data.data);
           } else {
-            // Translate error message based on error code
             let errorMessage = data.message;
-            if (data.error_code === 'RESI_NOT_FOUND') {
-              errorMessage = getCurrentTranslation('alertResiNotFound');
-            }
+            if (data.error_code === 'RESI_NOT_FOUND') errorMessage = translations[currentLang]['alertResiNotFound'];
             showAlert(errorMessage, 'error');
           }
         })
         .catch(error => {
-          showAlert(getCurrentTranslation('alertResiError'), 'error');
-          console.error('Error:', error);
+          showAlert(translations[currentLang]['alertResiError'], 'error');
         })
         .finally(() => {
-          // Reset CAPTCHA for next search
           isCaptchaVerified = false;
           captchaToken = '';
           btnLacak.disabled = true;
           btnLacak.style.opacity = '0.5';
           btnLacak.style.cursor = 'not-allowed';
-          btnLacak.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ' + getCurrentTranslation('btnLacakText');
-          
-          // Reset Cloudflare Turnstile widget
-          if (typeof turnstile !== 'undefined') {
-            turnstile.reset();
-          }
+          btnLacak.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ' + translations[currentLang]['btnLacakText'];
+          if (typeof turnstile !== 'undefined') turnstile.reset();
         });
     });
 
-    // Allow Enter key to trigger search
     inputResi.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        btnLacak.click();
-      }
+      if (e.key === 'Enter') btnLacak.click();
     });
 
-    // ===== CEK ONGKIR FUNCTIONALITY =====
     const btnHitungOngkir = document.getElementById('btnHitungOngkir');
     const cabangAsal = document.getElementById('cabangAsal');
     const cabangTujuan = document.getElementById('cabangTujuan');
@@ -904,7 +788,6 @@ const translations = {
     const alertOngkir = document.getElementById('alertOngkir');
     const resultOngkir = document.getElementById('resultOngkir');
 
-    // Function to show alert for ongkir
     function showAlertOngkir(message, type) {
       alertOngkir.style.display = 'block';
       alertOngkir.textContent = message;
@@ -918,23 +801,15 @@ const translations = {
         alertOngkir.style.border = '1px solid #c3e6cb';
       }
     }
+    function hideAlertOngkir() { alertOngkir.style.display = 'none'; }
 
-    // Function to hide alert for ongkir
-    function hideAlertOngkir() {
-      alertOngkir.style.display = 'none';
-    }
-
-    // Function to load branches
     function loadBranches() {
       fetch('utils/cekOngkir.php?action=get_branches')
         .then(response => response.json())
         .then(data => {
           if (data.success) {
-            // Clear existing options except the first one
             cabangAsal.innerHTML = '<option value="">-- Pilih Cabang Asal --</option>';
             cabangTujuan.innerHTML = '<option value="">-- Pilih Cabang Tujuan --</option>';
-            
-            // Add branches to both dropdowns
             data.data.forEach(branch => {
               const optionAsal = document.createElement('option');
               optionAsal.value = branch.id;
@@ -948,15 +823,10 @@ const translations = {
             });
           }
         })
-        .catch(error => {
-          console.error('Error loading branches:', error);
-        });
+        .catch(error => console.error('Error loading branches:', error));
     }
-
-    // Load branches when page loads
     loadBranches();
 
-    // Function to display ongkir result
     function displayOngkirResult(data) {
       document.getElementById('displayAsalOngkir').textContent = data.cabang_asal;
       document.getElementById('displayTujuanOngkir').textContent = data.cabang_tujuan;
@@ -965,46 +835,25 @@ const translations = {
       document.getElementById('displayBatasBerat').textContent = data.batas_berat_dasar + ' Kg';
       document.getElementById('displayTarifTambahan').textContent = 'Rp ' + data.tarif_tambahan_perkg;
       document.getElementById('displayTotalOngkir').textContent = 'Rp ' + data.total_tarif;
-      
       resultOngkir.style.display = 'block';
     }
 
-    // Calculate button click event
     btnHitungOngkir.addEventListener('click', function() {
       const idAsal = cabangAsal.value;
       const idTujuan = cabangTujuan.value;
       const berat = beratBarang.value;
       
-      // Hide previous results
       hideAlertOngkir();
       resultOngkir.style.display = 'none';
       
-      // Validation
-      if (!idAsal) {
-        showAlertOngkir(getCurrentTranslation('alertAsalKosong'), 'error');
-        return;
-      }
+      if (!idAsal) { showAlertOngkir(translations[currentLang]['alertAsalKosong'], 'error'); return; }
+      if (!idTujuan) { showAlertOngkir(translations[currentLang]['alertTujuanKosong'], 'error'); return; }
+      if (idAsal === idTujuan) { showAlertOngkir(translations[currentLang]['alertCabangSama'], 'error'); return; }
+      if (!berat || parseFloat(berat) <= 0) { showAlertOngkir(translations[currentLang]['alertBeratKosong'], 'error'); return; }
       
-      if (!idTujuan) {
-        showAlertOngkir(getCurrentTranslation('alertTujuanKosong'), 'error');
-        return;
-      }
-      
-      if (idAsal === idTujuan) {
-        showAlertOngkir(getCurrentTranslation('alertCabangSama'), 'error');
-        return;
-      }
-      
-      if (!berat || parseFloat(berat) <= 0) {
-        showAlertOngkir(getCurrentTranslation('alertBeratKosong'), 'error');
-        return;
-      }
-      
-      // Show loading state
       btnHitungOngkir.disabled = true;
-      btnHitungOngkir.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + getCurrentTranslation('alertCalculating');
+      btnHitungOngkir.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + translations[currentLang]['alertCalculating'];
       
-      // Send AJAX request
       const url = `utils/cekOngkir.php?action=calculate&id_cabang_asal=${idAsal}&id_cabang_tujuan=${idTujuan}&berat=${berat}`;
       
       fetch(url)
@@ -1018,20 +867,16 @@ const translations = {
           }
         })
         .catch(error => {
-          showAlertOngkir(getCurrentTranslation('alertOngkirError'), 'error');
-          console.error('Error:', error);
+          showAlertOngkir(translations[currentLang]['alertOngkirError'], 'error');
         })
         .finally(() => {
           btnHitungOngkir.disabled = false;
-          btnHitungOngkir.innerHTML = '<i class="fa-solid fa-calculator"></i> ' + getCurrentTranslation('btnHitungText');
+          btnHitungOngkir.innerHTML = '<i class="fa-solid fa-calculator"></i> ' + translations[currentLang]['btnHitungText'];
         });
     });
 
-    // Allow Enter key to trigger calculation
     beratBarang.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        btnHitungOngkir.click();
-      }
+      if (e.key === 'Enter') btnHitungOngkir.click();
     });
   </script>
 </body>

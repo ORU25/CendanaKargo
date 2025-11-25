@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // B. Handle Image Upload (Hero, Logo, Services)
+    // B. Handle Image Upload
     if (!empty($_FILES)) {
         $uploadDir = '../../../assets/';
         if (!file_exists($uploadDir)) {
@@ -102,40 +102,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             mkdir($sliderDir, 0777, true);
         }
 
-        // Helper Upload Function with DELETE Logic
         function handleUpload($fileInputName, $targetDir, &$dataRef, $jsonKey, &$updatedFlag) {
+            global $message, $messageType; // Akses variabel global untuk error message
+
             if (isset($_FILES[$fileInputName]) && $_FILES[$fileInputName]['error'] === 0) {
+                
+                // 1. CEK UKURAN FILE (Max 1 MB = 1048576 Bytes)
+                $maxSize = 1048576; // 1MB dalam bytes
+                if ($_FILES[$fileInputName]['size'] > $maxSize) {
+                    $message = "Gagal: Gambar <strong>" . $_FILES[$fileInputName]['name'] . "</strong> terlalu besar! (Maksimal 1 MB)";
+                    $messageType = "danger";
+                    return; // Batalkan proses upload file ini
+                }
+
                 $fileTmp = $_FILES[$fileInputName]['tmp_name'];
                 $fileName = $_FILES[$fileInputName]['name'];
                 $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
                 $allowed = ['jpg', 'jpeg', 'png', 'webp', 'svg'];
 
                 if (in_array($fileExt, $allowed)) {
-                    // Nama file baru unik
                     $newFileName = $jsonKey . '_' . time() . '.' . $fileExt;
                     $destPath = $targetDir . $newFileName;
-                    
-                    // Determine relative path for JSON
                     $relPath = (strpos($targetDir, 'slider') !== false) ? 'assets/slider/' : 'assets/';
 
                     if (move_uploaded_file($fileTmp, $destPath)) {
                         if (isset($dataRef[$jsonKey]) && !empty($dataRef[$jsonKey])) {
-                            $oldFilePath = '../../../' . $dataRef[$jsonKey]; // Path relatif dari file ini ke root
+                            $oldFilePath = '../../../' . $dataRef[$jsonKey];
                             if (file_exists($oldFilePath) && strpos($dataRef[$jsonKey], 'assets/') !== false) {
-                                unlink($oldFilePath);
+                                $oldBaseName = basename($oldFilePath);
+                                if (!in_array($oldBaseName, ['logo.jpg', 'clk.png', 'slider1.jpg', 'slider2.jpg', 'slider3.jpg'])) {
+                                    unlink($oldFilePath);
+                                }
                             }
                         }
-                        // ==========================================
-
-                        // Update JSON dengan path baru
                         $dataRef[$jsonKey] = $relPath . $newFileName;
                         $updatedFlag = true;
                     }
+                } else {
+                    $message = "Gagal: Format file tidak didukung (Gunakan JPG, PNG, WEBP).";
+                    $messageType = "danger";
                 }
             }
         }
 
-        // Upload Logic per Section
         if ($section === 'settings') {
             handleUpload('navLogo', $uploadDir, $currentData['settings'], 'navLogo', $isUpdated);
             handleUpload('footerLogo', $uploadDir, $currentData['settings'], 'footerLogo', $isUpdated);
@@ -150,8 +159,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($isUpdated) {
         if (file_put_contents($dataFile, json_encode($currentData, JSON_PRETTY_PRINT))) {
-            $message = "Bagian <strong>" . strtoupper(str_replace('_', ' ', $section)) . "</strong> berhasil diperbarui!";
-            $messageType = "success";
+            // Hanya set pesan sukses JIKA tidak ada error upload gambar sebelumnya
+            if ($messageType !== 'danger') {
+                $message = "Bagian <strong>" . strtoupper(str_replace('_', ' ', $section)) . "</strong> berhasil diperbarui!";
+                $messageType = "success";
+            } else {
+                // Jika ada error (misal gambar > 1MB)
+                $message .= " <br>(Data teks tersimpan, namun gambar gagal diupload)";
+            }
         } else {
             $message = "Gagal menyimpan data.";
             $messageType = "danger";
@@ -159,16 +174,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Helpers
 function getVal($data, $lang, $key) {
     return isset($data[$lang][$key]) ? $data[$lang][$key] : '';
 }
 function getImg($data, $group, $key) {
-    // Fallback logic
-    $default = 'assets/logo.jpg'; // Generic fallback
+    $default = 'assets/logo.jpg'; 
     if($group == 'sliders') $default = 'assets/slider/slider1.jpg';
     if($key == 'footerLogo') $default = 'assets/clk.png';
-    
     return isset($data[$group][$key]) ? $data[$group][$key] : $default;
 }
 
@@ -244,7 +256,6 @@ include '../../../components/sidebar_offcanvas.php';
                     <div class="card-body">
                         <form method="POST" action="" enctype="multipart/form-data">
                             <input type="hidden" name="section_type" value="hero">
-                            
                             <div class="row mb-4">
                                 <h6 class="fw-bold text-muted mb-3 small text-uppercase">Gambar Slider Background</h6>
                                 <?php for($i=1; $i<=3; $i++): ?>
@@ -289,12 +300,18 @@ include '../../../components/sidebar_offcanvas.php';
 
                 <div class="card border-0 shadow-sm mb-5">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-question-circle me-2"></i>Bagian Mengapa Kami</h5>
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-hand-holding-heart me-2"></i>Layanan (Services & Why Us)</h5>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="">
-                            <input type="hidden" name="section_type" value="why_us">
-                            <div class="row g-3">
+                            <input type="hidden" name="section_type" value="layanan">
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fa-solid fa-circle-question text-muted me-2"></i>
+                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Bagian Mengapa Kami</h6>
+                            </div>
+                            
+                            <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Judul Section (ID)</label>
@@ -316,100 +333,89 @@ include '../../../components/sidebar_offcanvas.php';
                                     </div>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end mt-3">
-                                <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-save me-2"></i>Simpan Why Us</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
 
-                <div class="card border-0 shadow-sm mb-5">
-                    <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-truck-fast me-2"></i>Layanan Kami (Services)</h5>
-                    </div>
-                    <div class="card-body">
-                        <form method="POST" action="">
-                            <input type="hidden" name="section_type" value="services">
-                            
-                            <div class="border rounded p-3 mb-4 bg-light">
-                                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Layanan 1 (Kiri)</h6>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Judul (ID)</label>
-                                            <input type="text" class="form-control form-control-sm" name="id_layanan1" value="<?= getVal($currentData, 'id', 'layanan1') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Deskripsi (ID)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="id_layanan1desc"><?= getVal($currentData, 'id', 'layanan1desc') ?></textarea>
-                                        </div>
+                            <hr class="my-4" style="border-top: 2px dashed #e9ecef;">
+
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fa-solid fa-truck-fast text-muted me-2"></i>
+                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Daftar Layanan</h6>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12 mb-2"><span class="badge bg-secondary">Layanan 1 (Kiri)</span></div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Judul (ID)</label>
+                                        <input type="text" class="form-control form-control-sm" name="id_layanan1" value="<?= getVal($currentData, 'id', 'layanan1') ?>">
                                     </div>
-                                    <div class="col-md-6 border-start">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Title (EN)</label>
-                                            <input type="text" class="form-control form-control-sm" name="en_layanan1" value="<?= getVal($currentData, 'en', 'layanan1') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Description (EN)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="en_layanan1desc"><?= getVal($currentData, 'en', 'layanan1desc') ?></textarea>
-                                        </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Deskripsi (ID)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="id_layanan1desc"><?= getVal($currentData, 'id', 'layanan1desc') ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 border-start">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Title (EN)</label>
+                                        <input type="text" class="form-control form-control-sm" name="en_layanan1" value="<?= getVal($currentData, 'en', 'layanan1') ?>">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Description (EN)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="en_layanan1desc"><?= getVal($currentData, 'en', 'layanan1desc') ?></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-bottom my-3"></div>
+
+                            <div class="row">
+                                <div class="col-12 mb-2"><span class="badge bg-secondary">Layanan 2 (Tengah)</span></div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Judul (ID)</label>
+                                        <input type="text" class="form-control form-control-sm" name="id_layanan2" value="<?= getVal($currentData, 'id', 'layanan2') ?>">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Deskripsi (ID)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="id_layanan2desc"><?= getVal($currentData, 'id', 'layanan2desc') ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 border-start">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Title (EN)</label>
+                                        <input type="text" class="form-control form-control-sm" name="en_layanan2" value="<?= getVal($currentData, 'en', 'layanan2') ?>">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Description (EN)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="en_layanan2desc"><?= getVal($currentData, 'en', 'layanan2desc') ?></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="border-bottom my-3"></div>
+
+                            <div class="row">
+                                <div class="col-12 mb-2"><span class="badge bg-secondary">Layanan 3 (Kanan)</span></div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Judul (ID)</label>
+                                        <input type="text" class="form-control form-control-sm" name="id_layanan3" value="<?= getVal($currentData, 'id', 'layanan3') ?>">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Deskripsi (ID)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="id_layanan3desc"><?= getVal($currentData, 'id', 'layanan3desc') ?></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 border-start">
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Title (EN)</label>
+                                        <input type="text" class="form-control form-control-sm" name="en_layanan3" value="<?= getVal($currentData, 'en', 'layanan3') ?>">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small fw-bold">Description (EN)</label>
+                                        <textarea class="form-control form-control-sm" rows="2" name="en_layanan3desc"><?= getVal($currentData, 'en', 'layanan3desc') ?></textarea>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="border rounded p-3 mb-4 bg-light">
-                                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Layanan 2 (Tengah)</h6>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Judul (ID)</label>
-                                            <input type="text" class="form-control form-control-sm" name="id_layanan2" value="<?= getVal($currentData, 'id', 'layanan2') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Deskripsi (ID)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="id_layanan2desc"><?= getVal($currentData, 'id', 'layanan2desc') ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 border-start">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Title (EN)</label>
-                                            <input type="text" class="form-control form-control-sm" name="en_layanan2" value="<?= getVal($currentData, 'en', 'layanan2') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Description (EN)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="en_layanan2desc"><?= getVal($currentData, 'en', 'layanan2desc') ?></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="border rounded p-3 mb-3 bg-light">
-                                <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Layanan 3 (Kanan)</h6>
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Judul (ID)</label>
-                                            <input type="text" class="form-control form-control-sm" name="id_layanan3" value="<?= getVal($currentData, 'id', 'layanan3') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Deskripsi (ID)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="id_layanan3desc"><?= getVal($currentData, 'id', 'layanan3desc') ?></textarea>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 border-start">
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Title (EN)</label>
-                                            <input type="text" class="form-control form-control-sm" name="en_layanan3" value="<?= getVal($currentData, 'en', 'layanan3') ?>">
-                                        </div>
-                                        <div class="mb-2">
-                                            <label class="form-label small fw-bold">Description (EN)</label>
-                                            <textarea class="form-control form-control-sm" rows="2" name="en_layanan3desc"><?= getVal($currentData, 'en', 'layanan3desc') ?></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex justify-content-end mt-3">
+                            <div class="d-flex justify-content-end mt-4">
                                 <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-save me-2"></i>Simpan Layanan</button>
                             </div>
                         </form>
@@ -425,7 +431,6 @@ include '../../../components/sidebar_offcanvas.php';
                             <input type="hidden" name="section_type" value="cta_footer">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Judul CTA (ID)</label>
                                         <input type="text" class="form-control form-control-sm" name="id_ctaTitle" value="<?= getVal($currentData, 'id', 'ctaTitle') ?>">
@@ -435,7 +440,9 @@ include '../../../components/sidebar_offcanvas.php';
                                         <input type="text" class="form-control form-control-sm" name="id_ctaText" value="<?= getVal($currentData, 'id', 'ctaText') ?>">
                                     </div>
                                     
-                                    <div class="mb-3 mt-4">
+                                    <h6 class="fw-bold mt-4 mb-2 small text-uppercase text-muted border-bottom pb-1">Kontak Footer (ID)</h6>
+                                    
+                                    <div class="mb-3">
                                         <label class="form-label small fw-bold">Deskripsi Footer (ID)</label>
                                         <textarea class="form-control form-control-sm" rows="3" name="id_footerDesc"><?= getVal($currentData, 'id', 'footerDesc') ?></textarea>
                                     </div>
@@ -443,10 +450,19 @@ include '../../../components/sidebar_offcanvas.php';
                                         <label class="form-label small fw-bold">Alamat (ID)</label>
                                         <input type="text" class="form-control form-control-sm" name="id_footerAddress" value="<?= getVal($currentData, 'id', 'footerAddress') ?>">
                                     </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small fw-bold">No. Telepon (ID)</label>
+                                            <input type="text" class="form-control form-control-sm" name="id_footerPhone" value="<?= getVal($currentData, 'id', 'footerPhone') ?>" placeholder="(0541) 123456">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small fw-bold">Email (ID)</label>
+                                            <input type="email" class="form-control form-control-sm" name="id_footerEmail" value="<?= getVal($currentData, 'id', 'footerEmail') ?>" placeholder="email@domain.com">
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <div class="col-md-6 border-start">
-                                    
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">CTA Title (EN)</label>
                                         <input type="text" class="form-control form-control-sm" name="en_ctaTitle" value="<?= getVal($currentData, 'en', 'ctaTitle') ?>">
@@ -456,9 +472,25 @@ include '../../../components/sidebar_offcanvas.php';
                                         <input type="text" class="form-control form-control-sm" name="en_ctaText" value="<?= getVal($currentData, 'en', 'ctaText') ?>">
                                     </div>
 
-                                    <div class="mb-3 mt-4">
+                                    <h6 class="fw-bold mt-4 mb-2 small text-uppercase text-muted border-bottom pb-1">Footer Contact (EN)</h6>
+
+                                    <div class="mb-3">
                                         <label class="form-label small fw-bold">Footer Description (EN)</label>
                                         <textarea class="form-control form-control-sm" rows="3" name="en_footerDesc"><?= getVal($currentData, 'en', 'footerDesc') ?></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">Address (EN)</label>
+                                        <input type="text" class="form-control form-control-sm" name="en_footerAddress" value="<?= getVal($currentData, 'en', 'footerAddress') ?>">
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small fw-bold">Phone (EN)</label>
+                                            <input type="text" class="form-control form-control-sm" name="en_footerPhone" value="<?= getVal($currentData, 'en', 'footerPhone') ?>">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label small fw-bold">Email (EN)</label>
+                                            <input type="email" class="form-control form-control-sm" name="en_footerEmail" value="<?= getVal($currentData, 'en', 'footerEmail') ?>">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
