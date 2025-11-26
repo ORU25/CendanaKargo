@@ -4,9 +4,9 @@
         "footerLogo": "assets\/clk.png"
     },
     "sliders": {
-        "slider1": "assets\/slider\/slider1.jpg",
-        "slider2": "assets\/slider\/slider2.jpg",
-        "slider3": "assets\/slider\/slider3.jpg"
+        "slider1": "assets\/slider\/slider1_1764083933.jpg",
+        "slider2": "assets\/slider\/slider2_1764083933.jpg",
+        "slider3": "assets\/slider\/slider3_1764083933.jpg"
     },
     "id": {
         "heroTitle": "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
@@ -15,7 +15,7 @@
         "whyText": "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
         "layanan1": "Pengiriman Cepat",
         "layanan1desc": "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
-        "layanan2": "Aman &amp; Terpercaya",
+        "layanan2": "Aman & Terpercaya",
         "layanan2desc": "Keamanan paket Anda menjadi prioritas kami dengan sistem tracking real-time.",
         "layanan3": "Tarif Terjangkau",
         "layanan3desc": "Nikmati tarif pengiriman hemat tanpa mengorbankan kualitas layanan kami.",
@@ -33,7 +33,7 @@
         "whyText": "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
         "layanan1": "Fast Delivery",
         "layanan1desc": "Your goods are shipped quickly and safely with accurate estimates.",
-        "layanan2": "Secure &amp; Trusted",
+        "layanan2": "Secure & Trusted",
         "layanan2desc": "Your package safety is our top priority with real-time tracking.",
         "layanan3": "Affordable Rates",
         "layanan3desc": "Enjoy low-cost delivery without sacrificing quality.",

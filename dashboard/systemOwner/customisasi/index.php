@@ -124,18 +124,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $destPath = $targetDir . $newFileName;
                     $relPath = (strpos($targetDir, 'slider') !== false) ? 'assets/slider/' : 'assets/';
 
-                    if (move_uploaded_file($fileTmp, $destPath)) {
-                        if (isset($dataRef[$jsonKey]) && !empty($dataRef[$jsonKey])) {
-                            $oldFilePath = '../../../' . $dataRef[$jsonKey];
-                            if (file_exists($oldFilePath) && strpos($dataRef[$jsonKey], 'assets/') !== false) {
-                                $oldBaseName = basename($oldFilePath);
-                                if (!in_array($oldBaseName, ['logo.jpg', 'clk.png', 'slider1.jpg', 'slider2.jpg', 'slider3.jpg'])) {
-                                    unlink($oldFilePath);
-                                }
+                    // Hapus gambar lama sebelum upload gambar baru
+                    if (isset($dataRef[$jsonKey]) && !empty($dataRef[$jsonKey])) {
+                        $oldFilePath = '../../../' . $dataRef[$jsonKey];
+                        if (file_exists($oldFilePath) && strpos($dataRef[$jsonKey], 'assets/') !== false) {
+                            $oldBaseName = basename($oldFilePath);
+                            // Hanya hapus jika bukan file default
+                            $defaultFiles = ['logo.jpg', 'clk.png', 'slider1.jpg', 'slider2.jpg', 'slider3.jpg'];
+                            if (!in_array($oldBaseName, $defaultFiles)) {
+                                @unlink($oldFilePath);
                             }
                         }
+                    }
+
+                    if (move_uploaded_file($fileTmp, $destPath)) {
                         $dataRef[$jsonKey] = $relPath . $newFileName;
                         $updatedFlag = true;
+                    } else {
+                        $message = "Gagal: Tidak dapat mengupload file.";
+                        $messageType = "danger";
                     }
                 } else {
                     $message = "Gagal: Format file tidak didukung (Gunakan JPG, PNG, WEBP).";
@@ -200,7 +207,7 @@ include '../../../components/sidebar_offcanvas.php';
                         <h1 class="h3 mb-1 fw-bold">Kustomisasi Landing Page</h1>
                         <p class="text-muted small mb-0">Kelola konten website utama secara dinamis.</p>
                     </div>
-                    <a href="../../../index.php" target="_blank" class="btn btn-outline-primary btn-sm">
+                    <a href="../../../" target="_blank" class="btn btn-primary btn-sm">
                         <i class="fa-solid fa-eye me-1"></i> Lihat Website
                     </a>
                 </div>
@@ -226,6 +233,7 @@ include '../../../components/sidebar_offcanvas.php';
                                         <img src="../../../<?= getImg($currentData, 'settings', 'navLogo') ?>" class="rounded bg-white p-1 border" style="height: 60px; width: 60px; object-fit: contain;">
                                         <div class="flex-grow-1">
                                             <input type="file" class="form-control form-control-sm" name="navLogo" accept="image/*">
+                                            <small class="text-muted d-block mt-1"></i>Maks. 1 MB</small>
                                         </div>
                                     </div>
                                 </div>
@@ -235,6 +243,7 @@ include '../../../components/sidebar_offcanvas.php';
                                         <img src="../../../<?= getImg($currentData, 'settings', 'footerLogo') ?>" class="rounded bg-white p-1 border" style="height: 60px; width: 60px; object-fit: contain;">
                                         <div class="flex-grow-1">
                                             <input type="file" class="form-control form-control-sm" name="footerLogo" accept="image/*">
+                                            <small class="text-muted d-block mt-1"></i>Maks. 1 MB</small>
                                         </div>
                                     </div>
                                 </div>
@@ -261,6 +270,7 @@ include '../../../components/sidebar_offcanvas.php';
                                         <p class="small fw-bold mb-2">Slider <?= $i ?></p>
                                         <img src="../../../<?= getImg($currentData, 'sliders', 'slider'.$i) ?>" class="img-fluid rounded mb-2 shadow-sm" style="height: 100px; object-fit: cover; width: 100%;">
                                         <input type="file" class="form-control form-control-sm" name="slider<?= $i ?>" accept="image/*">
+                                        <small class="text-muted d-block mt-1"></i>Maks. 1 MB</small>
                                     </div>
                                 </div>
                                 <?php endfor; ?>
@@ -304,9 +314,9 @@ include '../../../components/sidebar_offcanvas.php';
                             <input type="hidden" name="section_type" value="layanan">
                             
                             <div class="d-flex align-items-center mb-3">
-                                <i class="fa-solid fa-circle-question text-muted me-2"></i>
                                 <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Mengapa Kami</h6>
                             </div>
+                            <hr class="mt-0 mb-3">
                             
                             <div class="row g-3 mb-4">
                                 <div class="col-md-6">
@@ -334,9 +344,9 @@ include '../../../components/sidebar_offcanvas.php';
                             <hr class="my-4" style="border-top: 2px dashed #e9ecef;">
 
                             <div class="d-flex align-items-center mb-3">
-                                <i class="fa-solid fa-truck-fast text-muted me-2"></i>
                                 <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Daftar Layanan</h6>
                             </div>
+                            <hr class="mt-0 mb-3">
 
                             <div class="row">
                                 <div class="col-12 mb-2"><span class="badge bg-secondary">Layanan 1 (Kiri)</span></div>
@@ -426,77 +436,88 @@ include '../../../components/sidebar_offcanvas.php';
                     <div class="card-body">
                         <form method="POST" action="">
                             <input type="hidden" name="section_type" value="cta_footer">
-                            <div class="row g-3">
+                            
+                            <div class="d-flex align-items-center mb-3">
+                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Call to Action</h6>
+                            </div>
+                            <hr class="mt-0 mb-3">
+                            
+                            <div class="row g-3 mb-4">
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Judul CTA (ID)</label>
-                                        <input type="text" class="form-control form-control-sm" name="id_ctaTitle" value="<?= getVal($currentData, 'id', 'ctaTitle') ?>">
+                                        <input type="text" class="form-control" name="id_ctaTitle" value="<?= getVal($currentData, 'id', 'ctaTitle') ?>">
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Teks CTA (ID)</label>
-                                        <input type="text" class="form-control form-control-sm" name="id_ctaText" value="<?= getVal($currentData, 'id', 'ctaText') ?>">
+                                        <input type="text" class="form-control" name="id_ctaText" value="<?= getVal($currentData, 'id', 'ctaText') ?>">
                                     </div>
-                                    
-                                    <hr class="mt-5 mb-4" style="border-top: 2px dashed #e9ecef;">
-                                    
-                                    <h6 class="fw-bold small text-uppercase text-muted border-bottom pb-2 mb-3">Kontak Footer (ID)</h6>
-                                    
+                                </div>
+                                <div class="col-md-6 border-start">
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">CTA Title (EN)</label>
+                                        <input type="text" class="form-control" name="en_ctaTitle" value="<?= getVal($currentData, 'en', 'ctaTitle') ?>">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small fw-bold">CTA Text (EN)</label>
+                                        <input type="text" class="form-control" name="en_ctaText" value="<?= getVal($currentData, 'en', 'ctaText') ?>">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr class="my-4" style="border-top: 2px dashed #e9ecef;">
+
+                            <div class="d-flex align-items-center mb-3">
+                                <h6 class="fw-bold text-dark text-uppercase small ls-1 mb-0">Kontak Footer</h6>
+                            </div>
+                            <hr class="mt-0 mb-3">
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Deskripsi Footer (ID)</label>
-                                        <textarea class="form-control form-control-sm" rows="3" name="id_footerDesc"><?= getVal($currentData, 'id', 'footerDesc') ?></textarea>
+                                        <textarea class="form-control" rows="3" name="id_footerDesc"><?= getVal($currentData, 'id', 'footerDesc') ?></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Alamat (ID)</label>
-                                        <input type="text" class="form-control form-control-sm" name="id_footerAddress" value="<?= getVal($currentData, 'id', 'footerAddress') ?>">
+                                        <input type="text" class="form-control" name="id_footerAddress" value="<?= getVal($currentData, 'id', 'footerAddress') ?>">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label small fw-bold">No. Telepon (ID)</label>
-                                            <input type="text" class="form-control form-control-sm" name="id_footerPhone" value="<?= getVal($currentData, 'id', 'footerPhone') ?>" placeholder="(0541) 123456">
+                                            <input type="text" class="form-control" name="id_footerPhone" value="<?= getVal($currentData, 'id', 'footerPhone') ?>" placeholder="(0541) 123456">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label small fw-bold">Email (ID)</label>
-                                            <input type="email" class="form-control form-control-sm" name="id_footerEmail" value="<?= getVal($currentData, 'id', 'footerEmail') ?>" placeholder="email@domain.com">
+                                            <input type="email" class="form-control" name="id_footerEmail" value="<?= getVal($currentData, 'id', 'footerEmail') ?>" placeholder="email@domain.com">
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="col-md-6 border-start">
                                     <div class="mb-3">
-                                        <label class="form-label small fw-bold">CTA Title (EN)</label>
-                                        <input type="text" class="form-control form-control-sm" name="en_ctaTitle" value="<?= getVal($currentData, 'en', 'ctaTitle') ?>">
-                                    </div>
-                                    <div class="mb-3">
-                                        <label class="form-label small fw-bold">CTA Text (EN)</label>
-                                        <input type="text" class="form-control form-control-sm" name="en_ctaText" value="<?= getVal($currentData, 'en', 'ctaText') ?>">
-                                    </div>
-
-                                    <hr class="mt-5 mb-4" style="border-top: 2px dashed #e9ecef;">
-
-                                    <h6 class="fw-bold small text-uppercase text-muted border-bottom pb-2 mb-3">Footer Contact (EN)</h6>
-
-                                    <div class="mb-3">
                                         <label class="form-label small fw-bold">Footer Description (EN)</label>
-                                        <textarea class="form-control form-control-sm" rows="3" name="en_footerDesc"><?= getVal($currentData, 'en', 'footerDesc') ?></textarea>
+                                        <textarea class="form-control" rows="3" name="en_footerDesc"><?= getVal($currentData, 'en', 'footerDesc') ?></textarea>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label small fw-bold">Address (EN)</label>
-                                        <input type="text" class="form-control form-control-sm" name="en_footerAddress" value="<?= getVal($currentData, 'en', 'footerAddress') ?>">
+                                        <input type="text" class="form-control" name="en_footerAddress" value="<?= getVal($currentData, 'en', 'footerAddress') ?>">
                                     </div>
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label small fw-bold">Phone (EN)</label>
-                                            <input type="text" class="form-control form-control-sm" name="en_footerPhone" value="<?= getVal($currentData, 'en', 'footerPhone') ?>">
+                                            <input type="text" class="form-control" name="en_footerPhone" value="<?= getVal($currentData, 'en', 'footerPhone') ?>">
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label small fw-bold">Email (EN)</label>
-                                            <input type="email" class="form-control form-control-sm" name="en_footerEmail" value="<?= getVal($currentData, 'en', 'footerEmail') ?>">
+                                            <input type="email" class="form-control" name="en_footerEmail" value="<?= getVal($currentData, 'en', 'footerEmail') ?>">
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="d-flex justify-content-end mt-3">
-                                <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-save me-2"></i>Simpan Footer</button>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-danger px-4"><i class="fa-solid fa-save me-2"></i>Simpan CTA & Kontak</button>
                             </div>
                         </form>
                     </div>
