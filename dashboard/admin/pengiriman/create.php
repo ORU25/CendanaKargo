@@ -21,7 +21,7 @@ $title = "Dashboard - Cendana Kargo";
 // CEK STATUS CLOSING HARI INI - BLOCK AKSES JIKA SUDAH CLOSING
 // =======================================================
 $today = date('Y-m-d');
-$stmt_closing = $conn->prepare("SELECT id FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing = $conn->prepare("SELECT id FROM closing WHERE id_user = ? AND tanggal_closing = ?");
 $stmt_closing->bind_param('is', $_SESSION['user_id'], $today);
 $stmt_closing->execute();
 $is_closed_today = $stmt_closing->get_result()->num_rows > 0;

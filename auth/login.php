@@ -10,7 +10,7 @@ if (isset($_SESSION['user_id'])) {
     }
     // Kalau role superAdmin
     elseif ($_SESSION['role'] == 'superAdmin') {
-        header("Location: ../dashboard/superAdmin/?already_logined");
+        header("Location: ../dashboard/superadmin/?already_logined");
         exit;
     }
     // Kalau role admin
@@ -124,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header("Location: ../dashboard/systemOwner/");
             exit;
         } elseif ($user['role'] == 'superAdmin') {
-            header("Location: ../dashboard/superAdmin/");
+            header("Location: ../dashboard/superadmin/");
             exit;
         } elseif ($user['role'] == 'admin') {
             header("Location: ../dashboard/admin/");

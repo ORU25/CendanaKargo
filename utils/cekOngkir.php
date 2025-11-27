@@ -7,7 +7,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 
 // Action: Get list of branches (kantor cabang)
 if ($action === 'get_branches') {
-    $query = "SELECT id, nama_cabang, kode_cabang FROM Kantor_cabang ORDER BY nama_cabang ASC";
+    $query = "SELECT id, nama_cabang, kode_cabang FROM kantor_cabang ORDER BY nama_cabang ASC";
     $result = mysqli_query($conn, $query);
     
     $branches = [];
@@ -72,9 +72,9 @@ if ($action === 'calculate') {
         t.tarif_tambahan_perkg,
         ca.nama_cabang as cabang_asal,
         ct.nama_cabang as cabang_tujuan
-    FROM Tarif_pengiriman t
-    INNER JOIN Kantor_cabang ca ON t.id_cabang_asal = ca.id
-    INNER JOIN Kantor_cabang ct ON t.id_cabang_tujuan = ct.id
+    FROM tarif_pengiriman t
+    INNER JOIN kantor_cabang ca ON t.id_cabang_asal = ca.id
+    INNER JOIN kantor_cabang ct ON t.id_cabang_tujuan = ct.id
     WHERE t.id_cabang_asal = ? 
     AND t.id_cabang_tujuan = ? 
     AND t.status = 'aktif'

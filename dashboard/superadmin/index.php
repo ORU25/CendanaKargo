@@ -116,7 +116,7 @@
   }
 
   // Ambil semua user di cabang ini
-  $stmt_users = $conn->prepare("SELECT id, username FROM User WHERE id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) AND role != 'systemOwner' ORDER BY username ASC");
+  $stmt_users = $conn->prepare("SELECT id, username FROM user WHERE id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) AND role != 'systemOwner' ORDER BY username ASC");
   $stmt_users->bind_param('s', $cabang_superadmin);
   $stmt_users->execute();
   $all_users_result = $stmt_users->get_result();
@@ -149,7 +149,7 @@
           SUM(CASE WHEN status = 'dibatalkan' AND $where_clause THEN 1 ELSE 0 END) AS batal,
           COUNT(CASE WHEN $where_clause THEN 1 END) AS total_pengiriman
       FROM pengiriman p
-      JOIN User u ON p.id_user = u.id
+      JOIN user u ON p.id_user = u.id
       WHERE u.role = 'systemOwner' 
         AND p.cabang_pengirim = ?
   ";
@@ -178,7 +178,7 @@
           SUM(CASE WHEN s.status = 'diberangkatkan' AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
           COUNT(CASE WHEN $where_clause THEN 1 END) AS total
       FROM surat_jalan s
-      JOIN User u ON s.id_user = u.id
+      JOIN user u ON s.id_user = u.id
       JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id
       WHERE u.role = 'systemOwner' 
         AND kc.nama_cabang = ?
@@ -221,9 +221,9 @@ $sql_pendapatan = "
                  AND $where_clause 
                  AND p.status != 'dibatalkan'
             THEN p.total_tarif ELSE 0 END) AS total
-    FROM User u
+    FROM user u
     LEFT JOIN pengiriman p ON u.id = p.id_user
-    WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
+    WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
         AND u.role != 'systemOwner'
     GROUP BY u.id, u.username
     ORDER BY u.username
@@ -248,9 +248,9 @@ $sql_pendapatan = "
           SUM(CASE WHEN p.status = 'pod' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS pod,
           SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS batal,
           SUM(CASE WHEN p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS total
-      FROM User u
+      FROM user u
       LEFT JOIN pengiriman p ON u.id = p.id_user
-      WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
+      WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
           AND u.role != 'systemOwner'
       GROUP BY u.id, u.username
       ORDER BY u.username
@@ -271,9 +271,9 @@ $sql_pendapatan = "
           SUM(CASE WHEN s.status = 'draft' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS draft,
           SUM(CASE WHEN s.status = 'diberangkatkan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
           SUM(CASE WHEN s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS total
-      FROM User u
+      FROM user u
       LEFT JOIN surat_jalan s ON u.id = s.id_user
-      WHERE u.id_cabang = (SELECT id FROM Kantor_cabang WHERE nama_cabang = ?) 
+      WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
           AND u.role != 'systemOwner'
       GROUP BY u.id, u.username
       ORDER BY u.username

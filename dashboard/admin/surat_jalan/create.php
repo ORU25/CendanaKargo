@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_surat_jalan'])
     }
     
     // Validasi bahwa cabang asal adalah cabang user (untuk keamanan)
-    $stmt_validate = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang WHERE id = ?");
+    $stmt_validate = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM kantor_cabang WHERE id = ?");
     $stmt_validate->bind_param('i', $id_cabang_user);
     $stmt_validate->execute();
     $result_validate = $stmt_validate->get_result();
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_surat_jalan'])
     $stmt_validate->close();
     
     // Validasi cabang tujuan
-    $stmt_tujuan = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang WHERE kode_cabang = ?");
+    $stmt_tujuan = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM kantor_cabang WHERE kode_cabang = ?");
     $stmt_tujuan->bind_param('s', $cabang_tujuan);
     $stmt_tujuan->execute();
     $result_tujuan = $stmt_tujuan->get_result();
@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_surat_jalan'])
     
     $stmt_last = $conn->prepare("
         SELECT no_surat_jalan 
-        FROM Surat_jalan 
+        FROM surat_jalan 
         WHERE no_surat_jalan LIKE ?
         ORDER BY id DESC 
         LIMIT 1
@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_surat_jalan'])
     $username = $_SESSION['username'];
     
     $stmt_insert = $conn->prepare("
-        INSERT INTO Surat_jalan 
+        INSERT INTO surat_jalan 
         (id_user, id_cabang_pengirim, id_cabang_penerima, no_surat_jalan, user, cabang_pengirim, cabang_penerima, driver, status) 
         VALUES (?, ?, ?, ?, ?, ?, ?, '', 'draft')
     ");
@@ -126,7 +126,7 @@ if (!$id_surat_jalan) {
 }
 
 // Ambil data surat jalan (filter berdasarkan cabang)
-$stmt_sj = $conn->prepare("SELECT * FROM Surat_jalan WHERE id = ? AND status = 'draft' AND id_cabang_pengirim = ?");
+$stmt_sj = $conn->prepare("SELECT * FROM surat_jalan WHERE id = ? AND status = 'draft' AND id_cabang_pengirim = ?");
 $stmt_sj->bind_param('ii', $id_surat_jalan, $id_cabang_user);
 $stmt_sj->execute();
 $result_sj = $stmt_sj->get_result();
@@ -141,7 +141,7 @@ $surat_jalan = $result_sj->fetch_assoc();
 $stmt_sj->close();
 
 // Ambil data cabang
-$stmt_cabang = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang WHERE id IN (?, ?)");
+$stmt_cabang = $conn->prepare("SELECT id, kode_cabang, nama_cabang FROM kantor_cabang WHERE id IN (?, ?)");
 $stmt_cabang->bind_param('ii', $surat_jalan['id_cabang_pengirim'], $surat_jalan['id_cabang_penerima']);
 $stmt_cabang->execute();
 $result_cabang = $stmt_cabang->get_result();
@@ -285,7 +285,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['berangkatkan_surat_ja
     
     try {
         // Update surat jalan: set id_driver, nama driver dan ubah status jadi 'diberangkatkan'
-        $stmt_update_sj = $conn->prepare("UPDATE Surat_jalan SET id_driver = ?, driver = ?, status = 'diberangkatkan' WHERE id = ?");
+        $stmt_update_sj = $conn->prepare("UPDATE surat_jalan SET id_driver = ?, driver = ?, status = 'diberangkatkan' WHERE id = ?");
         $stmt_update_sj->bind_param('isi', $id_driver, $nama_driver, $id_surat_jalan);
         $stmt_update_sj->execute();
         $stmt_update_sj->close();
@@ -305,7 +305,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['berangkatkan_surat_ja
         // Update status semua pengiriman menjadi 'dalam pengiriman'
         if (!empty($pengiriman_ids)) {
             $placeholders = str_repeat('?,', count($pengiriman_ids) - 1) . '?';
-            $stmt_update_pengiriman = $conn->prepare("UPDATE Pengiriman SET status = 'dalam pengiriman' WHERE id IN ($placeholders)");
+            $stmt_update_pengiriman = $conn->prepare("UPDATE pengiriman SET status = 'dalam pengiriman' WHERE id IN ($placeholders)");
             $stmt_update_pengiriman->bind_param(str_repeat('i', count($pengiriman_ids)), ...$pengiriman_ids);
             $stmt_update_pengiriman->execute();
             $stmt_update_pengiriman->close();
@@ -341,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['berangkatkan_surat_ja
 $stmt_added = $conn->prepare("
     SELECT dsj.id as detail_id, p.* 
     FROM detail_surat_jalan dsj
-    JOIN Pengiriman p ON dsj.id_pengiriman = p.id
+    JOIN pengiriman p ON dsj.id_pengiriman = p.id
     WHERE dsj.id_surat_jalan = ?
     ORDER BY dsj.id DESC
 ");
@@ -367,7 +367,7 @@ $offset = ($pagePengiriman - 1) * $limit;
 $stmt_all_draft = $conn->prepare("
     SELECT DISTINCT dsj.id_pengiriman 
     FROM detail_surat_jalan dsj
-    JOIN Surat_jalan sj ON dsj.id_surat_jalan = sj.id
+    JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id
     WHERE sj.status = 'draft'
 ");
 $stmt_all_draft->execute();
@@ -383,7 +383,7 @@ $excluded_ids_str = !empty($all_draft_ids) ? implode(',', $all_draft_ids) : '0';
 // Query untuk menghitung total resi yang tersedia
 $count_query = "
     SELECT COUNT(*) as total
-    FROM Pengiriman p
+    FROM pengiriman p
     WHERE p.cabang_pengirim = ? 
     AND p.cabang_penerima = ? 
     AND p.status = 'bkd'
@@ -413,7 +413,7 @@ $total_pages = ceil($total_data / $limit);
 // Query untuk mengambil resi yang tersedia
 $query = "
     SELECT p.*
-    FROM Pengiriman p
+    FROM pengiriman p
     WHERE p.cabang_pengirim = ? 
     AND p.cabang_penerima = ? 
     AND p.status = 'bkd'

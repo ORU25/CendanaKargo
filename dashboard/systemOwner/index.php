@@ -313,9 +313,9 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
 // =======================================================
 
 // 1. Fetch Core Statistics (non-shipment, All Time)
-$total_cabang = get_count_stat($conn, 'Kantor_cabang');
-$total_user = get_count_stat($conn, 'User');
-$total_tarif = get_count_stat($conn, 'Tarif_pengiriman', "status = 'aktif'");
+$total_cabang = get_count_stat($conn, 'kantor_cabang');
+$total_user = get_count_stat($conn, 'user');
+$total_tarif = get_count_stat($conn, 'tarif_pengiriman', "status = 'aktif'");
 $total_pengiriman_all_time = get_count_stat($conn, 'pengiriman'); // Total Pengiriman All Time
 $total_pendapatan_all_time = get_total_revenue_all_time($conn); // Total Pendapatan All Time
 
@@ -357,7 +357,7 @@ $selesai = $selesai_filtered;
 $total_pendapatan = $total_revenue_filtered;
 
 // Mengambil daftar semua cabang untuk perulangan tabel
-$stmt = $conn->prepare('SELECT nama_cabang FROM Kantor_cabang ORDER BY nama_cabang ASC');
+$stmt = $conn->prepare('SELECT nama_cabang FROM kantor_cabang ORDER BY nama_cabang ASC');
 $stmt->execute();
 $all_branches_result = $stmt->get_result();
 $all_branches = [];

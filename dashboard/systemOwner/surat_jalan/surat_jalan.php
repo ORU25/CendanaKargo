@@ -19,7 +19,7 @@ if ($id_surat_jalan == 0) {
 }
 
 // Ambil data surat jalan
-$sql_sj = "SELECT * FROM Surat_jalan WHERE id = ?";
+$sql_sj = "SELECT * FROM surat_jalan WHERE id = ?";
 $stmt_sj = $conn->prepare($sql_sj);
 $stmt_sj->bind_param("i", $id_surat_jalan);
 $stmt_sj->execute();
@@ -32,7 +32,7 @@ if (!$sj) {
 }
 
 // Ambil detail pengiriman (maksimal 15)
-$sql_detail = "SELECT p.* FROM Pengiriman p 
+$sql_detail = "SELECT p.* FROM pengiriman p 
                JOIN detail_surat_jalan d ON p.id = d.id_pengiriman 
                WHERE d.id_surat_jalan = ? 
                ORDER BY p.tanggal DESC 

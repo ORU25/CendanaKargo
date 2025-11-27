@@ -45,8 +45,8 @@ function format_bulan_tahun_indonesia($timestamp) {
 // === Ambil ID & cabang admin login ===
 $stmt = $conn->prepare("
     SELECT kc.id, kc.nama_cabang 
-    FROM User u 
-    JOIN Kantor_cabang kc ON u.id_cabang = kc.id 
+    FROM user u 
+    JOIN kantor_cabang kc ON u.id_cabang = kc.id 
     WHERE u.id = ?
 ");
 $stmt->bind_param('i', $_SESSION['user_id']);
@@ -61,7 +61,7 @@ $nama_cabang_admin = $cabang_row['nama_cabang'] ?? 'Tidak diketahui';
 // CEK STATUS CLOSING HARI INI
 // =======================================================
 $today = date('Y-m-d');
-$stmt_closing = $conn->prepare("SELECT id, waktu_closing FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing = $conn->prepare("SELECT id, waktu_closing FROM closing WHERE id_user = ? AND tanggal_closing = ?");
 $stmt_closing->bind_param('is', $_SESSION['user_id'], $today);
 $stmt_closing->execute();
 $result_closing = $stmt_closing->get_result();
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 SUM(CASE WHEN pembayaran = 'transfer' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_transfer,
                 SUM(CASE WHEN pembayaran = 'bayar di tempat' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cod,
                 SUM(CASE WHEN status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_pendapatan
-            FROM Pengiriman
+            FROM pengiriman
             WHERE id_user = ? AND DATE(tanggal) = CURDATE()
         ");
         $stmt_data_closing->bind_param('i', $_SESSION['user_id']);
@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         // Insert data closing
         $stmt_insert = $conn->prepare("
-            INSERT INTO Closing 
+            INSERT INTO closing 
             (id_user, id_cabang, tanggal_closing, total_pengiriman, total_cash, total_transfer, total_cod, total_pendapatan)
             VALUES (?, ?, CURDATE(), ?, ?, ?, ?, ?)
         ");

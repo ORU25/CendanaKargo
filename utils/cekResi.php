@@ -82,8 +82,8 @@ $query = "SELECT
     p.status,
     kc.alamat_cabang as alamat_tujuan,
     kc.telp_cabang as telp_tujuan
-FROM Pengiriman p
-LEFT JOIN Kantor_cabang kc ON p.id_cabang_penerima = kc.id
+FROM pengiriman p
+LEFT JOIN kantor_cabang kc ON p.id_cabang_penerima = kc.id
 WHERE p.no_resi = ?";
 
 $stmt = mysqli_prepare($conn, $query);

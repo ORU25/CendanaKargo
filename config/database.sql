@@ -1,6 +1,6 @@
 USE cendanalintaskargo;
 
-CREATE TABLE Kantor_cabang (
+CREATE TABLE kantor_cabang (
     id INT AUTO_INCREMENT PRIMARY KEY,
     kode_cabang VARCHAR(10) NOT NULL UNIQUE,
     nama_cabang VARCHAR(100) NOT NULL,
@@ -14,7 +14,7 @@ CREATE TABLE User (
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin', 'superAdmin', 'systemOwner') DEFAULT 'admin',
-    FOREIGN KEY (id_cabang) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
+    FOREIGN KEY (id_cabang) REFERENCES kantor_cabang(id) ON DELETE CASCADE
 );
 
 CREATE TABLE driver (
@@ -23,7 +23,7 @@ CREATE TABLE driver (
     telp_driver VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE Tarif_pengiriman (
+CREATE TABLE tarif_pengiriman (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cabang_asal INT NOT NULL,
     id_cabang_tujuan INT NOT NULL,
@@ -31,8 +31,8 @@ CREATE TABLE Tarif_pengiriman (
     batas_berat_dasar INT NOT NULL,
     tarif_tambahan_perkg DECIMAL(10,2) NOT NULL,
     status ENUM('aktif', 'nonaktif') DEFAULT 'aktif',
-    FOREIGN KEY (id_cabang_asal) REFERENCES Kantor_cabang(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_cabang_tujuan) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
+    FOREIGN KEY (id_cabang_asal) REFERENCES kantor_cabang(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_cabang_tujuan) REFERENCES kantor_cabang(id) ON DELETE CASCADE
 );
 
 CREATE TABLE Pengiriman (
@@ -58,9 +58,9 @@ CREATE TABLE Pengiriman (
     total_tarif DECIMAL(10,2) NOT NULL,
     status ENUM('bkd', 'dalam pengiriman', 'sampai tujuan', 'pod', 'dibatalkan') DEFAULT 'bkd',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_tarif) REFERENCES Tarif_pengiriman(id) ON DELETE SET NULL
+    FOREIGN KEY (id_cabang_pengirim) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_cabang_penerima) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_tarif) REFERENCES tarif_pengiriman(id) ON DELETE SET NULL
 );
 
 CREATE TABLE Surat_jalan (
@@ -77,8 +77,8 @@ CREATE TABLE Surat_jalan (
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     status ENUM('draft','diberangkatkan') DEFAULT 'draft',
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_cabang_pengirim) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_cabang_penerima) REFERENCES Kantor_cabang(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_cabang_pengirim) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_cabang_penerima) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_driver) REFERENCES driver(id) ON DELETE SET NULL
 );
 
@@ -125,7 +125,7 @@ CREATE TABLE Closing (
     total_pendapatan DECIMAL(10,2) DEFAULT 0,
     UNIQUE KEY unique_user_date (id_user, tanggal_closing),
     FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_cabang) REFERENCES Kantor_cabang(id) ON DELETE CASCADE
+    FOREIGN KEY (id_cabang) REFERENCES kantor_cabang(id) ON DELETE CASCADE
 );
 
 -- akun user systemOwner dengan password 'admin' (hashed)

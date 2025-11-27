@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_draft'])) {
     
     if ($id_surat_jalan > 0) {
         // Cek apakah surat jalan masih draft dan dari cabang yang sama
-        $stmt_check = $conn->prepare("SELECT status FROM Surat_jalan WHERE id = ? AND id_cabang_pengirim = ?");
+        $stmt_check = $conn->prepare("SELECT status FROM surat_jalan WHERE id = ? AND id_cabang_pengirim = ?");
         $stmt_check->bind_param('ii', $id_surat_jalan, $id_cabang_user);
         $stmt_check->execute();
         $result_check = $stmt_check->get_result();
@@ -42,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_draft'])) {
             $sj = $result_check->fetch_assoc();
             if ($sj['status'] == 'draft') {
                 // Hapus surat jalan (detail akan terhapus otomatis karena ON DELETE CASCADE)
-                $stmt_delete = $conn->prepare("DELETE FROM Surat_jalan WHERE id = ?");
+                $stmt_delete = $conn->prepare("DELETE FROM surat_jalan WHERE id = ?");
                 $stmt_delete->bind_param('i', $id_surat_jalan);
                 
                 if ($stmt_delete->execute()) {
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_draft'])) {
 }
 
 // Query untuk draft surat jalan (filter berdasarkan cabang)
-$sql_draft = "SELECT * FROM Surat_jalan WHERE status = 'draft' AND id_cabang_pengirim = ? ORDER BY tanggal DESC";
+$sql_draft = "SELECT * FROM surat_jalan WHERE status = 'draft' AND id_cabang_pengirim = ? ORDER BY tanggal DESC";
 $stmt_draft = $conn->prepare($sql_draft);
 $stmt_draft->bind_param('i', $id_cabang_user);
 $stmt_draft->execute();
@@ -76,7 +76,7 @@ $limit = 10;
 $offset = ($current_page - 1) * $limit;
 
 // Query untuk menghitung total surat jalan diberangkatkan (filter berdasarkan cabang)
-$count_query = "SELECT COUNT(*) as total FROM Surat_jalan WHERE status = 'diberangkatkan' AND id_cabang_pengirim = ?";
+$count_query = "SELECT COUNT(*) as total FROM surat_jalan WHERE status = 'diberangkatkan' AND id_cabang_pengirim = ?";
 if (!empty($search)) {
     $count_query .= " AND (no_surat_jalan LIKE ? OR cabang_pengirim LIKE ? OR cabang_penerima LIKE ? OR driver LIKE ?)";
 }
@@ -96,7 +96,7 @@ $stmt_count->close();
 $total_pages = ceil($total_data / $limit);
 
 // Query untuk mengambil surat jalan diberangkatkan (filter berdasarkan cabang)
-$query = "SELECT * FROM Surat_jalan WHERE status = 'diberangkatkan' AND id_cabang_pengirim = ?";
+$query = "SELECT * FROM surat_jalan WHERE status = 'diberangkatkan' AND id_cabang_pengirim = ?";
 if (!empty($search)) {
     $query .= " AND (no_surat_jalan LIKE ? OR cabang_pengirim LIKE ? OR cabang_penerima LIKE ? OR driver LIKE ?)";
 }
@@ -114,7 +114,7 @@ $result_sj = $stmt_sj->get_result();
 $surat_jalans = ($result_sj->num_rows > 0) ? $result_sj->fetch_all(MYSQLI_ASSOC) : [];
 $stmt_sj->close();
 
-$sql_cabang_modal = "SELECT id, kode_cabang, nama_cabang FROM Kantor_cabang ORDER BY nama_cabang ASC";
+$sql_cabang_modal = "SELECT id, kode_cabang, nama_cabang FROM kantor_cabang ORDER BY nama_cabang ASC";
 $result_cabang_modal = $conn->query($sql_cabang_modal);
 $cabangs_modal = ($result_cabang_modal->num_rows > 0) ? $result_cabang_modal->fetch_all(MYSQLI_ASSOC) : [];
 

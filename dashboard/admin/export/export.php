@@ -20,7 +20,7 @@ $username = $_SESSION['username'];
 
 // Cek apakah sudah closing hari ini
 $today = date('Y-m-d');
-$stmt_closing_check = $conn->prepare("SELECT id FROM Closing WHERE id_user = ? AND tanggal_closing = ?");
+$stmt_closing_check = $conn->prepare("SELECT id FROM closing WHERE id_user = ? AND tanggal_closing = ?");
 $stmt_closing_check->bind_param('is', $user_id, $today);
 $stmt_closing_check->execute();
 $is_closed = $stmt_closing_check->get_result()->num_rows > 0;
@@ -53,10 +53,10 @@ $query = "SELECT
             p.status,
             u.username AS dibuat_oleh,
             sj.driver AS nama_driver
-          FROM Pengiriman p
-          LEFT JOIN User u ON p.id_user = u.id
+          FROM pengiriman p
+          LEFT JOIN user u ON p.id_user = u.id
           LEFT JOIN detail_surat_jalan dsj ON p.id = dsj.id_pengiriman
-          LEFT JOIN Surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
+          LEFT JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
           WHERE p.id_user = ?
             AND p.status != 'dibatalkan'
             $date_condition

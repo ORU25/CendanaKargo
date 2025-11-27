@@ -70,10 +70,10 @@ $query = "SELECT
             p.status,
             u.username AS dibuat_oleh,
             sj.driver AS nama_driver
-          FROM Pengiriman p
-          LEFT JOIN User u ON p.id_user = u.id
+          FROM pengiriman p
+          LEFT JOIN user u ON p.id_user = u.id
           LEFT JOIN detail_surat_jalan dsj ON p.id = dsj.id_pengiriman
-          LEFT JOIN Surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
+          LEFT JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
           WHERE p.cabang_pengirim = ?
             AND p.status != 'dibatalkan'
             $date_condition
