@@ -1,5 +1,6 @@
 {
     "settings": {
+        "siteName": "Cendana Lintas Kargo",
         "navLogo": "assets\/logo.jpg",
         "footerLogo": "assets\/clk.png"
     },

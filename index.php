@@ -5,6 +5,7 @@ $content = [];
 // 1. UPDATE DEFAULT DATA (Agar tidak error jika JSON terhapus)
 $defaultData = [
     'settings' => [
+        'siteName' => 'Cendana Lintas Kargo',
         'navLogo' => 'assets/logo.jpg',
         'footerLogo' => 'assets/clk.png'
     ],
@@ -97,7 +98,10 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         ?>
         <img src="<?php echo $navLogo; ?>" alt="Logo Cendana Lintas Kargo" class="logo" />
         </a>
-        <h1>Cendana Lintas Kargo</h1>
+        <?php
+            $siteName = isset($content['settings']['siteName']) ? $content['settings']['siteName'] : 'Cendana Lintas Kargo';
+        ?>
+        <h1><?php echo htmlspecialchars($siteName); ?></h1>
       </div>
 
       <nav>

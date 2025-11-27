@@ -17,6 +17,7 @@ $dataFile = 'content.json';
 // Data Default
 $defaultData = [
     'settings' => [
+        'siteName' => 'Cendana Lintas Kargo',
         'navLogo' => 'assets/logo.jpg',
         'footerLogo' => 'assets/clk.png'
     ],
@@ -87,6 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (strpos($key, 'en_') === 0) {
             $realKey = substr($key, 3);
             $currentData['en'][$realKey] = htmlspecialchars($value);
+            $isUpdated = true;
+        } elseif ($key === 'siteName' && $section === 'settings') {
+            $currentData['settings']['siteName'] = htmlspecialchars($value);
             $isUpdated = true;
         }
     }
@@ -221,11 +225,16 @@ include '../../../components/sidebar_offcanvas.php';
 
                 <div class="card border-0 shadow-sm mb-5">
                     <div class="card-header bg-white py-3 border-bottom">
-                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-gear me-2"></i>Bagian Pengaturan Logo</h5>
+                        <h5 class="mb-0 fw-bold text-danger"><i class="fa-solid fa-gear me-2"></i>Bagian Pengaturan Nama dan Logo</h5>
                     </div>
                     <div class="card-body">
                         <form method="POST" action="" enctype="multipart/form-data">
                             <input type="hidden" name="section_type" value="settings">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Nama Website</label>
+                                <input type="text" class="form-control" name="siteName" value="<?= isset($currentData['settings']['siteName']) ? htmlspecialchars($currentData['settings']['siteName']) : 'Cendana Lintas Kargo' ?>" placeholder="Masukkan nama website" required>
+                            </div>
+                            <hr class="my-4">
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label small fw-bold">Logo Navbar (Atas)</label>
