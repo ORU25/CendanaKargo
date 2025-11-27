@@ -105,16 +105,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $data_hari_ini['total_cash'],
             $data_hari_ini['total_transfer'],
             $data_hari_ini['total_cod'],
-            $data_hari_ini['total_pendapatan'],
+            $data_hari_ini['total_pendapatan']
         );
         
         if ($stmt_insert->execute()) {
             $stmt_insert->close();
-            header('Location: ?success=closing');
+            header('Location: index.php?success=closing');
             exit;
         } else {
             $stmt_insert->close();
-            header('Location: ?error=closing_failed');
+            header('Location: index.php?error=closing_failed&msg=' . urlencode($stmt_insert->error));
             exit;
         }
     }
@@ -670,7 +670,7 @@ include '../../components/sidebar_offcanvas.php';
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="POST" action="index.php" id="formClosing">
+      <form method="POST" action="index" id="formClosing">
         <input type="hidden" name="action" value="closing">
         <div class="modal-body">
           <div class="alert alert-warning" role="alert">

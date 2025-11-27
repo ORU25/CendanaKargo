@@ -8,7 +8,7 @@ CREATE TABLE kantor_cabang (
     telp_cabang VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE User (
+CREATE TABLE user (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cabang INT,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -35,7 +35,7 @@ CREATE TABLE tarif_pengiriman (
     FOREIGN KEY (id_cabang_tujuan) REFERENCES kantor_cabang(id) ON DELETE CASCADE
 );
 
-CREATE TABLE Pengiriman (
+CREATE TABLE pengiriman (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_user INT,
     id_cabang_pengirim INT,
@@ -57,13 +57,13 @@ CREATE TABLE Pengiriman (
     diskon DECIMAL(10,2) DEFAULT 0,
     total_tarif DECIMAL(10,2) NOT NULL,
     status ENUM('bkd', 'dalam pengiriman', 'sampai tujuan', 'pod', 'dibatalkan') DEFAULT 'bkd',
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_tarif) REFERENCES tarif_pengiriman(id) ON DELETE SET NULL
 );
 
-CREATE TABLE Surat_jalan (
+CREATE TABLE surat_jalan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_user INT,
     id_cabang_pengirim INT,
@@ -76,7 +76,7 @@ CREATE TABLE Surat_jalan (
     cabang_penerima VARCHAR(100) NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     status ENUM('draft','diberangkatkan') DEFAULT 'draft',
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE SET NULL,
+    FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_driver) REFERENCES driver(id) ON DELETE SET NULL
@@ -86,8 +86,8 @@ CREATE TABLE detail_surat_jalan (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_surat_jalan BIGINT,
     id_pengiriman BIGINT,
-    FOREIGN KEY (id_surat_jalan) REFERENCES Surat_jalan(id) ON DELETE CASCADE,
-    FOREIGN KEY (id_pengiriman) REFERENCES Pengiriman(id) ON DELETE CASCADE
+    FOREIGN KEY (id_surat_jalan) REFERENCES surat_jalan(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_pengiriman) REFERENCES pengiriman(id) ON DELETE CASCADE
 );
 
 CREATE TABLE pengambilan (
@@ -97,7 +97,7 @@ CREATE TABLE pengambilan (
     nama_pengambil VARCHAR(100) NOT NULL,
     telp_pengambil VARCHAR(20) NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE
+    FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE CASCADE
 );
 
 CREATE TABLE log_status_pengiriman (
@@ -108,11 +108,11 @@ CREATE TABLE log_status_pengiriman (
     keterangan VARCHAR(255) DEFAULT NULL,
     diubah_oleh INT DEFAULT NULL,
     waktu_perubahan DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_pengiriman) REFERENCES Pengiriman(id) ON DELETE CASCADE,
-    FOREIGN KEY (diubah_oleh) REFERENCES User(id) ON DELETE SET NULL
+    FOREIGN KEY (id_pengiriman) REFERENCES pengiriman(id) ON DELETE CASCADE,
+    FOREIGN KEY (diubah_oleh) REFERENCES user(id) ON DELETE SET NULL
 );
 
-CREATE TABLE Closing (
+CREATE TABLE closing (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
     id_cabang INT NOT NULL,
@@ -124,12 +124,12 @@ CREATE TABLE Closing (
     total_cod DECIMAL(10,2) DEFAULT 0,
     total_pendapatan DECIMAL(10,2) DEFAULT 0,
     UNIQUE KEY unique_user_date (id_user, tanggal_closing),
-    FOREIGN KEY (id_user) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE CASCADE,
     FOREIGN KEY (id_cabang) REFERENCES kantor_cabang(id) ON DELETE CASCADE
 );
 
 -- akun user systemOwner dengan password 'admin' (hashed)
-INSERT INTO User (username, password, role)
+INSERT INTO user (username, password, role)
 VALUES (
     'systemOwner',
     '$2y$10$HsH3nYMyOQtFYkIjtOkQ1O4Ip7IW71cNASjGqY8HQfqXGU5qZTl.u',
