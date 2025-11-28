@@ -83,11 +83,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST as $key => $value) {
         if (strpos($key, 'id_') === 0) {
             $realKey = substr($key, 3);
-            $currentData['id'][$realKey] = htmlspecialchars($value);
+            $currentData['id'][$realKey] = $value;
             $isUpdated = true;
         } elseif (strpos($key, 'en_') === 0) {
             $realKey = substr($key, 3);
-            $currentData['en'][$realKey] = htmlspecialchars($value);
+            $currentData['en'][$realKey] = $value;
             $isUpdated = true;
         } elseif ($key === 'siteName' && $section === 'settings') {
             $currentData['settings']['siteName'] = htmlspecialchars($value);

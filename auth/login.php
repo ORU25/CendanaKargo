@@ -142,8 +142,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $title = "Login - Cendana Kargo";
 include '../templates/header.php';
 ?>
-<div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card shadow p-4" style="width: 350px; border-top: 5px solid #dc3545;">
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+  .login-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-image: url('../assets/login.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+  .login-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.6), rgba(153, 27, 27, 0.7));
+    z-index: 1;
+  }
+  .login-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+</style>
+<div class="login-wrapper">
+  <div class="container d-flex justify-content-center align-items-center">
+    <div class="card login-card shadow-lg p-4" style="width: 350px; border-top: 5px solid #dc3545;">
         <a href="../" class="mx-auto">
             <img src="../assets/logo.jpg" alt="Logo Cendana Lintas Kargo" width="100px" />
         </a>
@@ -206,6 +244,7 @@ include '../templates/header.php';
             </div>
         </form>
     </div>
+  </div>
 </div>
 
 <script>
