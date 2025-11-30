@@ -1,0 +1,33 @@
+<?php
+if (!defined('BASE_URL')) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $host = $_SERVER['HTTP_HOST'];
+    define('BASE_URL', $protocol . $host . '/'); // selalu root domain
+}
+?>
+
+
+
+# Matikan listing folder
+Options -Indexes
+
+# Aktifkan URL rewriting
+RewriteEngine On
+RewriteBase /
+
+# Blokir akses ke file .env
+<FilesMatch "^\.env">
+    Require all denied
+</FilesMatch>
+
+# Hapus ekstensi .php dari URL
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^(.*)$ $1.php [L]
+
+# Redirect folder/index.php ke folder saja
+RewriteCond %{THE_REQUEST} /index\.php
+RewriteRule ^(.*)index\.php$ /$1 [R=301,L]
+
+# Blokir akses langsung ke folder sensitif
+RewriteRule ^(components|config|templates)/ - [F,L]

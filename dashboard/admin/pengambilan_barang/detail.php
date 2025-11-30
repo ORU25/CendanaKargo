@@ -274,12 +274,6 @@ include '../../../components/sidebar_offcanvas.php';
                     </div>
                 </div>
             </div>
-
-            <div class="d-flex justify-content-end">
-                <a href="resi?id=<?= (int)$pengiriman['id']; ?>" class="btn btn-md btn-secondary" target="_blank">
-                    <i class="fa-solid fa-receipt"></i> Cetak Resi
-                </a>
-            </div>
         </div>
     </div>
   </div>
