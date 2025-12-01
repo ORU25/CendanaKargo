@@ -131,6 +131,7 @@ function abbreviateName($name) {
         .empty-column {
             background: white;
             border: none;
+            order: 1; /* Kolom kosong di kiri */
         }
 
         .surat-jalan {
@@ -140,6 +141,7 @@ function abbreviateName($name) {
             height: 100%;
             padding: 8px;
             background: white;
+            order: 2; /* Surat jalan di kanan */
         }
 
         .header {

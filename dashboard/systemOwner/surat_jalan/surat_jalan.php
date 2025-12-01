@@ -131,6 +131,7 @@ function abbreviateName($name) {
         .empty-column {
             background: white;
             border: none;
+            order: 1; /* Kolom kosong di kiri */
         }
 
         .surat-jalan {
@@ -140,6 +141,7 @@ function abbreviateName($name) {
             height: 100%;
             padding: 8px;
             background: white;
+            order: 2; /* Surat jalan di kanan */
         }
 
         .header {
@@ -311,6 +313,7 @@ function abbreviateName($name) {
 
 <body onload="window.print()">
     <div class="page-container">
+        <div class="empty-column"></div>
         <div class="surat-jalan">
             <div class="header">
                 <div class="logo"><img src="../../../assets/logo.jpg" alt="Logo"></div>
@@ -393,8 +396,6 @@ function abbreviateName($name) {
                 </div>
             </div>
         </div>
-
-        <div class="empty-column"></div>
     </div>
 </body>
 
