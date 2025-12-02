@@ -310,7 +310,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
-            <i class="fa-solid fa-bolt fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
+            <i class="fa-solid fa-bolt fa-3x" style="color: var(--accent-yellow); margin-bottom: 30px; font-size: 70px;"></i>
               <h3 id="layanan1"><?php echo t('layanan1', 'id'); ?></h3>
           </div>
           <div class="card-back">
@@ -322,7 +322,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
-            <i class="fa-solid fa-shield-halved fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
+            <i class="fa-solid fa-shield-halved fa-3x" style="color: var(--accent-yellow); margin-bottom: 30px; font-size: 70px;"></i>
               <h3 id="layanan2"><?php echo t('layanan2', 'id'); ?></h3>
           </div>
           <div class="card-back">
@@ -334,7 +334,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       <div class="service-card">
         <div class="card-inner">
           <div class="card-front">
-            <i class="fa-solid fa-coins fa-3x" style="color: var(--accent-yellow); margin-bottom: 14px;"></i>
+            <i class="fa-solid fa-coins fa-3x" style="color: var(--accent-yellow); margin-bottom: 30px; font-size: 70px;"></i>
               <h3 id="layanan3"><?php echo t('layanan3', 'id'); ?></h3>
           </div>
           <div class="card-back">
