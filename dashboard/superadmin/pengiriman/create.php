@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $asal = trim($_POST['id_cabang_asal']);
+    $asal = $_SESSION['id_cabang']; // Gunakan cabang user sendiri
     $tujuan = trim($_POST['id_cabang_tujuan']);
     $nama_pengirim = trim($_POST['nama_pengirim']);
     $telp_pengirim = trim($_POST['telp_pengirim']);
@@ -37,9 +37,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $berat = (float) trim($_POST['berat']);
     $jumlah = (int) trim($_POST['jumlah']);
     $diskon = isset($_POST['diskon']) && $_POST['diskon'] !== '' ? (float) trim($_POST['diskon']) : 0;
-    $pembayaran = trim($_POST['jasa_pengiriman']); // field masih "jasa_pengiriman"
+    $pembayaran = trim($_POST['pembayaran']);
+    $jenis_pengiriman = isset($_POST['jenis_pengiriman']) ? trim($_POST['jenis_pengiriman']) : 'reguler';
+    $tarif_manual = isset($_POST['tarif_manual']) && $_POST['tarif_manual'] !== '' ? (float) trim($_POST['tarif_manual']) : 0;
 
-    // Validasi nomor telepon pengirim dan penerima
+    // Validasi diskon (0-100%)
+    if ($diskon < 0 || $diskon > 100) {
+        header("Location: create?error=invalid_diskon");
+        exit;
+    }
+
+    // Validasi tarif manual untuk barang khusus
+    if ($jenis_pengiriman === 'khusus' && $tarif_manual <= 0) {
+        header("Location: create?error=tarif_manual_required");
+        exit;
+    }
+
     if (!preg_match('/^[0-9]{10,15}$/', $telp_pengirim)) {
         header("Location: create?error=invalid_phone_pengirim");
         exit;
@@ -49,41 +62,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Validasi diskon
-    if ($diskon < 0 || $diskon > 100) {
-        header("Location: create?error=invalid_diskon");
-        exit;
-    }
-
-    $checkTarif = $conn->prepare("SELECT * FROM tarif_pengiriman WHERE id_cabang_asal = ? AND id_cabang_tujuan = ?");
-    $checkTarif->bind_param("ii", $asal, $tujuan);
-    $checkTarif->execute();
-    $checkResult = $checkTarif->get_result();
-
-    if (!$row = $checkResult->fetch_assoc()) {
-        header("Location: create?error=tarif_not_found");
-        exit;
-    }
-
-    $data_tarif = $row;
-    $tarif_dasar = (float) $data_tarif['tarif_dasar'];
-    $batas_berat = (float) $data_tarif['batas_berat_dasar'];
-    $tarif_tambahan = (float) $data_tarif['tarif_tambahan_perkg'];
-
-    // Hitung tarif sebelum diskon
-    if ($berat <= $batas_berat) {
-        $tarif_sebelum_diskon = $tarif_dasar;
+    // Cek jenis pengiriman: reguler atau khusus
+    if ($jenis_pengiriman === 'khusus') {
+        // Barang Khusus: Gunakan tarif manual, tidak perlu cek tabel tarif
+        $data_tarif = null;
+        $tarif_sebelum_diskon = $tarif_manual;
+        
+        // Hitung total tarif setelah diskon
+        if ($diskon > 0) {
+            $nominal_diskon = ($tarif_sebelum_diskon * $diskon) / 100;
+            $total_tarif = $tarif_sebelum_diskon - $nominal_diskon;
+        } else {
+            $total_tarif = $tarif_sebelum_diskon;
+        }
     } else {
-        $lebih = $berat - $batas_berat;
-        $tarif_sebelum_diskon = $tarif_dasar + ($lebih * $tarif_tambahan);
-    }
+        // Pengiriman Reguler: Gunakan perhitungan dari tabel tarif
+        $checkTarif = $conn->prepare("SELECT * FROM tarif_pengiriman WHERE id_cabang_asal = ? AND id_cabang_tujuan = ?");
+        $checkTarif->bind_param("ii", $asal, $tujuan);
+        $checkTarif->execute();
+        $checkResult = $checkTarif->get_result();
 
-    // Hitung total tarif setelah diskon
-    if ($diskon > 0) {
-        $nominal_diskon = ($tarif_sebelum_diskon * $diskon) / 100;
-        $total_tarif = $tarif_sebelum_diskon - $nominal_diskon;
-    } else {
-        $total_tarif = $tarif_sebelum_diskon;
+        if (!$row = $checkResult->fetch_assoc()) {
+            header("Location: create?error=tarif_not_found");
+            exit;
+        }
+
+        $data_tarif = $row;
+        $tarif_dasar = (float) $data_tarif['tarif_dasar'];
+        $batas_berat = (float) $data_tarif['batas_berat_dasar'];
+        $tarif_tambahan = (float) $data_tarif['tarif_tambahan_perkg'];
+
+        // Hitung tarif sebelum diskon
+        if ($berat <= $batas_berat) {
+            $tarif_sebelum_diskon = $tarif_dasar;
+        } else {
+            $lebih = $berat - $batas_berat;
+            $tarif_sebelum_diskon = $tarif_dasar + ($lebih * $tarif_tambahan);
+        }
+
+        // Hitung total tarif setelah diskon
+        if ($diskon > 0) {
+            $nominal_diskon = ($tarif_sebelum_diskon * $diskon) / 100;
+            $total_tarif = $tarif_sebelum_diskon - $nominal_diskon;
+        } else {
+            $total_tarif = $tarif_sebelum_diskon;
+        }
     }
 
     $getCabang = $conn->prepare("SELECT id, nama_cabang, kode_cabang FROM kantor_cabang WHERE id IN (?, ?)");
@@ -121,26 +144,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
+    $id_tarif_value = ($jenis_pengiriman === 'khusus') ? null : $data_tarif['id'];
+    
     $stmt->bind_param(
         "iiiisssssssssdisdd",
-        $id_user, $asal, $tujuan, $data_tarif['id'], $username,
+        $id_user, $asal, $tujuan, $id_tarif_value, $username,
         $nama_cabang_asal, $nama_cabang_tujuan, $no_resi,
         $nama_pengirim, $telp_pengirim, $nama_penerima, $telp_penerima,
         $nama_barang, $berat, $jumlah, $pembayaran, $diskon, $total_tarif
     );
 
     if ($stmt->execute()) {
+        // Ambil ID pengiriman yang baru dibuat
         $id_pengiriman_baru = $conn->insert_id;
+        
+        // Insert log status awal (BKD)
         $status_awal = 'bkd';
         $keterangan_awal = 'Pengiriman dibuat oleh ' . $username;
-
         $stmt_log = $conn->prepare('INSERT INTO log_status_pengiriman (id_pengiriman, status_lama, status_baru, keterangan, diubah_oleh) VALUES (?, NULL, ?, ?, ?)');
         if ($stmt_log) {
             $stmt_log->bind_param('issi', $id_pengiriman_baru, $status_awal, $keterangan_awal, $id_user);
             $stmt_log->execute();
             $stmt_log->close();
         }
-
+        
         header("Location: index?success=created&resi=$no_resi");
         exit;
     } else {
@@ -163,33 +190,57 @@ include '../../../components/sidebar_offcanvas.php';
       <div class="card shadow-sm p-4 col-lg-7">
         <h4 class="fw-bold mb-4 text-danger">Tambah Pengiriman</h4>
 
-        <?php
-        if(isset($_GET['error']) && $_GET['error'] == 'failed'){
-            $type = "danger"; $message = "Gagal menambahkan pengiriman baru";
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'failed'){
+            $type = "danger";
+            $message = "Gagal menambahkan pengiriman baru";
             include '../../../components/alert.php';
-        }
-        if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
-            $type = "danger"; $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'tarif_not_found'){
+            $type = "danger";
+            $message = "Tarif untuk cabang asal dan tujuan tidak ditemukan";
             include '../../../components/alert.php';
-        }
-        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
-            $type = "danger"; $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_pengirim'){
+            $type = "danger";
+            $message = "Format nomor telepon pengirim tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }
-        if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
-            $type = "danger"; $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_phone_penerima'){
+            $type = "danger";
+            $message = "Format nomor telepon penerima tidak valid. Harus 10-15 digit angka.";
             include '../../../components/alert.php';
-        }
-        if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
-            $type = "danger"; $message = "Diskon tidak valid. Harus antara 0-100%.";
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'invalid_diskon'){
+            $type = "danger";
+            $message = "Diskon tidak valid. Harus antara 0-100%.";
             include '../../../components/alert.php';
-        }
-        ?>
+        }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'tarif_manual_required'){
+            $type = "danger";
+            $message = "Tarif manual harus diisi untuk barang khusus.";
+            include '../../../components/alert.php';
+        }?>
 
         <form method="POST" action="create">
           <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
 
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="jenis_pengiriman" class="form-label fw-semibold">Jenis Pengiriman</label>
+              <select name="jenis_pengiriman" id="jenis_pengiriman" class="form-select" required>
+                <option value="reguler">Reguler</option>
+                <option value="khusus">Barang Khusus</option>
+              </select>
+              <small class="text-muted">Pilih "Barang Khusus" untuk input tarif manual</small>
+            </div>
+            <div class="col-md-6" id="tarifManualWrapper" style="display: none;">
+              <label for="tarif_manual" class="form-label fw-semibold">Tarif Manual (Rp) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="tarif_manual" name="tarif_manual" min="0" step="1000" placeholder="Masukkan tarif manual">
+              <small class="text-muted">Hanya aktif untuk barang khusus</small>
+            </div>
+          </div>
           <div class="row g-3">
+
             <div class="col-md-6">
               <label class="form-label fw-semibold" for="asal">Cabang Asal</label>
               <input type="text" class="form-control" value="<?= $_SESSION['cabang']; ?>" readonly>
@@ -256,16 +307,15 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
 
             <div class="col-md-6">
-              <label for="jasa_pengiriman" class="form-label fw-semibold">Jasa Pengiriman</label>
-              <select name="jasa_pengiriman" id="jasa_pengiriman" class="form-select" required>
-                <option value="">-- Pilih Jasa Pengiriman --</option>
+              <label for="pembayaran" class="form-label fw-semibold">Metode Pembayaran</label>
+              <select name="pembayaran" id="pembayaran" class="form-select" required>
+                <option value="">-- Pilih Metode Pembayaran --</option>
                 <option value="Transfer">Transfer</option>
                 <option value="Cash">Cash</option>
                 <option value="Bayar di Tempat">Bayar di Tempat</option>
               </select>
             </div>
           </div>
-
           <div class="d-flex justify-content-start mt-4">
             <button type="submit" class="btn btn-danger fw-semibold" style="width: 120px;">Tambah</button>
           </div>
@@ -328,13 +378,71 @@ function formatRupiah(angka) {
     return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
 }
 
+// Toggle field tarif manual berdasarkan jenis pengiriman
+document.getElementById('jenis_pengiriman').addEventListener('change', function() {
+    const jenis = this.value;
+    const tarifManualWrapper = document.getElementById('tarifManualWrapper');
+    const tarifManualInput = document.getElementById('tarif_manual');
+    const estimasiCard = document.getElementById('estimasiBiaya');
+    
+    if (jenis === 'khusus') {
+        tarifManualWrapper.style.display = 'block';
+        tarifManualInput.required = true;
+        estimasiCard.querySelector('h5').innerHTML = '<i class="fa-solid fa-exclamation-triangle me-2"></i>Mode Barang Khusus';
+        estimasiCard.classList.add('border-warning');
+    } else {
+        tarifManualWrapper.style.display = 'none';
+        tarifManualInput.required = false;
+        tarifManualInput.value = '';
+        estimasiCard.querySelector('h5').innerHTML = 'Estimasi Biaya';
+        estimasiCard.classList.remove('border-warning');
+    }
+    hitungEstimasi();
+});
+
 function hitungEstimasi() {
+    const jenisPengiriman = document.getElementById('jenis_pengiriman').value;
     const cabangAsal = document.getElementById('asal').value;
     const cabangTujuan = document.getElementById('tujuan').value;
     const berat = parseFloat(document.getElementById('berat').value) || 0;
     const diskon = parseFloat(document.getElementById('diskon').value) || 0;
+    const tarifManual = parseFloat(document.getElementById('tarif_manual').value) || 0;
     
-    // Cari tarif yang sesuai
+    // Jika barang khusus, gunakan tarif manual
+    if (jenisPengiriman === 'khusus') {
+        if (tarifManual > 0) {
+            const subtotal = tarifManual;
+            const nominalDiskon = (subtotal * diskon) / 100;
+            const totalBayar = subtotal - nominalDiskon;
+            
+            // Tampilkan estimasi untuk barang khusus
+            document.getElementById('error_not_found').style.display = 'none';
+            document.getElementById('est_batas_berat').textContent = '-';
+            document.getElementById('est_tarif_dasar').textContent = 'Manual';
+            document.getElementById('est_tarif_tambahan').textContent = 'Manual';
+            document.getElementById('est_biaya_tambahan').textContent = 'Rp 0';
+            document.getElementById('est_berat').textContent = berat > 0 ? berat + ' kg' : '- kg';
+            document.getElementById('est_subtotal').textContent = formatRupiah(subtotal);
+            document.getElementById('est_persen_diskon').textContent = diskon;
+            document.getElementById('est_nominal_diskon').textContent = formatRupiah(nominalDiskon);
+            document.getElementById('est_total').textContent = formatRupiah(totalBayar);
+        } else {
+            // Tarif manual belum diisi
+            document.getElementById('error_not_found').style.display = 'none';
+            document.getElementById('est_batas_berat').textContent = '-';
+            document.getElementById('est_tarif_dasar').textContent = 'Manual';
+            document.getElementById('est_tarif_tambahan').textContent = 'Manual';
+            document.getElementById('est_biaya_tambahan').textContent = 'Rp -';
+            document.getElementById('est_berat').textContent = berat > 0 ? berat + ' kg' : '- kg';
+            document.getElementById('est_subtotal').textContent = 'Rp -';
+            document.getElementById('est_persen_diskon').textContent = '0';
+            document.getElementById('est_nominal_diskon').textContent = 'Rp -';
+            document.getElementById('est_total').textContent = 'Rp -';
+        }
+        return;
+    }
+    
+    // Pengiriman reguler: Cari tarif yang sesuai
     const tarif = tarifData.find(t => 
         t.id_cabang_asal == cabangAsal && t.id_cabang_tujuan == cabangTujuan
     );
@@ -349,11 +457,12 @@ function hitungEstimasi() {
         document.getElementById('est_nominal_diskon').textContent = 'Rp -';
         document.getElementById('est_total').textContent = 'Rp -';
         document.getElementById('est_persen_diskon').textContent = '0';
-
         return;
-    }else{
+    } else {
         document.getElementById('error_not_found').style.display = 'none';
     }
+    
+    if (!tarif) return;
     
     const tarifDasar = parseFloat(tarif.tarif_dasar);
     const batasBerat = parseFloat(tarif.batas_berat_dasar);
@@ -393,6 +502,7 @@ document.getElementById('asal').addEventListener('change', hitungEstimasi);
 document.getElementById('tujuan').addEventListener('change', hitungEstimasi);
 document.getElementById('berat').addEventListener('input', hitungEstimasi);
 document.getElementById('diskon').addEventListener('input', hitungEstimasi);
+document.getElementById('tarif_manual').addEventListener('input', hitungEstimasi);
 </script>
 
 <?php
