@@ -127,10 +127,11 @@ $where_clause = 'DATE(tanggal) = CURDATE()';
 $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
 
 // === Hitung total pengiriman, surat jalan, dan pendapatan (berdasarkan filter) ===
+$user_id = $_SESSION['user_id'];
 $total_pengiriman = $conn->query("
     SELECT COUNT(*) AS total 
     FROM pengiriman 
-    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
+    WHERE $where_clause AND id_user = '$user_id' AND id_cabang_pengirim = '$id_cabang_admin'
 ")->fetch_assoc()['total'] ?? 0;
 
 $total_surat_jalan = $conn->query("
