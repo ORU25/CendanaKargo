@@ -206,7 +206,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                <th class="px-4" style="width: 70px;">ID</th>
+                                <th class="px-4" style="width: 70px;">No</th>
                                 <th >Username</th>
                                 <th >Role</th>
                                 <th >Kode Cabang</th>
@@ -216,9 +216,8 @@
                             </thead>
                             <tbody>
                                 <?php foreach($users as $index => $user): ?>
-                                    <?php if($user['id'] !== $_SESSION['user_id']): ?>
                                         <tr>
-                                            <td class="px-4 fw-semibold"><?= htmlspecialchars($user['id']); ?></td>
+                                            <td class="px-4 fw-semibold"><?= htmlspecialchars($index+1); ?></td>
                                             <td><?= htmlspecialchars($user['username']); ?></td>
                                             <td><?= htmlspecialchars($user['role']); ?></td>
                                             <td>
@@ -242,6 +241,7 @@
                                                     <span class="badge bg-success">Aktif</span>
                                                 <?php endif; ?>
                                             </td>
+                                            <?php if($user['id'] != $_SESSION['user_id']): ?>
                                             <td class="">
                                                 <a href="update?id=<?= $user['id']; ?>" class="btn btn-sm btn-primary" title="Edit">
                                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -255,7 +255,11 @@
                                                     </button>
                                                 <?php endif; ?>
                                             </td>
+                                            <?php else: ?>
+                                            <td class="text-muted small"></td>
+                                            <?php endif; ?>
                                         </tr>
+                                        <?php if($user['id'] != $_SESSION['user_id']): ?>
                                         <!-- Delete Modal -->
                                         <div class="modal fade" id="delete<?= $user['id']; ?>" tabindex="-1" aria-labelledby="deleteLabel<?= $user['id']; ?>" aria-hidden="true">
                                             <div class="modal-dialog modal-dialog-centered"> <!-- Tambahkan 'modal-dialog-centered' agar modal di tengah -->
@@ -286,6 +290,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <?php endif; ?>
                                         
                                         <?php if($user['is_closing'] > 0): ?>
                                         <!-- Reopen Modal -->
@@ -319,7 +324,6 @@
                                             </div>
                                         </div>
                                         <?php endif; ?>
-                                    <?php endif; ?>
                                 <?php endforeach; ?>
                                 <?php if (empty($users)): ?>
                                     <tr>

@@ -137,8 +137,7 @@ include '../../../components/sidebar_offcanvas.php';
                 <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                    <th class="px-4">ID</th>
-                    <th>No Resi</th>
+                    <th class="px-4">No Resi</th>
                     <th>Nama Barang</th>
                     <th>Pengirim</th>
                     <th>Penerima</th>
@@ -161,8 +160,7 @@ include '../../../components/sidebar_offcanvas.php';
                 <?php else: ?>
                     <?php foreach ($pengambilan_barang as $b): ?>
                     <tr class="text-capitalize">
-                    <td class="px-4 fw-semibold"><?= (int)$b['id']; ?></td>
-                    <td><span class="badge bg-dark"><?= htmlspecialchars($b['no_resi']); ?></span></td>
+                    <td class="px-4"><span class="badge bg-dark"><?= htmlspecialchars($b['no_resi']); ?></span></td>
                     <td class="fw-semibold"><?= htmlspecialchars($b['nama_barang']); ?></td>
                     <td class="small"><?= htmlspecialchars($b['nama_pengirim']); ?></td>
                     <td class="small"><?= htmlspecialchars($b['nama_penerima']); ?></td>

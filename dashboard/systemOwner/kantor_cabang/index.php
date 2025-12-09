@@ -159,7 +159,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="px-4" style="width: 70px;">ID</th>
+                                    <th class="px-4" style="width: 70px;">No</th>
                                     <th>Kode Cabang</th>
                                     <th>Nama Cabang</th>
                                     <th>Alamat</th>
@@ -168,9 +168,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($cabangs as $cabang): ?>
+                                <?php foreach ($cabangs as $index => $cabang): ?>
                                 <tr>
-                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($cabang['id']); ?></td>
+                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($index+1); ?></td>
                                     <td><?= htmlspecialchars($cabang['kode_cabang']); ?></td>
                                     <td><?= htmlspecialchars($cabang['nama_cabang']); ?></td>
                                     <td><?= htmlspecialchars($cabang['alamat_cabang']); ?></td>

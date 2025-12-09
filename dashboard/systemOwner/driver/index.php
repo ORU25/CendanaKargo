@@ -160,7 +160,7 @@ if ($search !== '') {
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                <th class="px-4" style="width: 70px;">ID</th>
+                                <th class="px-4" style="width: 70px;">No</th>
                                 <th>Nama Driver</th>
                                 <th>No. Telepon</th>
                                 <th class="text-center" style="width: 100px;">Aksi</th>
@@ -169,7 +169,7 @@ if ($search !== '') {
                             <tbody>
                                 <?php foreach($drivers as $index => $driver): ?>
                                     <tr>
-                                        <td class="px-4 fw-semibold"><?= htmlspecialchars($driver['id']); ?></td>
+                                        <td class="px-4 fw-semibold"><?= htmlspecialchars($index+1); ?></td>
                                         <td><?= htmlspecialchars($driver['nama_driver']); ?></td>
                                         <td><?= htmlspecialchars($driver['telp_driver']); ?></td>
                                         <td>

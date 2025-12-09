@@ -145,8 +145,7 @@ $stmt->close();
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                    <th class="px-4" style="width: 70px;">ID</th>
-                                    <th>No Resi</th>
+                                    <th class="px-4">No Resi</th>
                                     <th>Nama Barang</th>
                                     <th>Pengirim</th>
                                     <th>Penerima</th>
@@ -177,8 +176,7 @@ $stmt->close();
                                         }
                                     ?>
                                     <tr class="text-capitalize">
-                                        <td class="px-4 fw-semibold"><?= (int)$p['id']; ?></td>
-                                        <td><span class="badge bg-dark"><?= htmlspecialchars($p['no_resi']); ?></span></td>
+                                        <td class="px-4"><span class="badge bg-dark"><?= htmlspecialchars($p['no_resi']); ?></span></td>
                                         <td class="fw-semibold"><?= htmlspecialchars($p['nama_barang']); ?></td>
                                         <td class="small"><?= htmlspecialchars($p['nama_pengirim']); ?></td>
                                         <td class="small"><?= htmlspecialchars($p['nama_penerima']); ?></td>

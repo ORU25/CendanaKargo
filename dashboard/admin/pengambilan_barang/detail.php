@@ -185,13 +185,41 @@ include '../../../components/sidebar_offcanvas.php';
                                     <small class="opacity-75 d-block">Jumlah</small>
                                     <strong><?= (int)$pengiriman['jumlah']; ?> item</strong>
                                 </div>
-                                <div class="col-6 col-md-2">
-                                    <small class="opacity-75 d-block">Diskon</small>
-                                    <strong><?= $pengiriman['diskon'] ? number_format($pengiriman['diskon'], 1).'%' : '-'; ?></strong>
-                                </div>
                                 <div class="col-6 col-md-3">
                                     <small class="opacity-75 d-block">Metode Pembayaran</small>
                                     <strong><?= htmlspecialchars($pengiriman['pembayaran']); ?></strong>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Tarif Manual</small>
+                                    <?php if($pengiriman['tarif_manual'] > 0): ?>
+                                    <strong>Rp <?= number_format($pengiriman['tarif_manual'], 0, ',', '.'); ?></strong>
+                                    <?php else: ?>
+                                    <strong>-</strong>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Tarif Handling</small>
+                                    <?php if($pengiriman['tarif_handling'] > 0): ?>
+                                    <strong>Rp <?= number_format($pengiriman['tarif_handling'], 0, ',', '.'); ?></strong>
+                                    <?php else: ?>
+                                    <strong>-</strong>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Tarif Lintas Cabang</small>
+                                    <?php if($pengiriman['tarif_lintas_cabang'] > 0): ?>
+                                    <strong>Rp <?= number_format($pengiriman['tarif_lintas_cabang'], 0, ',', '.'); ?></strong>
+                                    <?php else: ?>
+                                    <strong>-</strong>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <small class="opacity-75 d-block">Diskon</small>
+                                    <?php if($pengiriman['diskon'] == 0): ?>
+                                        <strong>-</strong>
+                                    <?php else: ?>
+                                        <strong><?= number_format($pengiriman['diskon'], 1); ?>%</strong>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>

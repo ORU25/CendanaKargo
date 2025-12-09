@@ -118,6 +118,11 @@ include '../../../components/sidebar_offcanvas.php';
                 $message = "Pengiriman berhasil sampai tujuan";
                 include '../../../components/alert.php';
         }?>
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'not_found'){
+            $type = "danger";
+            $message = "Pengiriman tidak ditemukan";
+            include '../../../components/alert.php';
+        }?>
 
         <!-- Search -->
         <div class="card border-0 shadow-sm mb-4">
@@ -149,8 +154,7 @@ include '../../../components/sidebar_offcanvas.php';
               <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                   <tr>
-                    <th class="px-4" style="width:70px;">ID</th>
-                    <th>No Resi</th>
+                    <th class="px-4">No Resi</th>
                     <th>Nama Barang</th>
                     <th>Pengirim</th>
                     <th>Penerima</th>
@@ -179,8 +183,7 @@ include '../../../components/sidebar_offcanvas.php';
                       }
                   ?>
                   <tr class="text-capitalize">
-                    <td class="px-4 fw-semibold"><?= (int)$b['id']; ?></td>
-                    <td><span class="badge bg-dark"><?= htmlspecialchars($b['no_resi']); ?></span></td>
+                    <td class="px-4"><span class="badge bg-dark"><?= htmlspecialchars($b['no_resi']); ?></span></td>
                     <td class="fw-semibold"><?= htmlspecialchars($b['nama_barang']); ?></td>
                     <td class="small"><?= htmlspecialchars($b['nama_pengirim']); ?></td>
                     <td class="small"><?= htmlspecialchars($b['nama_penerima']); ?></td>

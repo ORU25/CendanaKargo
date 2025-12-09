@@ -127,7 +127,7 @@
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
-                                <th class="px-4" style="width: 70px;">ID</th>
+                                <th class="px-4" style="width: 70px;">No</th>
                                 <th >Username</th>
                                 <th >Role</th>
                                 <th >Kode Cabang</th>
@@ -138,7 +138,7 @@
                             <tbody>
                                 <?php foreach($users as $index => $user): ?>
                                 <tr>
-                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($user['id']); ?></td>
+                                    <td class="px-4 fw-semibold"><?= htmlspecialchars($index+1); ?></td>
                                     <td><?= htmlspecialchars($user['username']); ?></td>
                                     <td><?= htmlspecialchars($user['role']); ?></td>
                                     <td>
