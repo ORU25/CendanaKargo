@@ -47,9 +47,11 @@ $stmt = $conn->prepare("
         p.cabang_penerima,
         p.pembayaran,
         p.total_tarif,
-        p.status
+        p.status,
+        u.username as user_pengambil
     FROM pengambilan pg
     INNER JOIN pengiriman p ON pg.no_resi = p.no_resi
+    LEFT JOIN user u ON pg.id_user = u.id
     WHERE DATE(pg.tanggal) = ?
     AND p.id_cabang_penerima = ?
     ORDER BY pg.tanggal DESC
@@ -82,9 +84,9 @@ echo "<table border='1' cellspacing='0' cellpadding='5'>";
 
 // Judul laporan
 echo "<tr style='background:#dc3545; color:white; font-weight:bold;'>
-        <th colspan='17'>LAPORAN PENGAMBILAN BARANG - " . strtoupper(htmlspecialchars($cabang_admin)) . "</th>
+        <th colspan='18'>LAPORAN PENGAMBILAN BARANG - " . strtoupper(htmlspecialchars($cabang_admin)) . "</th>
       </tr>";
-echo "<tr><td colspan='17' style='background:#f8d7da;'>Periode: " . htmlspecialchars($tanggal_display) . "</td></tr>";
+echo "<tr><td colspan='18' style='background:#f8d7da;'>Periode: " . htmlspecialchars($tanggal_display) . "</td></tr>";
 
 // Header kolom
 echo "<tr style='background:#f2f2f2; font-weight:bold;'>
@@ -105,7 +107,8 @@ echo "<tr style='background:#f2f2f2; font-weight:bold;'>
         <th>Pembayaran</th>
         <th>Total Tarif</th>
         <th>Status</th>
-      </tr>";
+        <th>User</th>
+        </tr>";
 
 $no = 1;
 $total_berat = 0;
@@ -169,6 +172,7 @@ foreach ($data as $row) {
             break;
     }
     echo "<td align='center'>" . $status . "</td>";
+    echo "<td>" . htmlspecialchars($row['user_pengambil'] ?? '-') . "</td>";
     echo "</tr>";
     
     $total_berat += $row['berat'];

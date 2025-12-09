@@ -80,7 +80,7 @@
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/pengambilan_barang/" 
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengambilan_barang' ? 'active bg-danger text-white border-0' : ''; ?>">
-                <i class="fa-solid fa-box-archive"></i> Pengambilan Barang
+                <i class="fa-solid fa-box-archive me-2"></i> Pengambilan Barang
             </a>
             <a href="<?= BASE_URL; ?>dashboard/admin/surat_jalan/" 
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
