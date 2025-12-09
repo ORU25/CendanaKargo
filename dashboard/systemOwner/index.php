@@ -233,13 +233,15 @@ function get_branch_revenue_data($conn, $date_condition)
 function get_branch_shipment_data($conn, $date_condition) // Hapus $date_param
 {$data = [];
     // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
+    // Catatan: sampai_tujuan dan POD dihitung berdasarkan cabang_penerima (cabang tujuan)
     $sql = "
             SELECT
                 kc.nama_cabang,
                 SUM(CASE WHEN p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS total_shipments,
                 SUM(CASE WHEN p.status = 'bkd' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_proses,
                 SUM(CASE WHEN p.status = 'dalam pengiriman' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_pengiriman,
-                SUM(CASE WHEN (p.status = 'sampai tujuan' OR p.status = 'pod') AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_selesai,
+                (SELECT COUNT(*) FROM pengiriman WHERE cabang_penerima = kc.nama_cabang AND status = 'sampai tujuan' AND $date_condition) AS count_sampai_tujuan,
+                (SELECT COUNT(*) FROM pengiriman WHERE cabang_penerima = kc.nama_cabang AND status = 'pod' AND $date_condition) AS count_selesai,
                 SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_dibatalkan
             FROM
                 kantor_cabang kc
@@ -712,8 +714,10 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="text-center">Total Pengiriman</th>
                                         <th class="text-center">BKD</th>
                                         <th class="text-center">Dalam Pengiriman</th>
+                                        <th class="text-center">sampai Tujuan</th>
                                         <th class="text-center">POD</th>
                                         <th class="text-center">Dibatalkan</th>
+                                        <th class="text-center">Export Pengambilan</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -722,8 +726,8 @@ include '../../components/sidebar_offcanvas.php';
                                     foreach ($all_branches as $branch_name) {
                                     $data = $shipment_data[$branch_name] ?? [
                                         'total_shipments' => 0, 'count_proses' => 0,
-                                        'count_pengiriman' => 0, 'count_selesai' => 0,
-                                        'count_dibatalkan' => 0,
+                                        'count_pengiriman' => 0, 'cont_sampai_tujuan' => 0,
+                                        'count_selesai' => 0, 'count_dibatalkan' => 0,
                                     ];
                                     ?>
                                         <tr>
@@ -732,8 +736,25 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="fw-bold text-center"><?php echo $data['total_shipments']; ?></td>
                                             <td class="text-center"><?php echo $data['count_proses']; ?></td>
                                             <td class="text-center"><?php echo $data['count_pengiriman']; ?></td>
+                                            <td class="text-center"><?php echo $data['count_sampai_tujuan']; ?></td>
                                             <td class="text-center"><?php echo $data['count_selesai']; ?></td>
                                             <td class="text-center"><?php echo $data['count_dibatalkan']; ?></td>
+                                            <td class="d-flex justify-content-center" style="white-space: nowrap;">
+                                                <div>
+                                                    <?php
+                                                    // Build export URL with current dashboard filter
+                                                    $export_pengambilan_params = 'cabang=' . urlencode($branch_name);
+                                                    $export_pengambilan_params .= '&filter_type=' . urlencode($filter_type);
+                                                    if (!empty($filter_value)) {
+                                                        $export_pengambilan_params .= '&filter_value=' . urlencode($filter_value);
+                                                    }
+                                                    ?>
+                                                    <a href="export/export_pengambilan.php?<?php echo $export_pengambilan_params; ?>" 
+                                                       class="btn btn-sm btn-outline-success">
+                                                        <i class="fa-solid fa-file-excel"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -785,6 +806,8 @@ include '../../components/sidebar_offcanvas.php';
         </div>
     </div>
 </div>
+
+
 
 <!-- Smart Filter Script -->
 <script>
@@ -926,6 +949,7 @@ btnHapusSuper.addEventListener('click', function() {
   btnHapusSuper.style.display = 'none';
 });
 </script>
+
 
 
 <?php

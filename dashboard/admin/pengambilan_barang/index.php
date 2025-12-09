@@ -96,6 +96,13 @@ include '../../../components/sidebar_offcanvas.php';
             $message = "Pengiriman tidak ditemukan";
             include '../../../components/alert.php';
         }?>
+        
+        <?php if(isset($_GET['error']) && $_GET['error'] == 'no_data'){
+            $tanggal_filter = isset($_GET['tanggal']) ? date('d F Y', strtotime($_GET['tanggal'])) : '';
+            $type = "warning";
+            $message = "Tidak ada data pengambilan barang pada tanggal " . htmlspecialchars($tanggal_filter);
+            include '../../../components/alert.php';
+        }?>
 
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
           <div>
@@ -106,6 +113,38 @@ include '../../../components/sidebar_offcanvas.php';
                   (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
               <?php endif; ?>
             </p>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exportModal">
+              <i class="fa-solid fa-file-excel"></i> Export Excel
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Export -->
+        <div class="modal fade" id="exportModal" tabindex="-1" aria-labelledby="exportModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exportModalLabel">Export Data Pengambilan Barang</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <form action="export_pengambilan.php" method="GET" target="_blank">
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="tanggal_export" class="form-label">Pilih Tanggal</label>
+                    <input type="date" class="form-control" id="tanggal_export" name="tanggal" value="<?= date('Y-m-d'); ?>" required>
+                    <small class="text-muted">Data yang sudah diambil pada tanggal yang dipilih</small>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                  <button type="submit" class="btn btn-success">
+                    <i class="fa-solid fa-download"></i> Download Excel
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
 
