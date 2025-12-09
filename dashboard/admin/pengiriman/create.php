@@ -55,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $pembayaran = trim($_POST['pembayaran']);
     $jenis_pengiriman = isset($_POST['jenis_pengiriman']) ? trim($_POST['jenis_pengiriman']) : 'reguler';
     $tarif_manual = isset($_POST['tarif_manual']) && $_POST['tarif_manual'] !== '' ? (float) trim($_POST['tarif_manual']) : 0;
+    $tarif_handling = isset($_POST['tarif_handling']) && $_POST['tarif_handling'] !== '' ? (float) trim($_POST['tarif_handling']) : 0;
+    $tarif_lintas_cabang = isset($_POST['tarif_lintas_cabang']) && $_POST['tarif_lintas_cabang'] !== '' ? (float) trim($_POST['tarif_lintas_cabang']) : 0;
 
     // Validasi diskon (0-100%)
     if ($diskon < 0 || $diskon > 100) {
@@ -90,6 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $total_tarif = $tarif_sebelum_diskon;
         }
+        
+        // Tambahkan tarif handling dan lintas cabang
+        $total_tarif += $tarif_handling + $tarif_lintas_cabang;
     } else {
         // Pengiriman Reguler: Gunakan perhitungan dari tabel tarif
         $checkTarif = $conn->prepare("SELECT * FROM tarif_pengiriman WHERE id_cabang_asal = ? AND id_cabang_tujuan = ?");
@@ -122,6 +127,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $total_tarif = $tarif_sebelum_diskon;
         }
+        
+        // Tambahkan tarif handling dan lintas cabang
+        $total_tarif += $tarif_handling + $tarif_lintas_cabang;
     }
 
     $getCabang = $conn->prepare("SELECT id, nama_cabang, kode_cabang FROM kantor_cabang WHERE id IN (?, ?)");
@@ -155,18 +163,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO pengiriman 
         (id_user, id_cabang_pengirim, id_cabang_penerima, id_tarif, user, cabang_pengirim, cabang_penerima, 
         no_resi, nama_pengirim, telp_pengirim, nama_penerima, telp_penerima, nama_barang, 
-        berat, jumlah, pembayaran, diskon, total_tarif)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        berat, jumlah, pembayaran, diskon, tarif_manual, tarif_handling, tarif_lintas_cabang, total_tarif)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $id_tarif_value = ($jenis_pengiriman === 'khusus') ? null : $data_tarif['id'];
     
     $stmt->bind_param(
-        "iiiisssssssssdisdd",
+        "iiiisssssssssdisddddd",
         $id_user, $asal, $tujuan, $id_tarif_value, $username,
         $nama_cabang_asal, $nama_cabang_tujuan, $no_resi,
         $nama_pengirim, $telp_pengirim, $nama_penerima, $telp_penerima,
-        $nama_barang, $berat, $jumlah, $pembayaran, $diskon, $total_tarif
+        $nama_barang, $berat, $jumlah, $pembayaran, $diskon, 
+        $tarif_manual, $tarif_handling, $tarif_lintas_cabang, $total_tarif
     );
 
     if ($stmt->execute()) {
@@ -322,12 +331,22 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
 
             <div class="col-md-6">
+              <label for="pembayaran" class="form-label fw-semibold">Tarif Handling</label>
+              <input type="number" class="form-control" id="tarif_handling" name="tarif_handling" min="0" step="1000">
+              <small class="text-muted">Masukkan tarif handling jika ada</small>
+            </div>
+            <div class="col-md-6">
+              <label for="pembayaran" class="form-label fw-semibold">Tarif Lintas Cabang</label>
+              <input type="number" class="form-control" id="tarif_lintas_cabang" name="tarif_lintas_cabang" min="0" step="1000">
+              <small class="text-muted">Masukkan tarif lintas cabang jika ada</small>
+            </div>
+            <div class="col-md-6">
               <label for="pembayaran" class="form-label fw-semibold">Metode Pembayaran</label>
               <select name="pembayaran" id="pembayaran" class="form-select" required>
                 <option value="">-- Pilih Metode Pembayaran --</option>
                 <option value="Transfer">Transfer</option>
                 <option value="Cash">Cash</option>
-                <option value="Bayar di Tempat">Bayar di Tempat</option>
+                <option value="invoice">Invoice</option>
               </select>
             </div>
           </div>
@@ -364,6 +383,14 @@ include '../../../components/sidebar_offcanvas.php';
             <div class="col-md-6">
               <small class="text-muted d-block">Subtotal</small>
               <strong class="text-dark" id="est_subtotal">Rp -</strong>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Tarif Handling</small>
+              <strong class="text-dark" id="est_tarif_handling">Rp -</strong>
+            </div>
+            <div class="col-md-6">
+              <small class="text-muted d-block">Tarif Lintas Cabang</small>
+              <strong class="text-dark" id="est_tarif_lintas_cabang">Rp -</strong>
             </div>
           </div>
           <div class="row mt-4">
@@ -426,9 +453,13 @@ function hitungEstimasi() {
     // Jika barang khusus, gunakan tarif manual
     if (jenisPengiriman === 'khusus') {
         if (tarifManual > 0) {
+            const tarifHandling = parseFloat(document.getElementById('tarif_handling').value) || 0;
+            const tarifLintasCabang = parseFloat(document.getElementById('tarif_lintas_cabang').value) || 0;
+            
             const subtotal = tarifManual;
             const nominalDiskon = (subtotal * diskon) / 100;
-            const totalBayar = subtotal - nominalDiskon;
+            const subtotalSetelahDiskon = subtotal - nominalDiskon;
+            const totalBayar = subtotalSetelahDiskon + tarifHandling + tarifLintasCabang;
             
             // Tampilkan estimasi untuk barang khusus
             document.getElementById('error_not_found').style.display = 'none';
@@ -438,6 +469,8 @@ function hitungEstimasi() {
             document.getElementById('est_biaya_tambahan').textContent = 'Rp 0';
             document.getElementById('est_berat').textContent = berat > 0 ? berat + ' kg' : '- kg';
             document.getElementById('est_subtotal').textContent = formatRupiah(subtotal);
+            document.getElementById('est_tarif_handling').textContent = formatRupiah(tarifHandling);
+            document.getElementById('est_tarif_lintas_cabang').textContent = formatRupiah(tarifLintasCabang);
             document.getElementById('est_persen_diskon').textContent = diskon;
             document.getElementById('est_nominal_diskon').textContent = formatRupiah(nominalDiskon);
             document.getElementById('est_total').textContent = formatRupiah(totalBayar);
@@ -450,6 +483,8 @@ function hitungEstimasi() {
             document.getElementById('est_biaya_tambahan').textContent = 'Rp -';
             document.getElementById('est_berat').textContent = berat > 0 ? berat + ' kg' : '- kg';
             document.getElementById('est_subtotal').textContent = 'Rp -';
+            document.getElementById('est_tarif_handling').textContent = 'Rp -';
+            document.getElementById('est_tarif_lintas_cabang').textContent = 'Rp -';
             document.getElementById('est_persen_diskon').textContent = '0';
             document.getElementById('est_nominal_diskon').textContent = 'Rp -';
             document.getElementById('est_total').textContent = 'Rp -';
@@ -493,9 +528,14 @@ function hitungEstimasi() {
         subtotal = tarifDasar + biayaTambahan;
     }
     
+    // Ambil tarif handling dan lintas cabang
+    const tarifHandling = parseFloat(document.getElementById('tarif_handling').value) || 0;
+    const tarifLintasCabang = parseFloat(document.getElementById('tarif_lintas_cabang').value) || 0;
+    
     // Hitung diskon
     const nominalDiskon = (subtotal * diskon) / 100;
-    const totalBayar = subtotal - nominalDiskon;
+    const subtotalSetelahDiskon = subtotal - nominalDiskon;
+    const totalBayar = subtotalSetelahDiskon + tarifHandling + tarifLintasCabang;
     
     // Tampilkan estimasi
     document.getElementById('error_not_found').style.display = 'none';
@@ -505,6 +545,8 @@ function hitungEstimasi() {
     document.getElementById('est_berat').textContent = berat + ' kg';
     document.getElementById('est_biaya_tambahan').textContent = formatRupiah(biayaTambahan);
     document.getElementById('est_subtotal').textContent = formatRupiah(subtotal);
+    document.getElementById('est_tarif_handling').textContent = formatRupiah(tarifHandling);
+    document.getElementById('est_tarif_lintas_cabang').textContent = formatRupiah(tarifLintasCabang);
     document.getElementById('est_persen_diskon').textContent = diskon;
     document.getElementById('est_nominal_diskon').textContent = '- ' + formatRupiah(nominalDiskon);
     document.getElementById('est_total').textContent = formatRupiah(totalBayar);
@@ -518,6 +560,8 @@ document.getElementById('tujuan').addEventListener('change', hitungEstimasi);
 document.getElementById('berat').addEventListener('input', hitungEstimasi);
 document.getElementById('diskon').addEventListener('input', hitungEstimasi);
 document.getElementById('tarif_manual').addEventListener('input', hitungEstimasi);
+document.getElementById('tarif_handling').addEventListener('input', hitungEstimasi);
+document.getElementById('tarif_lintas_cabang').addEventListener('input', hitungEstimasi);
 </script>
 
 <?php

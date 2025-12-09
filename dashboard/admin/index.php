@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 COUNT(*) as total_pengiriman,
                 SUM(CASE WHEN pembayaran = 'cash' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cash,
                 SUM(CASE WHEN pembayaran = 'transfer' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_transfer,
-                SUM(CASE WHEN pembayaran = 'bayar di tempat' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cod,
+                SUM(CASE WHEN pembayaran = 'invoice' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cod,
                 SUM(CASE WHEN status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_pendapatan
             FROM pengiriman
             WHERE id_user = ? AND DATE(tanggal) = CURDATE()
@@ -178,7 +178,7 @@ $total_cod = $conn->query("
     WHERE $where_clause 
       AND id_cabang_pengirim = '$id_cabang_admin'
       AND id_user = '$id_admin'
-      AND pembayaran = 'bayar di tempat'
+      AND pembayaran = 'invoice'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
@@ -384,11 +384,11 @@ include '../../components/sidebar_offcanvas.php';
             </div>
           </div>
 
-          <!-- Bayar di Tempat -->
+          <!-- invoice -->
           <div class="col-xl-4 col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
               <div class="card-body">
-                <p class="text-danger mb-1 small fw-bold">BAYAR DI TEMPAT (COD)</p>
+                <p class="text-danger mb-1 small fw-bold">TOTAL INVOICE </p>
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_cod ?? 0); ?></h4>

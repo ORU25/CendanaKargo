@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Makassar');
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "db_cendanakargo";
+$db = "db_clk";
 
 $conn = mysqli_connect($host, $user, $pass, $db);
 if (!$conn) {

@@ -150,7 +150,7 @@ while ($row = $result->fetch_assoc()) {
         case 'transfer':
             $metode = 'TF';
             break;
-        case 'bayar di tempat':
+        case 'invoice':
             $metode = 'BT';
             break;
         default:
@@ -167,7 +167,7 @@ while ($row = $result->fetch_assoc()) {
     $totalAll += (float)$row['total'];
     if ($row['metode_pembayaran'] === 'cash') $totalCash += (float)$row['total'];
     if ($row['metode_pembayaran'] === 'transfer') $totalTransfer += (float)$row['total'];
-    if ($row['metode_pembayaran'] === 'bayar di tempat') $totalCOD += (float)$row['total'];
+    if ($row['metode_pembayaran'] === 'invoice') $totalCOD += (float)$row['total'];
     $no++;
 }
 
@@ -181,7 +181,7 @@ echo "<tr style='font-weight:bold; background:#f9f9f9;'>
         <td align='right' style='mso-number-format:\"#,##0\"'>" . $totalTransfer . "</td>
       </tr>";
 echo "<tr style='font-weight:bold; background:#f9f9f9;'>
-        <td colspan='14' align='right'>Total Bayar di Tempat</td>
+        <td colspan='14' align='right'>Total invoice</td>
         <td align='right' style='mso-number-format:\"#,##0\"'>" . $totalCOD . "</td>
       </tr>";
 echo "<tr style='font-weight:bold; background:#e9ecef;'>

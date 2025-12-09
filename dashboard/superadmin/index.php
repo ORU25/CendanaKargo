@@ -140,7 +140,7 @@
       SELECT 
           SUM(CASE WHEN pembayaran = 'cash' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cash,
           SUM(CASE WHEN pembayaran = 'transfer' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS transfer,
-          SUM(CASE WHEN pembayaran = 'bayar di tempat' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cod,
+          SUM(CASE WHEN pembayaran = 'invoice' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cod,
           SUM(CASE WHEN $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS total,
           SUM(CASE WHEN status = 'bkd' AND $where_clause THEN 1 ELSE 0 END) AS bkd,
           SUM(CASE WHEN status = 'dalam pengiriman' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
@@ -211,7 +211,7 @@ $sql_pendapatan = "
                  AND p.status != 'dibatalkan'
             THEN p.total_tarif ELSE 0 END) AS transfer,
         SUM(CASE 
-            WHEN p.pembayaran = 'bayar di tempat' 
+            WHEN p.pembayaran = 'invoice' 
                  AND p.id IS NOT NULL 
                  AND $where_clause 
                  AND p.status != 'dibatalkan'
@@ -505,7 +505,7 @@ $sql_pendapatan = "
                     <th class="text-end" style="white-space: nowrap;">Total</th>
                     <th class="text-end" style="white-space: nowrap;">Cash</th>
                     <th class="text-end" style="white-space: nowrap;">Transfer</th>
-                    <th class="text-end" style="white-space: nowrap;">Bayar di Tempat</th>
+                    <th class="text-end" style="white-space: nowrap;">Invoice</th>
                     <th class="text-center" style="white-space: nowrap;">Cetak Data</th>
                   </tr>
                 </thead>

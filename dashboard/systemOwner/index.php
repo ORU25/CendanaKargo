@@ -201,7 +201,7 @@ function get_branch_revenue_data($conn, $date_condition)
             SUM(CASE WHEN p.id IS NOT NULL AND p.status != 'dibatalkan' AND $date_condition THEN p.total_tarif ELSE 0 END) AS total_revenue,
             SUM(CASE WHEN p.pembayaran = 'cash' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cash_revenue,
             SUM(CASE WHEN p.pembayaran = 'transfer' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-            SUM(CASE WHEN p.pembayaran = 'bayar di tempat' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
+            SUM(CASE WHEN p.pembayaran = 'invoice' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
         FROM
             kantor_cabang kc
         LEFT JOIN
@@ -655,7 +655,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="text-end">Total</th>
                                         <th class="text-end">Cash</th>
                                         <th class="text-end">Transfer</th>
-                                        <th class="text-end">Bayar di Tempat</th>
+                                        <th class="text-end">Invoice</th>
                                         <th class="text-center">Cetak Data</th>
                                     </tr>
                                 </thead>
