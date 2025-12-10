@@ -74,21 +74,68 @@ $stmt_closing->close();
 // =======================================================
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'closing') {
     if (!$is_closed_today) {
-        // Hitung data hari ini untuk closing
-        $stmt_data_closing = $conn->prepare("
+        // Hitung data hari ini untuk closing (sama seperti perhitungan di dashboard)
+        $closing_user_id = $_SESSION['user_id'];
+        
+        // Total pengiriman
+        $total_pengiriman_closing = $conn->query("
+            SELECT COUNT(*) AS total 
+            FROM pengiriman 
+            WHERE DATE(tanggal) = CURDATE() AND id_user = '$closing_user_id' AND id_cabang_pengirim = '$id_cabang_admin'
+        ")->fetch_assoc()['total'] ?? 0;
+        
+        // Cash: cash dari pengiriman + invoice POD yang diambil
+        $closing_total_cash = $conn->query("
             SELECT 
-                COUNT(*) as total_pengiriman,
-                SUM(CASE WHEN pembayaran = 'cash' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cash,
-                SUM(CASE WHEN pembayaran = 'transfer' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_transfer,
-                SUM(CASE WHEN pembayaran = 'invoice' AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_cod,
-                SUM(CASE WHEN status != 'dibatalkan' THEN total_tarif ELSE 0 END) as total_pendapatan
-            FROM pengiriman
-            WHERE id_user = ? AND DATE(tanggal) = CURDATE()
-        ");
-        $stmt_data_closing->bind_param('i', $_SESSION['user_id']);
-        $stmt_data_closing->execute();
-        $data_hari_ini = $stmt_data_closing->get_result()->fetch_assoc();
-        $stmt_data_closing->close();
+                (SUM(CASE 
+                    WHEN p.pembayaran = 'cash' 
+                         AND p.id_user = '$closing_user_id'
+                         AND p.status != 'dibatalkan'
+                         AND DATE(p.tanggal) = CURDATE()
+                    THEN p.total_tarif ELSE 0 END) +
+                 COALESCE(
+                    (SELECT SUM(p2.total_tarif)
+                     FROM pengiriman p2 
+                     JOIN pengambilan pg ON p2.no_resi = pg.no_resi
+                     WHERE pg.id_user = '$closing_user_id'
+                       AND p2.cabang_penerima = '$nama_cabang_admin'
+                       AND p2.pembayaran = 'invoice' 
+                       AND p2.status = 'pod' 
+                       AND DATE(p2.tanggal) = CURDATE()), 0
+                 )) AS total
+            FROM pengiriman p
+        ")->fetch_assoc()['total'] ?? 0;
+        
+        // Transfer
+        $closing_total_transfer = $conn->query("
+            SELECT SUM(total_tarif) AS total 
+            FROM pengiriman 
+            WHERE DATE(tanggal) = CURDATE()
+              AND id_user = '$closing_user_id'
+              AND pembayaran = 'transfer'
+              AND status != 'dibatalkan'
+        ")->fetch_assoc()['total'] ?? 0;
+        
+        // Invoice (COD)
+        $closing_total_cod = $conn->query("
+            SELECT SUM(total_tarif) AS total 
+            FROM pengiriman 
+            WHERE DATE(tanggal) = CURDATE()
+              AND id_user = '$closing_user_id'
+              AND pembayaran = 'invoice'
+              AND status != 'dibatalkan'
+        ")->fetch_assoc()['total'] ?? 0;
+        
+        // Total pendapatan = cash + transfer
+        $closing_total_pendapatan = $closing_total_cash + $closing_total_transfer;
+        
+        $data_hari_ini = [
+            'total_pengiriman' => $total_pengiriman_closing,
+            'total_cash' => $closing_total_cash,
+            'total_transfer' => $closing_total_transfer,
+            'total_cod' => $closing_total_cod,
+            'total_pendapatan' => $closing_total_pendapatan
+        ];
         
         // Insert data closing
         $stmt_insert = $conn->prepare("
@@ -141,79 +188,59 @@ $total_surat_jalan = $conn->query("
 ")->fetch_assoc()['total'] ?? 0;
 
 // === TOTAL PENDAPATAN & PEMBAYARAN (khusus admin login) ===
+// Perhitungan sama seperti di dashboard superadmin per admin
 $id_admin = $_SESSION['user_id'];
 
-$total_pendapatan = $conn->query("
-    SELECT SUM(total_tarif) AS total 
-    FROM pengiriman 
-    WHERE $where_clause 
-      AND id_cabang_pengirim = '$id_cabang_admin'
-      AND id_user = '$id_admin'
-      AND status != 'dibatalkan'
+// Cash: cash dari pengiriman + invoice POD yang diambil di cabang ini
+$total_cash = $conn->query("
+    SELECT 
+        (SUM(CASE 
+            WHEN p.pembayaran = 'cash' 
+                 AND p.id_user = '$id_admin'
+                 AND p.status != 'dibatalkan'
+                 AND $where_clause
+            THEN p.total_tarif ELSE 0 END) +
+         COALESCE(
+            (SELECT SUM(p2.total_tarif)
+             FROM pengiriman p2 
+             JOIN pengambilan pg ON p2.no_resi = pg.no_resi
+             WHERE pg.id_user = '$id_admin'
+               AND p2.cabang_penerima = '$nama_cabang_admin'
+               AND p2.pembayaran = 'invoice' 
+               AND p2.status = 'pod' 
+               AND DATE(p2.tanggal) = CURDATE()), 0
+         )) AS total
+    FROM pengiriman p
 ")->fetch_assoc()['total'] ?? 0;
 
+// Transfer: hanya dari pengiriman yang dikirim
 $total_transfer = $conn->query("
     SELECT SUM(total_tarif) AS total 
     FROM pengiriman 
     WHERE $where_clause 
-      AND id_cabang_pengirim = '$id_cabang_admin'
       AND id_user = '$id_admin'
       AND pembayaran = 'transfer'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
-$total_cash = $conn->query("
-    SELECT SUM(total_tarif) AS total 
-    FROM pengiriman 
-    WHERE $where_clause 
-      AND id_cabang_pengirim = '$id_cabang_admin'
-      AND id_user = '$id_admin'
-      AND pembayaran = 'cash'
-      AND status != 'dibatalkan'
-")->fetch_assoc()['total'] ?? 0;
-
+// Invoice (COD): hanya dari pengiriman yang dikirim
 $total_cod = $conn->query("
     SELECT SUM(total_tarif) AS total 
     FROM pengiriman 
     WHERE $where_clause 
-      AND id_cabang_pengirim = '$id_cabang_admin'
       AND id_user = '$id_admin'
       AND pembayaran = 'invoice'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
+
+// Total pendapatan = cash + transfer (tidak termasuk invoice yang belum POD)
+$total_pendapatan = $total_cash + $total_transfer;
 
 
 // Helper format rupiah
 function format_rupiah($angka) {
     return 'Rp ' . number_format($angka, 0, ',', '.');
 }
-
-// === Hitung jumlah pengiriman berdasarkan status (per cabang admin) ===
-$status_counts = [
-    'bkd' => 0,
-    'dalam pengiriman' => 0,
-    'sampai tujuan' => 0,
-    'pod' => 0,
-    'dibatalkan' => 0
-];
-
-$stmt = $conn->prepare("
-    SELECT status, COUNT(*) AS jumlah
-    FROM pengiriman
-    WHERE id_cabang_pengirim = ? 
-      AND $where_clause
-    GROUP BY status
-");
-$stmt->bind_param('i', $id_cabang_admin);
-$stmt->execute();
-$result_status = $stmt->get_result();
-while ($row = $result_status->fetch_assoc()) {
-    $key = strtolower($row['status']);
-    if (isset($status_counts[$key])) {
-        $status_counts[$key] = $row['jumlah'];
-    }
-}
-$stmt->close();
 
 
 // === Ambil pengiriman keluar (8 terbaru) ===
@@ -352,6 +379,22 @@ include '../../components/sidebar_offcanvas.php';
         </div>
           <!-- === CARD RINCIAN METODE PEMBAYARAN === -->
         <div class="row g-4 mb-4">
+          <!-- Cash -->
+          <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+              <div class="card-body">
+                <p class="text-warning mb-1 small fw-bold">TOTAL CASH + INVOICE POD</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
+                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-money-bill-1-wave text-warning opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Transfer -->
           <div class="col-xl-4 col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
@@ -363,22 +406,6 @@ include '../../components/sidebar_offcanvas.php';
                     <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
                   </div>
                   <i class="fa-solid fa-credit-card text-info opacity-50" style="font-size:1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cash -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
-              <div class="card-body">
-                <p class="text-warning mb-1 small fw-bold">TOTAL CASH</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
-                    <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
-                  </div>
-                  <i class="fa-solid fa-money-bill-1-wave text-warning opacity-50" style="font-size:1.8rem;"></i>
                 </div>
               </div>
             </div>
@@ -401,7 +428,7 @@ include '../../components/sidebar_offcanvas.php';
           </div>
         </div>
 
-        <div class="text-end">
+        <div class="text-end mb-4">
             <?php if($is_closed_today): ?>
             <a href="export/export.php" class="btn btn-sm btn-outline-success">
               <i class="fa-solid fa-file-export me-1"></i> Export Data Hari Ini
@@ -411,88 +438,6 @@ include '../../components/sidebar_offcanvas.php';
               <i class="fa-solid fa-lock me-1"></i> Export Data (Belum Closing)
             </button>
             <?php endif; ?>
-        </div>
-
-
-        <!-- === CARD STATUS PENGIRIMAN === -->
-        <div class="row g-4 mb-4">
-          <!-- === JUDUL UNTUK STATUS PENGIRIMAN === -->
-          <h5 class="fw-bold text-dark mb-0 mt-5"> Status Pengiriman Cabang <?=$_SESSION['cabang']?></h5>
-          <!-- BKD -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
-              <div class="card-body">
-                <p class="text-secondary mb-1 small fw-bold">BKD</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-secondary"><?= $status_counts['bkd']; ?> Kiriman</h4>
-                  </div>
-                  <i class="fa-solid fa-box-open text-secondary opacity-50" style="font-size: 1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dalam Pengiriman -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
-              <div class="card-body">
-                <p class="text-primary mb-1 small fw-bold">DALAM PENGIRIMAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-primary"><?= $status_counts['dalam pengiriman']; ?> Kiriman</h4>
-                  </div>
-                  <i class="fa-solid fa-truck-moving text-primary opacity-50" style="font-size: 1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sampai Tujuan -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
-              <div class="card-body">
-                <p class="text-info mb-1 small fw-bold">SAMPAI TUJUAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-info"><?= $status_counts['sampai tujuan']; ?> Kiriman</h4>
-                  </div>
-                  <i class="fa-solid fa-location-dot text-info opacity-50" style="font-size: 1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- POD -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
-              <div class="card-body">
-                <p class="text-success mb-1 small fw-bold">POD</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-success"><?= $status_counts['pod']; ?> Kiriman</h4>
-                  </div>
-                  <i class="fa-solid fa-file-circle-check text-success opacity-50" style="font-size: 1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dibatalkan -->
-          <div class="col-xl-4 col-md-6">
-            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
-              <div class="card-body">
-                <p class="text-danger mb-1 small fw-bold">DIBATALKAN</p>
-                <div class="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h4 class="mb-0 fw-bold text-danger"><?= $status_counts['dibatalkan']; ?> Kiriman</h4>
-                  </div>
-                  <i class="fa-solid fa-circle-xmark text-danger opacity-50" style="font-size: 1.8rem;"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
 
@@ -699,8 +644,8 @@ include '../../components/sidebar_offcanvas.php';
                 <strong><?= format_rupiah($total_transfer ?? 0); ?></strong>
               </div>
               <div class="col-4">
-                <small class="text-muted d-block">COD</small>
-                <strong><?= format_rupiah($total_cod ?? 0); ?></strong>
+                <small class="text-muted d-block">Invoice</small>
+                <strong class="text-danger"><?= format_rupiah($total_cod ?? 0); ?></strong>
               </div>
             </div>
           </div>

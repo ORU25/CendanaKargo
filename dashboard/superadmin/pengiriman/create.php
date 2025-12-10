@@ -244,7 +244,7 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
             <div class="col-md-6" id="tarifManualWrapper" style="display: none;">
               <label for="tarif_manual" class="form-label fw-semibold">Tarif Manual (Rp) <span class="text-danger">*</span></label>
-              <input type="number" class="form-control" id="tarif_manual" name="tarif_manual" min="0" step="1000" placeholder="Masukkan tarif manual">
+              <input type="number" class="form-control" id="tarif_manual" name="tarif_manual" min="0"  placeholder="Masukkan tarif manual">
               <small class="text-muted">Hanya aktif untuk barang khusus</small>
             </div>
           </div>
@@ -317,12 +317,12 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="pembayaran" class="form-label fw-semibold">Tarif Handling</label>
-              <input type="number" class="form-control" id="tarif_handling" name="tarif_handling" min="0" step="1000">
+              <input type="number" class="form-control" id="tarif_handling" name="tarif_handling" min="0" >
               <small class="text-muted">Masukkan tarif handling jika ada</small>
             </div>
             <div class="col-md-6">
               <label for="pembayaran" class="form-label fw-semibold">Tarif Lintas Cabang</label>
-              <input type="number" class="form-control" id="tarif_lintas_cabang" name="tarif_lintas_cabang" min="0" step="1000">
+              <input type="number" class="form-control" id="tarif_lintas_cabang" name="tarif_lintas_cabang" min="0" >
               <small class="text-muted">Masukkan tarif lintas cabang jika ada</small>
             </div>
             <div class="col-md-6">

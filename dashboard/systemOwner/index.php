@@ -195,13 +195,23 @@ function format_rupiah($number)
 function get_branch_revenue_data($conn, $date_condition)
 {
     $data = [];
+    // Buat date condition untuk subquery dengan prefix p2
+    $date_condition_p2 = str_replace('p.tanggal', 'p2.tanggal', $date_condition);
+    
     $sql = "
         SELECT
             kc.nama_cabang,
-            SUM(CASE WHEN p.id IS NOT NULL AND p.status != 'dibatalkan' AND $date_condition THEN p.total_tarif ELSE 0 END) AS total_revenue,
-            SUM(CASE WHEN p.pembayaran = 'cash' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cash_revenue,
-            SUM(CASE WHEN p.pembayaran = 'transfer' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-            SUM(CASE WHEN p.pembayaran = 'invoice' AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
+            (SUM(CASE WHEN p.pembayaran = 'cash' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) +
+             COALESCE((SELECT SUM(p2.total_tarif)
+                       FROM pengiriman p2 
+                       JOIN pengambilan pg ON p2.no_resi = pg.no_resi
+                       WHERE p2.cabang_penerima = kc.nama_cabang
+                         AND p2.pembayaran = 'invoice' 
+                         AND p2.status = 'pod' 
+                         AND $date_condition_p2), 0)
+            ) AS cash_revenue,
+            SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
+            SUM(CASE WHEN p.pembayaran = 'invoice' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
         FROM
             kantor_cabang kc
         LEFT JOIN
@@ -220,6 +230,7 @@ function get_branch_revenue_data($conn, $date_condition)
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
+        $row['total_revenue'] = $row['cash_revenue'] + $row['transfer_revenue'];
         $data[$row['nama_cabang']] = $row;
     }
     $stmt->close();
@@ -655,7 +666,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
                                         <th class="text-end">Total</th>
-                                        <th class="text-end">Cash</th>
+                                        <th class="text-end">Cash + Invoice</th>
                                         <th class="text-end">Transfer</th>
                                         <th class="text-end">Invoice</th>
                                         <th class="text-center">Cetak Data</th>
@@ -682,7 +693,7 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="text-end fw-bold" style="white-space: nowrap;"><?php echo format_rupiah($data['total_revenue']); ?></td>
                                             <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['cash_revenue']); ?></td>
                                             <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
-                                            <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="text-end text-danger" style="white-space: nowrap;"><?php echo format_rupiah($data['cod_revenue']); ?></td>
                                             <td class="d-flex justify-content-center" style="white-space: nowrap;">
                                                 <div>
                                                     <a href="export/export.php?<?php echo $export_params; ?>" 

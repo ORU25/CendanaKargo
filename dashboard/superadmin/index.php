@@ -104,10 +104,36 @@
   // Ambil cabang user yang login
   $cabang_superadmin = $_SESSION['cabang'];
 
-  // === TOTAL DATA (hanya untuk cabang user) ===
-  $total_pengiriman = $conn->query("SELECT COUNT(*) AS total FROM pengiriman WHERE $where_clause AND cabang_pengirim = '$cabang_superadmin'")->fetch_assoc()['total'] ?? 0;
-  $total_surat_jalan = $conn->query("SELECT COUNT(*) AS total FROM surat_jalan s JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id WHERE $where_clause AND kc.nama_cabang = '$cabang_superadmin'")->fetch_assoc()['total'] ?? 0;
-  $total_pendapatan = $conn->query("SELECT SUM(total_tarif) AS total FROM pengiriman WHERE $where_clause AND cabang_pengirim = '$cabang_superadmin'AND status != 'dibatalkan'")->fetch_assoc()['total'] ?? 0;
+  // === TOTAL DATA (hanya untuk cabang user, tidak termasuk systemOwner) ===
+  $total_pengiriman = $conn->query("
+    SELECT COUNT(*) AS total 
+    FROM pengiriman p
+    LEFT JOIN user u ON p.id_user = u.id
+    WHERE $where_clause 
+      AND p.cabang_pengirim = '$cabang_superadmin'
+      AND (u.role != 'systemOwner' OR u.role IS NULL)
+  ")->fetch_assoc()['total'] ?? 0;
+  $total_surat_jalan = $conn->query("
+    SELECT COUNT(*) AS total 
+    FROM surat_jalan s 
+    JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id 
+    LEFT JOIN user u ON s.id_user = u.id
+    WHERE $where_clause 
+      AND kc.nama_cabang = '$cabang_superadmin'
+      AND (u.role != 'systemOwner' OR u.role IS NULL)
+  ")->fetch_assoc()['total'] ?? 0;
+  
+  // Total pendapatan: cash + transfer dari cabang + invoice POD ke cabang (tidak termasuk systemOwner)
+  $total_pendapatan = $conn->query("
+    SELECT 
+      (SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'cash' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
+       SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'transfer' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
+       SUM(CASE WHEN p.cabang_penerima = '$cabang_superadmin' AND p.pembayaran = 'invoice' AND p.status = 'pod' THEN p.total_tarif ELSE 0 END)) AS total
+    FROM pengiriman p
+    LEFT JOIN user u ON p.id_user = u.id
+    WHERE $where_clause
+      AND (u.role != 'systemOwner' OR u.role IS NULL)
+  ")->fetch_assoc()['total'] ?? 0;
 
 
   // Helper function untuk format rupiah
@@ -126,101 +152,43 @@
   }
   $stmt_users->close();
 
-  // === AMBIL DATA systemOwner UNTUK CABANG INI ===
-  $systemOwner_data = [
-      'id' => null,
-      'username' => 'systemOwner',
-      'pendapatan' => ['cash' => 0, 'transfer' => 0, 'cod' => 0, 'total' => 0],
-      'pengiriman' => ['bkd' => 0, 'perjalanan' => 0, 'sampai' => 0, 'pod' => 0, 'batal' => 0, 'total' => 0],
-      'surat_jalan' => ['draft' => 0, 'perjalanan' => 0, 'sampai' => 0, 'batal' => 0, 'total' => 0]
-  ];
-
-  // Query untuk mengambil data pengiriman & pendapatan dari systemOwner
-  $sql_systemOwner = "
-      SELECT 
-          SUM(CASE WHEN pembayaran = 'cash' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cash,
-          SUM(CASE WHEN pembayaran = 'transfer' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS transfer,
-          SUM(CASE WHEN pembayaran = 'invoice' AND $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS cod,
-          SUM(CASE WHEN $where_clause AND status != 'dibatalkan' THEN total_tarif ELSE 0 END) AS total,
-          SUM(CASE WHEN status = 'bkd' AND $where_clause THEN 1 ELSE 0 END) AS bkd,
-          SUM(CASE WHEN status = 'dalam pengiriman' AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
-          SUM(CASE WHEN status = 'sampai tujuan' AND $where_clause THEN 1 ELSE 0 END) AS sampai,
-          SUM(CASE WHEN status = 'pod' AND $where_clause THEN 1 ELSE 0 END) AS pod,
-          SUM(CASE WHEN status = 'dibatalkan' AND $where_clause THEN 1 ELSE 0 END) AS batal,
-          COUNT(CASE WHEN $where_clause THEN 1 END) AS total_pengiriman
-      FROM pengiriman p
-      JOIN user u ON p.id_user = u.id
-      WHERE u.role = 'systemOwner' 
-        AND p.cabang_pengirim = ?
-  ";
-  $stmt_systemOwner = $conn->prepare($sql_systemOwner);
-  $stmt_systemOwner->bind_param('s', $cabang_superadmin);
-  $stmt_systemOwner->execute();
-  $result_systemOwner = $stmt_systemOwner->get_result();
-  if ($row = $result_systemOwner->fetch_assoc()) {
-      $systemOwner_data['pendapatan']['cash'] = $row['cash'] ?? 0;
-      $systemOwner_data['pendapatan']['transfer'] = $row['transfer'] ?? 0;
-      $systemOwner_data['pendapatan']['cod'] = $row['cod'] ?? 0;
-      $systemOwner_data['pendapatan']['total'] = $row['total'] ?? 0;
-      $systemOwner_data['pengiriman']['bkd'] = $row['bkd'] ?? 0;
-      $systemOwner_data['pengiriman']['perjalanan'] = $row['perjalanan'] ?? 0;
-      $systemOwner_data['pengiriman']['sampai'] = $row['sampai'] ?? 0;
-      $systemOwner_data['pengiriman']['pod'] = $row['pod'] ?? 0;
-      $systemOwner_data['pengiriman']['batal'] = $row['batal'] ?? 0;
-      $systemOwner_data['pengiriman']['total'] = $row['total_pengiriman'] ?? 0;
-  }
-  $stmt_systemOwner->close();
-
-  // Query untuk surat jalan dari systemOwner
-  $sql_sj_systemOwner = "
-      SELECT 
-          SUM(CASE WHEN s.status = 'draft' AND $where_clause THEN 1 ELSE 0 END) AS draft,
-          SUM(CASE WHEN s.status = 'diberangkatkan' AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
-          COUNT(CASE WHEN $where_clause THEN 1 END) AS total
-      FROM surat_jalan s
-      JOIN user u ON s.id_user = u.id
-      JOIN kantor_cabang kc ON s.id_cabang_pengirim = kc.id
-      WHERE u.role = 'systemOwner' 
-        AND kc.nama_cabang = ?
-  ";
-  $stmt_sj_systemOwner = $conn->prepare($sql_sj_systemOwner);
-  $stmt_sj_systemOwner->bind_param('s', $cabang_superadmin);
-  $stmt_sj_systemOwner->execute();
-  $result_sj_systemOwner = $stmt_sj_systemOwner->get_result();
-  if ($row = $result_sj_systemOwner->fetch_assoc()) {
-      $systemOwner_data['surat_jalan']['draft'] = $row['draft'] ?? 0;
-      $systemOwner_data['surat_jalan']['diberangkatkan'] = $row['diberangkatkan'] ?? 0;
-      $systemOwner_data['surat_jalan']['total'] = $row['total'] ?? 0;
-  }
-  $stmt_sj_systemOwner->close();
-
   // === PENDAPATAN PER ADMIN (dengan LEFT JOIN agar semua user muncul) ===
   $pendapatan_data = [];
+  
+  // Buat where clause dengan prefix p. untuk main query
+  $where_clause_p = str_replace('tanggal', 'p.tanggal', $where_clause);
+  $where_clause_p2 = str_replace('tanggal', 'p2.tanggal', $where_clause);
+  
 $sql_pendapatan = "
     SELECT u.id, u.username,
-        SUM(CASE 
+        (SUM(CASE 
             WHEN p.pembayaran = 'cash' 
                  AND p.id IS NOT NULL 
-                 AND $where_clause 
+                 AND $where_clause_p 
                  AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS cash,
+            THEN p.total_tarif ELSE 0 END) +
+         COALESCE(
+            (SELECT SUM(p2.total_tarif)
+             FROM pengiriman p2 
+             JOIN pengambilan pg ON p2.no_resi = pg.no_resi
+             WHERE pg.id_user = u.id
+               AND p2.cabang_penerima = ? 
+               AND p2.pembayaran = 'invoice' 
+               AND p2.status = 'pod' 
+               AND $where_clause_p2), 0
+         )) AS cash,
         SUM(CASE 
             WHEN p.pembayaran = 'transfer' 
                  AND p.id IS NOT NULL 
-                 AND $where_clause 
+                 AND $where_clause_p 
                  AND p.status != 'dibatalkan'
             THEN p.total_tarif ELSE 0 END) AS transfer,
         SUM(CASE 
             WHEN p.pembayaran = 'invoice' 
                  AND p.id IS NOT NULL 
-                 AND $where_clause 
+                 AND $where_clause_p 
                  AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS cod,
-        SUM(CASE 
-            WHEN p.id IS NOT NULL 
-                 AND $where_clause 
-                 AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS total
+            THEN p.total_tarif ELSE 0 END) AS invoice
     FROM user u
     LEFT JOIN pengiriman p ON u.id = p.id_user
     WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
@@ -230,10 +198,11 @@ $sql_pendapatan = "
 ";
 
   $stmt_pendapatan = $conn->prepare($sql_pendapatan);
-  $stmt_pendapatan->bind_param('s', $cabang_superadmin);
+  $stmt_pendapatan->bind_param('ss', $cabang_superadmin, $cabang_superadmin);
   $stmt_pendapatan->execute();
   $result_pendapatan = $stmt_pendapatan->get_result();
   while ($row = $result_pendapatan->fetch_assoc()) {
+      $row['total'] = $row['cash'] + $row['transfer'];
       $pendapatan_data[$row['id']] = $row;
   }
   $stmt_pendapatan->close();
@@ -242,16 +211,16 @@ $sql_pendapatan = "
   $pengiriman_data = [];
   $sql_pengiriman = "
       SELECT u.id, u.username,
-          SUM(CASE WHEN p.status = 'bkd' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS bkd,
-          SUM(CASE WHEN p.status = 'dalam pengiriman' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS perjalanan,
-          SUM(CASE WHEN p.status = 'sampai tujuan' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS sampai,
-          SUM(CASE WHEN p.status = 'pod' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS pod,
-          SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS batal,
-          SUM(CASE WHEN p.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS total
+          SUM(CASE WHEN p.status = 'bkd' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS bkd,
+          SUM(CASE WHEN p.status = 'dalam pengiriman' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS perjalanan,
+          SUM(CASE WHEN p.status = 'sampai tujuan' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS sampai,
+          SUM(CASE WHEN p.status = 'pod' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS pod,
+          SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS batal,
+          SUM(CASE WHEN p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS total
       FROM user u
       LEFT JOIN pengiriman p ON u.id = p.id_user
       WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
-          AND u.role != 'systemOwner'
+
       GROUP BY u.id, u.username
       ORDER BY u.username
   ";
@@ -266,15 +235,16 @@ $sql_pendapatan = "
 
   // === SURAT JALAN PER ADMIN (dengan LEFT JOIN agar semua user muncul) ===
   $surat_jalan_data = [];
+  $where_clause_s = str_replace('tanggal', 's.tanggal', $where_clause);
   $sql_surat_jalan = "
       SELECT u.id, u.username,
-          SUM(CASE WHEN s.status = 'draft' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS draft,
-          SUM(CASE WHEN s.status = 'diberangkatkan' AND s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS diberangkatkan,
-          SUM(CASE WHEN s.id IS NOT NULL AND $where_clause THEN 1 ELSE 0 END) AS total
+          SUM(CASE WHEN s.status = 'draft' AND s.id IS NOT NULL AND $where_clause_s THEN 1 ELSE 0 END) AS draft,
+          SUM(CASE WHEN s.status = 'diberangkatkan' AND s.id IS NOT NULL AND $where_clause_s THEN 1 ELSE 0 END) AS diberangkatkan,
+          SUM(CASE WHEN s.id IS NOT NULL AND $where_clause_s THEN 1 ELSE 0 END) AS total
       FROM user u
       LEFT JOIN surat_jalan s ON u.id = s.id_user
       WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
-          AND u.role != 'systemOwner'
+
       GROUP BY u.id, u.username
       ORDER BY u.username
   ";
@@ -503,7 +473,7 @@ $sql_pendapatan = "
                     <th class="px-3" style="white-space: nowrap;">No.</th>
                     <th style="white-space: nowrap;">Username</th>
                     <th class="text-end" style="white-space: nowrap;">Total</th>
-                    <th class="text-end" style="white-space: nowrap;">Cash</th>
+                    <th class="text-end" style="white-space: nowrap;">Cash + Invoice</th>
                     <th class="text-end" style="white-space: nowrap;">Transfer</th>
                     <th class="text-end" style="white-space: nowrap;">Invoice</th>
                     <th class="text-center" style="white-space: nowrap;">Cetak Data</th>
@@ -514,7 +484,7 @@ $sql_pendapatan = "
                   $no = 1;
                   foreach ($all_users as $user):
                     $data = $pendapatan_data[$user['id']] ?? [
-                      'cash' => 0, 'transfer' => 0, 'cod' => 0, 'total' => 0
+                      'cash' => 0, 'transfer' => 0, 'invoice' => 0, 'total' => 0
                     ];
                     // Build export URL with filter params
                     $export_params = 'username=' . urlencode($user['username']);
@@ -529,7 +499,7 @@ $sql_pendapatan = "
                       <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($data['total']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cash']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['transfer']); ?></td>
-                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cod']); ?></td>
+                      <td class="text-end text-danger" style="white-space: nowrap;"><?= format_rupiah($data['invoice']); ?></td>
                       <td class="d-flex justify-content-center" style="white-space: nowrap;">
                         <a href="export/export.php?<?php echo $export_params; ?>" 
                            class="btn btn-sm btn-outline-success">
@@ -538,31 +508,6 @@ $sql_pendapatan = "
                       </td>
                     </tr>
                   <?php endforeach; ?>
-                  
-                  <?php if ($systemOwner_data['pendapatan']['total'] > 0): 
-                    $export_params_so = 'username=systemOwner';
-                    $export_params_so .= '&filter_type=' . urlencode($filter_type);
-                    if (!empty($filter_value)) {
-                        $export_params_so .= '&filter_value=' . urlencode($filter_value);
-                    }
-                  ?>
-                    <tr class="table-warning">
-                      <td class="px-3" style="white-space: nowrap;"><?= $no++; ?></td>
-                      <td class="fw-bold" style="white-space: nowrap;">
-                        <?= htmlspecialchars($systemOwner_data['username']); ?>
-                      </td>
-                      <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['total']); ?></td>
-                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['cash']); ?></td>
-                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['transfer']); ?></td>
-                      <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($systemOwner_data['pendapatan']['cod']); ?></td>
-                      <td class="d-flex justify-content-center" style="white-space: nowrap;">
-                        <a href="export/export.php?<?php echo $export_params_so; ?>" 
-                           class="btn btn-sm btn-outline-success">
-                          <i class="fa-solid fa-file-export me-1"></i> 
-                        </a>
-                      </td>
-                    </tr>
-                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -609,21 +554,6 @@ $sql_pendapatan = "
                       <td class="text-center"><?= $data['batal']; ?></td>
                     </tr>
                   <?php endforeach; ?>
-                  
-                  <?php if ($systemOwner_data['pengiriman']['total'] > 0): ?>
-                    <tr class="table-warning">
-                      <td class="px-3"><?= $no++; ?></td>
-                      <td class="fw-bold">
-                        <?= htmlspecialchars($systemOwner_data['username']); ?>
-                      </td>
-                      <td class="text-center fw-bold"><?= $systemOwner_data['pengiriman']['total']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['pengiriman']['bkd']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['pengiriman']['perjalanan']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['pengiriman']['sampai']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['pengiriman']['pod']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['pengiriman']['batal']; ?></td>
-                    </tr>
-                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
@@ -663,18 +593,6 @@ $sql_pendapatan = "
                       <td class="text-center"><?= $data['diberangkatkan']; ?></td>
                     </tr>
                   <?php endforeach; ?>
-                  
-                  <?php if ($systemOwner_data['surat_jalan']['total'] > 0): ?>
-                    <tr class="table-warning">
-                      <td class="px-3"><?= $no++; ?></td>
-                      <td class="fw-bold">
-                        <?= htmlspecialchars($systemOwner_data['username']); ?>
-                      </td>
-                      <td class="text-center fw-bold"><?= $systemOwner_data['surat_jalan']['total']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['draft']; ?></td>
-                      <td class="text-center"><?= $systemOwner_data['surat_jalan']['diberangkatkan']; ?></td>
-                    </tr>
-                  <?php endif; ?>
                 </tbody>
               </table>
             </div>
