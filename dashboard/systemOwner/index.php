@@ -220,7 +220,7 @@ function get_branch_revenue_data($conn, $date_condition)
         LEFT JOIN
             pengiriman p ON kc.nama_cabang = p.cabang_pengirim 
         GROUP BY
-            kc.nama_cabang
+            kc.id, kc.nama_cabang
         ORDER BY
             kc.nama_cabang
     ";
@@ -262,7 +262,7 @@ function get_branch_shipment_data($conn, $date_condition) // Hapus $date_param
             LEFT JOIN
                 pengiriman p ON kc.nama_cabang = p.cabang_pengirim
             GROUP BY
-                kc.nama_cabang
+                kc.id, kc.nama_cabang
             ORDER BY
                 kc.nama_cabang
         ";
@@ -299,7 +299,7 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
             LEFT JOIN
                 surat_jalan sj ON kc.id = sj.id_cabang_pengirim
             GROUP BY
-                kc.nama_cabang
+                kc.id, kc.nama_cabang
             ORDER BY
                 kc.nama_cabang
         ";
