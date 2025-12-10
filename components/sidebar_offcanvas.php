@@ -97,7 +97,10 @@
         </div>
 
         <div class="text-center mt-3 mb-3">
-            <a href="<?= BASE_URL; ?>auth/logout.php" class="btn btn-outline-danger w-75 rounded-0">
+            <a href="<?= BASE_URL; ?>dashboard/change_password" class="btn btn-outline-secondary w-75 rounded-0 mb-3">
+                <i class="fa-solid fa-key me-2"></i> Ubah Password
+            </a>
+            <a href="<?= BASE_URL; ?>auth/logout" class="btn btn-outline-danger w-75 rounded-0">
                 <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
             </a>
         </div>
