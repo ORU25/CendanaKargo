@@ -158,6 +158,7 @@
   // Buat where clause dengan prefix p. untuk main query
   $where_clause_p = str_replace('tanggal', 'p.tanggal', $where_clause);
   $where_clause_p2 = str_replace('tanggal', 'p2.tanggal', $where_clause);
+  $where_clause_pengambilan = str_replace('tanggal', 'pg.tanggal', $where_clause);
   
 $sql_pendapatan = "
     SELECT u.id, u.username,
@@ -175,7 +176,7 @@ $sql_pendapatan = "
                AND p2.cabang_penerima = ? 
                AND p2.pembayaran = 'invoice' 
                AND p2.status = 'pod' 
-               AND $where_clause_p2), 0
+               AND $where_clause_pengambilan), 0
          )) AS cash,
         SUM(CASE 
             WHEN p.pembayaran = 'transfer' 

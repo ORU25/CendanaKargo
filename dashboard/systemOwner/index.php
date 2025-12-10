@@ -198,6 +198,9 @@ function get_branch_revenue_data($conn, $date_condition)
     // Buat date condition untuk subquery dengan prefix p2
     $date_condition_p2 = str_replace('p.tanggal', 'p2.tanggal', $date_condition);
     
+    // Buat date condition untuk tanggal pengambilan
+    $date_condition_pengambilan = str_replace('p2.tanggal', 'pg.tanggal', $date_condition_p2);
+    
     $sql = "
         SELECT
             kc.nama_cabang,
@@ -208,7 +211,7 @@ function get_branch_revenue_data($conn, $date_condition)
                        WHERE p2.cabang_penerima = kc.nama_cabang
                          AND p2.pembayaran = 'invoice' 
                          AND p2.status = 'pod' 
-                         AND $date_condition_p2), 0)
+                         AND $date_condition_pengambilan), 0)
             ) AS cash_revenue,
             SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
             SUM(CASE WHEN p.pembayaran = 'invoice' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue

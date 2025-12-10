@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             WHERE DATE(tanggal) = CURDATE() AND id_user = '$closing_user_id' AND id_cabang_pengirim = '$id_cabang_admin'
         ")->fetch_assoc()['total'] ?? 0;
         
-        // Cash: cash dari pengiriman + invoice POD yang diambil
+        // Cash: cash dari pengiriman + invoice POD yang diambil (berdasarkan tanggal pengambilan)
         $closing_total_cash = $conn->query("
             SELECT 
                 (SUM(CASE 
@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                        AND p2.cabang_penerima = '$nama_cabang_admin'
                        AND p2.pembayaran = 'invoice' 
                        AND p2.status = 'pod' 
-                       AND DATE(p2.tanggal) = CURDATE()), 0
+                       AND DATE(pg.tanggal) = CURDATE()), 0
                  )) AS total
             FROM pengiriman p
         ")->fetch_assoc()['total'] ?? 0;
@@ -191,7 +191,7 @@ $total_surat_jalan = $conn->query("
 // Perhitungan sama seperti di dashboard superadmin per admin
 $id_admin = $_SESSION['user_id'];
 
-// Cash: cash dari pengiriman + invoice POD yang diambil di cabang ini
+// Cash: cash dari pengiriman + invoice POD yang diambil di cabang ini (berdasarkan tanggal pengambilan)
 $total_cash = $conn->query("
     SELECT 
         (SUM(CASE 
@@ -208,7 +208,7 @@ $total_cash = $conn->query("
                AND p2.cabang_penerima = '$nama_cabang_admin'
                AND p2.pembayaran = 'invoice' 
                AND p2.status = 'pod' 
-               AND DATE(p2.tanggal) = CURDATE()), 0
+               AND DATE(pg.tanggal) = CURDATE()), 0
          )) AS total
     FROM pengiriman p
 ")->fetch_assoc()['total'] ?? 0;
