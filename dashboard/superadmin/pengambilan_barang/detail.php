@@ -90,6 +90,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
     $telp_pengambil = trim($_POST['telp_pengambil'] ?? '');
     $id_user = $_SESSION['user_id'];
 
+    // Validasi apakah barang sudah diambil
+    $stmt_check = $conn->prepare("SELECT id FROM pengambilan WHERE no_resi = ? LIMIT 1");
+    $stmt_check->bind_param('s', $pengiriman['no_resi']);
+    $stmt_check->execute();
+    $result_check = $stmt_check->get_result();
+    if ($result_check->num_rows > 0) {
+        $stmt_check->close();
+        header("Location: detail?id=$id_update&error=already_taken");
+        exit;
+    }
+    $stmt_check->close();
+
     if ($nama_pengambil === '') {
         header("Location: detail?id=$id_update&error=empty_name");
         exit;
@@ -139,6 +151,41 @@ include '../../../components/sidebar_offcanvas.php';
 
     <div class="col-lg-10 bg-light">
         <div class="container-fluid p-4">
+
+            <?php
+            // Notifikasi
+            if (isset($_GET['success'])) {
+                if ($_GET['success'] === 'pod_updated') {
+                    echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-circle-check me-2"></i>Status berhasil diubah menjadi POD!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                }
+            }
+            if (isset($_GET['error'])) {
+                if ($_GET['error'] === 'already_taken') {
+                    echo '<div class="alert alert-warning alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-triangle-exclamation me-2"></i>Barang ini sudah dikonfirmasi diambil sebelumnya!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                } elseif ($_GET['error'] === 'empty_name') {
+                    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-circle-xmark me-2"></i>Nama pengambil tidak boleh kosong!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                } elseif ($_GET['error'] === 'invalid_phone') {
+                    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-circle-xmark me-2"></i>Format nomor telepon tidak valid!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                } elseif ($_GET['error'] === 'invalid_csrf') {
+                    echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fa-solid fa-circle-xmark me-2"></i>Token keamanan tidak valid!
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>';
+                }
+            }
+            ?>
 
             <!-- Header -->
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
