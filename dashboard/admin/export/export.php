@@ -46,7 +46,7 @@ $cabang_admin = $result_cabang->fetch_assoc()['nama_cabang'] ?? '';
 $stmt_cabang->close();
 
 // === Query 1: Pendapatan Cash ===
-// Cash dari admin + Invoice POD yang di-ACC oleh admin ini (melalui tabel pengambilan)
+// Cash dari admin + bayar_ditempat POD yang di-ACC oleh admin ini (melalui tabel pengambilan)
 // Buat date condition untuk pengambilan
 $date_condition_pengambilan = str_replace('p2.tanggal', 'pg.tanggal', $date_condition_p2);
 
@@ -94,7 +94,7 @@ $queryCash = "SELECT
             p2.status,
             u2.username AS dibuat_oleh,
             sj2.driver AS nama_driver,
-            'invoice_pod_acc' AS tipe_cash
+            'bayar_ditempat_pod_acc' AS tipe_cash
           FROM pengiriman p2
           JOIN pengambilan pg ON p2.no_resi = pg.no_resi
           LEFT JOIN user u2 ON p2.id_user = u2.id
@@ -102,7 +102,7 @@ $queryCash = "SELECT
           LEFT JOIN surat_jalan sj2 ON dsj2.id_surat_jalan = sj2.id AND sj2.status = 'diberangkatkan'
           WHERE pg.id_user = ?
             AND p2.cabang_penerima = ?
-            AND p2.pembayaran = 'invoice'
+            AND p2.pembayaran = 'bayar_ditempat'
             AND p2.status = 'pod'
             $date_condition_pengambilan
           
@@ -145,8 +145,8 @@ $stmtTransfer->bind_param('i', $user_id);
 $stmtTransfer->execute();
 $resultTransfer = $stmtTransfer->get_result();
 
-// === Query 3: Pendapatan Invoice (belum POD) ===
-$queryInvoice = "SELECT 
+// === Query 3: Pendapatan bayar_ditempat (belum POD) ===
+$querybayar_ditempat = "SELECT 
             p.id,
             p.no_resi,
             p.nama_barang,
@@ -167,18 +167,18 @@ $queryInvoice = "SELECT
           LEFT JOIN detail_surat_jalan dsj ON p.id = dsj.id_pengiriman
           LEFT JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id AND sj.status = 'diberangkatkan'
           WHERE p.id_user = ?
-            AND p.pembayaran = 'invoice'
+            AND p.pembayaran = 'bayar_ditempat'
             AND p.status != 'dibatalkan'
             $date_condition
           ORDER BY p.tanggal ASC";
 
-$stmtInvoice = $conn->prepare($queryInvoice);
-$stmtInvoice->bind_param('i', $user_id);
-$stmtInvoice->execute();
-$resultInvoice = $stmtInvoice->get_result();
+$stmtbayar_ditempat = $conn->prepare($querybayar_ditempat);
+$stmtbayar_ditempat->bind_param('i', $user_id);
+$stmtbayar_ditempat->execute();
+$resultbayar_ditempat = $stmtbayar_ditempat->get_result();
 
 // Cek apakah ada data
-if ($resultCash->num_rows === 0 && $resultTransfer->num_rows === 0 && $resultInvoice->num_rows === 0) {
+if ($resultCash->num_rows === 0 && $resultTransfer->num_rows === 0 && $resultbayar_ditempat->num_rows === 0) {
     header("Location: ../index.php?error=no_data");
     exit();
 }
@@ -198,7 +198,7 @@ echo "<tr style='background:#dc3545; color:white; font-weight:bold;'>
         <th colspan='15'>LAPORAN PENDAPATAN CASH - ADMIN " . strtoupper($username) . "</th>
       </tr>";
 echo "<tr><td colspan='15' style='background:#f8d7da;'>Periode: " . htmlspecialchars($periode_display) . " (Hari Ini)</td></tr>";
-echo "<tr><td colspan='15' style='background:#fff3cd; font-style:italic;'>Cash langsung + Invoice POD yang di-ACC</td></tr>";
+echo "<tr><td colspan='15' style='background:#fff3cd; font-style:italic;'>Cash langsung + BT POD yang di-ACC</td></tr>";
 
 // Header kolom
 echo "<tr style='background:#f2f2f2; font-weight:bold;'>
@@ -248,7 +248,7 @@ while ($row = $resultCash->fetch_assoc()) {
     switch ($row['metode_pembayaran']) {
         case 'cash': $metode = 'Cash'; break;
         case 'transfer': $metode = 'TF'; break;
-        case 'invoice': $metode = 'Invoice'; break;
+        case 'bayar_ditempat': $metode = 'bayar_ditempat'; break;
         default: $metode = ucfirst($row['metode_pembayaran']); break;
     }
     echo "<td>" . $metode . "</td>";
@@ -341,15 +341,15 @@ echo "<tr style='font-weight:bold; background:#cfe2ff;'>
 
 echo "</table>";
 
-// === TABEL 3: PENDAPATAN INVOICE ===
+// === TABEL 3: PENDAPATAN bayar_ditempat ===
 echo "<br><br>";
 echo "<table border='1' cellspacing='0' cellpadding='5'>";
 
 echo "<tr style='background:#ffc107; color:black; font-weight:bold;'>
-        <th colspan='15'>LAPORAN PENDAPATAN INVOICE - ADMIN " . strtoupper($username) . "</th>
+        <th colspan='15'>LAPORAN PENDAPATAN BAYAR DITEMPAT - ADMIN " . strtoupper($username) . "</th>
       </tr>";
 echo "<tr><td colspan='15' style='background:#fff3cd;'>Periode: " . htmlspecialchars($periode_display) . " (Hari Ini)</td></tr>";
-echo "<tr><td colspan='15' style='background:#fff3cd; font-style:italic;'>Invoice dari admin ini (semua status)</td></tr>";
+echo "<tr><td colspan='15' style='background:#fff3cd; font-style:italic;'>Bayar Ditempat dari admin ini (semua status)</td></tr>";
 
 // Header kolom
 echo "<tr style='background:#f2f2f2; font-weight:bold;'>
@@ -371,9 +371,9 @@ echo "<tr style='background:#f2f2f2; font-weight:bold;'>
       </tr>";
 
 $no = 1;
-$totalInvoice = 0;
+$totalbayar_ditempat = 0;
 
-while ($row = $resultInvoice->fetch_assoc()) {
+while ($row = $resultbayar_ditempat->fetch_assoc()) {
     echo "<tr>";
     echo "<td>{$no}</td>";
     echo "<td>" . htmlspecialchars($row['no_resi']) . "</td>";
@@ -395,26 +395,26 @@ while ($row = $resultInvoice->fetch_assoc()) {
         default: $status = ucfirst($row['status']); break;
     }
     echo "<td>" . $status . "</td>";
-    echo "<td>Invoice</td>";
+    echo "<td>Bayar Ditempat</td>";
     echo "<td>" . htmlspecialchars($row['dibuat_oleh'] ?? '-') . "</td>";
     echo "<td>" . htmlspecialchars($row['nama_driver'] ?? '') . "</td>";
     echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . $row['total'] . "</td>";
     echo "</tr>";
 
-    $totalInvoice += (float)$row['total'];
+    $totalbayar_ditempat += (float)$row['total'];
     $no++;
 }
 
-// Total Invoice
+// Total bayar_ditempat
 echo "<tr style='font-weight:bold; background:#fff3cd;'>
-        <td colspan='14' align='right'>TOTAL PENDAPATAN INVOICE</td>
-        <td align='right' style='mso-number-format:\"#,##0\"'>" . $totalInvoice . "</td>
+        <td colspan='14' align='right'>TOTAL PENDAPATAN BAYAR DITEMPAT</td>
+        <td align='right' style='mso-number-format:\"#,##0\"'>" . $totalbayar_ditempat . "</td>
       </tr>";
 
 echo "</table>";
 
 $stmtCash->close();
 $stmtTransfer->close();
-$stmtInvoice->close();
+$stmtbayar_ditempat->close();
 $conn->close();
 ?>

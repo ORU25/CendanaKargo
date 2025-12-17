@@ -52,7 +52,7 @@ CREATE TABLE pengiriman (
     nama_barang VARCHAR(100) NOT NULL,
     berat DECIMAL(10,2) NOT NULL,
     jumlah INT DEFAULT 1,
-    pembayaran ENUM('cash', 'transfer', 'invoice') NOT NULL,
+    pembayaran ENUM('cash', 'transfer', 'bayar_ditempat') NOT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     diskon DECIMAL(10,2) DEFAULT 0,
     tarif_manual DECIMAL(10,2) DEFAULT 0,

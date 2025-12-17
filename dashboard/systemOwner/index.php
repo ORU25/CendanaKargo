@@ -209,12 +209,12 @@ function get_branch_revenue_data($conn, $date_condition)
                        FROM pengiriman p2 
                        JOIN pengambilan pg ON p2.no_resi = pg.no_resi
                        WHERE p2.cabang_penerima = kc.nama_cabang
-                         AND p2.pembayaran = 'invoice' 
+                         AND p2.pembayaran = 'bayar_ditempat' 
                          AND p2.status = 'pod' 
                          AND $date_condition_pengambilan), 0)
             ) AS cash_revenue,
             SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-            SUM(CASE WHEN p.pembayaran = 'invoice' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
+            SUM(CASE WHEN p.pembayaran = 'bayar_ditempat' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
         FROM
             kantor_cabang kc
         LEFT JOIN
@@ -669,9 +669,9 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="px-3">No.</th>
                                         <th>Nama Cabang</th>
                                         <th class="text-end">Total</th>
-                                        <th class="text-end">Cash + Invoice</th>
+                                        <th class="text-end">Cash + BT</th>
                                         <th class="text-end">Transfer</th>
-                                        <th class="text-end">Invoice</th>
+                                        <th class="text-end">Bayar Ditempat</th>
                                         <th class="text-center">Cetak Data</th>
                                     </tr>
                                 </thead>

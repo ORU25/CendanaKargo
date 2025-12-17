@@ -346,7 +346,7 @@ include '../../../components/sidebar_offcanvas.php';
                 <option value="">-- Pilih Metode Pembayaran --</option>
                 <option value="Transfer">Transfer</option>
                 <option value="Cash">Cash</option>
-                <option value="invoice">Invoice</option>
+                <option value="bayar_ditempat">Bayar Ditempat</option>
               </select>
             </div>
           </div>

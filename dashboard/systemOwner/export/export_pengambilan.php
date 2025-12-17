@@ -210,7 +210,7 @@ foreach ($data as $row) {
             case 'transfer':
                 $metode = 'TF';
                 break;
-                case 'invoice':
+                case 'bayar_ditempat':
                     $metode = 'BT';
                     break;
                     default:

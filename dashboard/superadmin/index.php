@@ -123,12 +123,12 @@
       AND (u.role != 'systemOwner' OR u.role IS NULL)
   ")->fetch_assoc()['total'] ?? 0;
   
-  // Total pendapatan: cash + transfer dari cabang + invoice POD ke cabang (tidak termasuk systemOwner)
+  // Total pendapatan: cash + transfer dari cabang + bayar_ditempat POD ke cabang (tidak termasuk systemOwner)
   $total_pendapatan = $conn->query("
     SELECT 
       (SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'cash' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
        SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'transfer' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
-       SUM(CASE WHEN p.cabang_penerima = '$cabang_superadmin' AND p.pembayaran = 'invoice' AND p.status = 'pod' THEN p.total_tarif ELSE 0 END)) AS total
+       SUM(CASE WHEN p.cabang_penerima = '$cabang_superadmin' AND p.pembayaran = 'bayar_ditempat' AND p.status = 'pod' THEN p.total_tarif ELSE 0 END)) AS total
     FROM pengiriman p
     LEFT JOIN user u ON p.id_user = u.id
     WHERE $where_clause
@@ -174,7 +174,7 @@ $sql_pendapatan = "
              JOIN pengambilan pg ON p2.no_resi = pg.no_resi
              WHERE pg.id_user = u.id
                AND p2.cabang_penerima = ? 
-               AND p2.pembayaran = 'invoice' 
+               AND p2.pembayaran = 'bayar_ditempat' 
                AND p2.status = 'pod' 
                AND $where_clause_pengambilan), 0
          )) AS cash,
@@ -185,11 +185,11 @@ $sql_pendapatan = "
                  AND p.status != 'dibatalkan'
             THEN p.total_tarif ELSE 0 END) AS transfer,
         SUM(CASE 
-            WHEN p.pembayaran = 'invoice' 
+            WHEN p.pembayaran = 'bayar_ditempat' 
                  AND p.id IS NOT NULL 
                  AND $where_clause_p 
                  AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS invoice
+            THEN p.total_tarif ELSE 0 END) AS bayar_ditempat
     FROM user u
     LEFT JOIN pengiriman p ON u.id = p.id_user
     WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
@@ -474,9 +474,9 @@ $sql_pendapatan = "
                     <th class="px-3" style="white-space: nowrap;">No.</th>
                     <th style="white-space: nowrap;">Username</th>
                     <th class="text-end" style="white-space: nowrap;">Total</th>
-                    <th class="text-end" style="white-space: nowrap;">Cash + Invoice</th>
+                    <th class="text-end" style="white-space: nowrap;">Cash + BT</th>
                     <th class="text-end" style="white-space: nowrap;">Transfer</th>
-                    <th class="text-end" style="white-space: nowrap;">Invoice</th>
+                    <th class="text-end" style="white-space: nowrap;">Bayar Ditempat</th>
                     <th class="text-center" style="white-space: nowrap;">Cetak Data</th>
                   </tr>
                 </thead>
@@ -485,7 +485,7 @@ $sql_pendapatan = "
                   $no = 1;
                   foreach ($all_users as $user):
                     $data = $pendapatan_data[$user['id']] ?? [
-                      'cash' => 0, 'transfer' => 0, 'invoice' => 0, 'total' => 0
+                      'cash' => 0, 'transfer' => 0, 'bayar_ditempat' => 0, 'total' => 0
                     ];
                     // Build export URL with filter params
                     $export_params = 'username=' . urlencode($user['username']);
@@ -500,7 +500,7 @@ $sql_pendapatan = "
                       <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($data['total']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cash']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['transfer']); ?></td>
-                      <td class="text-end text-danger" style="white-space: nowrap;"><?= format_rupiah($data['invoice']); ?></td>
+                      <td class="text-end text-danger" style="white-space: nowrap;"><?= format_rupiah($data['bayar_ditempat']); ?></td>
                       <td class="d-flex justify-content-center" style="white-space: nowrap;">
                         <a href="export/export.php?<?php echo $export_params; ?>" 
                            class="btn btn-sm btn-outline-success">

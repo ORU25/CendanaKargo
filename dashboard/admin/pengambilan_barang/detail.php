@@ -28,6 +28,9 @@ if(isset($_GET['id'])) {
     $result = $stmt->get_result();
     $pengiriman = $result->fetch_assoc();
     $stmt->close();
+    if ($pengiriman['pembayaran'] === 'bayar_ditempat') {
+        $pengiriman['pembayaran'] = 'Bayar Ditempat';
+    }
 
     if (!$pengiriman || !in_array($pengiriman['status'], ['sampai tujuan', 'pod'])) {
         header("Location: ./?error=not_found");

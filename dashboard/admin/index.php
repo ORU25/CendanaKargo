@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             WHERE DATE(tanggal) = CURDATE() AND id_user = '$closing_user_id' AND id_cabang_pengirim = '$id_cabang_admin'
         ")->fetch_assoc()['total'] ?? 0;
         
-        // Cash: cash dari pengiriman + invoice POD yang diambil (berdasarkan tanggal pengambilan)
+        // Cash: cash dari pengiriman + bayar_ditempat POD yang diambil (berdasarkan tanggal pengambilan)
         $closing_total_cash = $conn->query("
             SELECT 
                 (SUM(CASE 
@@ -99,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                      JOIN pengambilan pg ON p2.no_resi = pg.no_resi
                      WHERE pg.id_user = '$closing_user_id'
                        AND p2.cabang_penerima = '$nama_cabang_admin'
-                       AND p2.pembayaran = 'invoice' 
+                       AND p2.pembayaran = 'bayar_ditempat' 
                        AND p2.status = 'pod' 
                        AND DATE(pg.tanggal) = CURDATE()), 0
                  )) AS total
@@ -116,13 +116,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
               AND status != 'dibatalkan'
         ")->fetch_assoc()['total'] ?? 0;
         
-        // Invoice (COD)
+        // bayar_ditempat (COD)
         $closing_total_cod = $conn->query("
             SELECT SUM(total_tarif) AS total 
             FROM pengiriman 
             WHERE DATE(tanggal) = CURDATE()
               AND id_user = '$closing_user_id'
-              AND pembayaran = 'invoice'
+              AND pembayaran = 'bayar_ditempat'
               AND status != 'dibatalkan'
         ")->fetch_assoc()['total'] ?? 0;
         
@@ -191,7 +191,7 @@ $total_surat_jalan = $conn->query("
 // Perhitungan sama seperti di dashboard superadmin per admin
 $id_admin = $_SESSION['user_id'];
 
-// Cash: cash dari pengiriman + invoice POD yang diambil di cabang ini (berdasarkan tanggal pengambilan)
+// Cash: cash dari pengiriman + bayar_ditempat POD yang diambil di cabang ini (berdasarkan tanggal pengambilan)
 $total_cash = $conn->query("
     SELECT 
         (SUM(CASE 
@@ -206,7 +206,7 @@ $total_cash = $conn->query("
              JOIN pengambilan pg ON p2.no_resi = pg.no_resi
              WHERE pg.id_user = '$id_admin'
                AND p2.cabang_penerima = '$nama_cabang_admin'
-               AND p2.pembayaran = 'invoice' 
+               AND p2.pembayaran = 'bayar_ditempat' 
                AND p2.status = 'pod' 
                AND DATE(pg.tanggal) = CURDATE()), 0
          )) AS total
@@ -223,17 +223,17 @@ $total_transfer = $conn->query("
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
-// Invoice (COD): hanya dari pengiriman yang dikirim
+// bayar_ditempat (COD): hanya dari pengiriman yang dikirim
 $total_cod = $conn->query("
     SELECT SUM(total_tarif) AS total 
     FROM pengiriman 
     WHERE $where_clause 
       AND id_user = '$id_admin'
-      AND pembayaran = 'invoice'
+      AND pembayaran = 'bayar_ditempat'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
-// Total pendapatan = cash + transfer (tidak termasuk invoice yang belum POD)
+// Total pendapatan = cash + transfer (tidak termasuk bayar_ditempat yang belum POD)
 $total_pendapatan = $total_cash + $total_transfer;
 
 
@@ -383,7 +383,7 @@ include '../../components/sidebar_offcanvas.php';
           <div class="col-xl-4 col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
               <div class="card-body">
-                <p class="text-warning mb-1 small fw-bold">TOTAL CASH + INVOICE POD</p>
+                <p class="text-warning mb-1 small fw-bold">TOTAL CASH + BT POD</p>
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h4 class="mb-0 fw-bold text-warning"><?= format_rupiah($total_cash ?? 0); ?></h4>
@@ -411,11 +411,11 @@ include '../../components/sidebar_offcanvas.php';
             </div>
           </div>
 
-          <!-- invoice -->
+          <!-- bayar_ditempat -->
           <div class="col-xl-4 col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
               <div class="card-body">
-                <p class="text-danger mb-1 small fw-bold">TOTAL INVOICE </p>
+                <p class="text-danger mb-1 small fw-bold">TOTAL BAYAR DITEMPAT </p>
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_cod ?? 0); ?></h4>
@@ -644,7 +644,7 @@ include '../../components/sidebar_offcanvas.php';
                 <strong><?= format_rupiah($total_transfer ?? 0); ?></strong>
               </div>
               <div class="col-4">
-                <small class="text-muted d-block">Invoice</small>
+                <small class="text-muted d-block">Bayar Ditempat</small>
                 <strong class="text-danger"><?= format_rupiah($total_cod ?? 0); ?></strong>
               </div>
             </div>

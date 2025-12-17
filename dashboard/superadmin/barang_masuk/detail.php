@@ -82,6 +82,9 @@
             $result = $stmt->get_result();
             if ($result->num_rows > 0) {
                 $pengiriman = $result->fetch_assoc();
+                if ($pengiriman['pembayaran'] === 'bayar_ditempat') {
+                    $pengiriman['pembayaran'] = 'Bayar Ditempat';
+                }
             }
             $stmt->close();
         }
