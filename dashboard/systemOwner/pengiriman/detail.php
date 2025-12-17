@@ -165,6 +165,21 @@
                 }
                 $stmt->close();
             }
+            
+            // Ambil data validator invoice jika ada
+            if ($pengiriman['validasi_oleh']) {
+                $stmt_validator = $conn->prepare('SELECT username FROM user WHERE id = ? LIMIT 1');
+                if ($stmt_validator) {
+                    $stmt_validator->bind_param('i', $pengiriman['validasi_oleh']);
+                    $stmt_validator->execute();
+                    $result_validator = $stmt_validator->get_result();
+                    if ($result_validator->num_rows > 0) {
+                        $validatorData = $result_validator->fetch_assoc();
+                        $pengiriman['validator_username'] = $validatorData['username'];
+                    }
+                    $stmt_validator->close();
+                }
+            }
         }
         
         // log perubahan status
@@ -287,7 +302,37 @@
                                     <small class="opacity-75 d-block">Metode Pembayaran</small>
                                     <strong><?= htmlspecialchars($pengiriman['pembayaran']); ?></strong>
                                 </div>
-                                                                <div class="col-6 col-md-3">
+                                
+                                <?php if(strtolower($pengiriman['pembayaran']) === 'invoice'): ?>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Status Pembayaran</small>
+                                    <?php if($pengiriman['status_pembayaran'] === 'Sudah Dibayar'): ?>
+                                        <strong class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i><?= htmlspecialchars($pengiriman['status_pembayaran']); ?>
+                                        </strong>
+                                    <?php else: ?>
+                                        <strong class="text-warning">
+                                            <i class="fas fa-clock me-1"></i><?= htmlspecialchars($pengiriman['status_pembayaran'] ?? 'Belum Dibayar'); ?>
+                                        </strong>
+                                    <?php endif; ?>
+                                </div>
+                                
+                                <?php if($pengiriman['tanggal_pembayaran']): ?>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Tanggal Pembayaran</small>
+                                    <strong><?= date('d/m/Y H:i', strtotime($pengiriman['tanggal_pembayaran'])); ?></strong>
+                                </div>
+                                <?php endif; ?>
+                                
+                                <?php if(isset($pengiriman['validator_username'])): ?>
+                                <div class="col-6 col-md-3">
+                                    <small class="opacity-75 d-block">Divalidasi Oleh</small>
+                                    <strong><?= htmlspecialchars($pengiriman['validator_username']); ?></strong>
+                                </div>
+                                <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <div class="col-6 col-md-3">
                                     <small class="opacity-75 d-block">Tarif Manual</small>
                                     <?php if($pengiriman['tarif_manual'] > 0): ?>
                                     <strong>Rp <?= number_format($pengiriman['tarif_manual'], 0, ',', '.'); ?></strong>

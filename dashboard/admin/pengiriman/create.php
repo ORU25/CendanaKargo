@@ -53,6 +53,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $jumlah = (int) trim($_POST['jumlah']);
     $diskon = isset($_POST['diskon']) && $_POST['diskon'] !== '' ? (float) trim($_POST['diskon']) : 0;
     $pembayaran = trim($_POST['pembayaran']);
+    // Auto set status pembayaran untuk invoice
+    $status_pembayaran = ($pembayaran === 'invoice') ? 'Belum Dibayar' : null;
     $jenis_pengiriman = isset($_POST['jenis_pengiriman']) ? trim($_POST['jenis_pengiriman']) : 'reguler';
     $tarif_manual = isset($_POST['tarif_manual']) && $_POST['tarif_manual'] !== '' ? (float) trim($_POST['tarif_manual']) : 0;
     $tarif_handling = isset($_POST['tarif_handling']) && $_POST['tarif_handling'] !== '' ? (float) trim($_POST['tarif_handling']) : 0;
@@ -163,18 +165,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO pengiriman 
         (id_user, id_cabang_pengirim, id_cabang_penerima, id_tarif, user, cabang_pengirim, cabang_penerima, 
         no_resi, nama_pengirim, telp_pengirim, nama_penerima, telp_penerima, nama_barang, 
-        berat, jumlah, pembayaran, diskon, tarif_manual, tarif_handling, tarif_lintas_cabang, total_tarif)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        berat, jumlah, pembayaran, status_pembayaran, diskon, tarif_manual, tarif_handling, tarif_lintas_cabang, total_tarif)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
 
     $id_tarif_value = ($jenis_pengiriman === 'khusus') ? null : $data_tarif['id'];
     
     $stmt->bind_param(
-        "iiiisssssssssdisddddd",
+        "iiiisssssssssdissddddd",
         $id_user, $asal, $tujuan, $id_tarif_value, $username,
         $nama_cabang_asal, $nama_cabang_tujuan, $no_resi,
         $nama_pengirim, $telp_pengirim, $nama_penerima, $telp_penerima,
-        $nama_barang, $berat, $jumlah, $pembayaran, $diskon, 
+        $nama_barang, $berat, $jumlah, $pembayaran, $status_pembayaran, $diskon, 
         $tarif_manual, $tarif_handling, $tarif_lintas_cabang, $total_tarif
     );
 
@@ -347,6 +349,7 @@ include '../../../components/sidebar_offcanvas.php';
                 <option value="Transfer">Transfer</option>
                 <option value="Cash">Cash</option>
                 <option value="bayar_ditempat">Bayar Ditempat</option>
+                <option value="invoice">Invoice</option>
               </select>
             </div>
           </div>

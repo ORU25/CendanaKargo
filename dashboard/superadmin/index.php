@@ -128,6 +128,7 @@
     SELECT 
       (SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'cash' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
        SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'transfer' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
+       SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'invoice' AND p.status_pembayaran = 'Belum Dibayar' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
        SUM(CASE WHEN p.cabang_penerima = '$cabang_superadmin' AND p.pembayaran = 'bayar_ditempat' AND p.status = 'pod' THEN p.total_tarif ELSE 0 END)) AS total
     FROM pengiriman p
     LEFT JOIN user u ON p.id_user = u.id
@@ -189,7 +190,14 @@ $sql_pendapatan = "
                  AND p.id IS NOT NULL 
                  AND $where_clause_p 
                  AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS bayar_ditempat
+            THEN p.total_tarif ELSE 0 END) AS bayar_ditempat,
+        SUM(CASE 
+            WHEN p.pembayaran = 'invoice' 
+                 AND p.status_pembayaran = 'Belum Dibayar'
+                 AND p.id IS NOT NULL 
+                 AND $where_clause_p 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END) AS invoice
     FROM user u
     LEFT JOIN pengiriman p ON u.id = p.id_user
     WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
@@ -477,6 +485,7 @@ $sql_pendapatan = "
                     <th class="text-end" style="white-space: nowrap;">Cash + BT</th>
                     <th class="text-end" style="white-space: nowrap;">Transfer</th>
                     <th class="text-end" style="white-space: nowrap;">Bayar Ditempat</th>
+                    <th class="text-end" style="white-space: nowrap;">Invoice (Belum Dibayar)</th>
                     <th class="text-center" style="white-space: nowrap;">Cetak Data</th>
                   </tr>
                 </thead>
@@ -485,7 +494,7 @@ $sql_pendapatan = "
                   $no = 1;
                   foreach ($all_users as $user):
                     $data = $pendapatan_data[$user['id']] ?? [
-                      'cash' => 0, 'transfer' => 0, 'bayar_ditempat' => 0, 'total' => 0
+                      'cash' => 0, 'transfer' => 0, 'bayar_ditempat' => 0, 'invoice' => 0, 'total' => 0
                     ];
                     // Build export URL with filter params
                     $export_params = 'username=' . urlencode($user['username']);
@@ -500,7 +509,8 @@ $sql_pendapatan = "
                       <td class="text-end fw-bold" style="white-space: nowrap;"><?= format_rupiah($data['total']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['cash']); ?></td>
                       <td class="text-end" style="white-space: nowrap;"><?= format_rupiah($data['transfer']); ?></td>
-                      <td class="text-end text-danger" style="white-space: nowrap;"><?= format_rupiah($data['bayar_ditempat']); ?></td>
+                      <td class="text-end text-warning" style="white-space: nowrap;"><?= format_rupiah($data['bayar_ditempat']); ?></td>
+                      <td class="text-end text-danger" style="white-space: nowrap;"><?= format_rupiah($data['invoice']); ?></td>
                       <td class="d-flex justify-content-center" style="white-space: nowrap;">
                         <a href="export/export.php?<?php echo $export_params; ?>" 
                            class="btn btn-sm btn-outline-success">

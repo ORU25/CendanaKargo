@@ -214,7 +214,8 @@ function get_branch_revenue_data($conn, $date_condition)
                          AND $date_condition_pengambilan), 0)
             ) AS cash_revenue,
             SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
-            SUM(CASE WHEN p.pembayaran = 'bayar_ditempat' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue
+            SUM(CASE WHEN p.pembayaran = 'bayar_ditempat' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue,
+            SUM(CASE WHEN p.pembayaran = 'invoice' AND p.status_pembayaran = 'Belum Dibayar' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS invoice_revenue
         FROM
             kantor_cabang kc
         LEFT JOIN
@@ -672,6 +673,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th class="text-end">Cash + BT</th>
                                         <th class="text-end">Transfer</th>
                                         <th class="text-end">Bayar Ditempat</th>
+                                        <th class="text-end">Invoice (Belum Dibayar)</th>
                                         <th class="text-center">Cetak Data</th>
                                     </tr>
                                 </thead>
@@ -682,6 +684,7 @@ include '../../components/sidebar_offcanvas.php';
                                         $data = $revenue_data[$branch_name] ?? [
                                             'total_revenue' => 0, 'cash_revenue' => 0,
                                             'transfer_revenue' => 0, 'cod_revenue' => 0,
+                                            'invoice_revenue' => 0,
                                         ];
                                         // Build export URL with new filter params
                                         $export_params = 'cabang=' . urlencode($branch_name);
@@ -696,7 +699,8 @@ include '../../components/sidebar_offcanvas.php';
                                             <td class="text-end fw-bold" style="white-space: nowrap;"><?php echo format_rupiah($data['total_revenue']); ?></td>
                                             <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['cash_revenue']); ?></td>
                                             <td class="text-end" style="white-space: nowrap;"><?php echo format_rupiah($data['transfer_revenue']); ?></td>
-                                            <td class="text-end text-danger" style="white-space: nowrap;"><?php echo format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="text-end text-warning" style="white-space: nowrap;"><?php echo format_rupiah($data['cod_revenue']); ?></td>
+                                            <td class="text-end text-danger" style="white-space: nowrap;"><?php echo format_rupiah($data['invoice_revenue']); ?></td>
                                             <td class="d-flex justify-content-center" style="white-space: nowrap;">
                                                 <div>
                                                     <a href="export/export.php?<?php echo $export_params; ?>" 

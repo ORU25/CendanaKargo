@@ -52,7 +52,10 @@ CREATE TABLE pengiriman (
     nama_barang VARCHAR(100) NOT NULL,
     berat DECIMAL(10,2) NOT NULL,
     jumlah INT DEFAULT 1,
-    pembayaran ENUM('cash', 'transfer', 'bayar_ditempat') NOT NULL,
+    pembayaran ENUM('cash', 'transfer', 'bayar_ditempat', 'invoice') NOT NULL,
+    status_pembayaran ENUM('Belum Dibayar', 'Sudah Dibayar') DEFAULT NULL,
+    tanggal_pembayaran DATETIME DEFAULT NULL,
+    validasi_oleh INT DEFAULT NULL,
     tanggal DATETIME DEFAULT CURRENT_TIMESTAMP,
     diskon DECIMAL(10,2) DEFAULT 0,
     tarif_manual DECIMAL(10,2) DEFAULT 0,
@@ -63,7 +66,8 @@ CREATE TABLE pengiriman (
     FOREIGN KEY (id_user) REFERENCES user(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_pengirim) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
     FOREIGN KEY (id_cabang_penerima) REFERENCES kantor_cabang(id) ON DELETE SET NULL,
-    FOREIGN KEY (id_tarif) REFERENCES tarif_pengiriman(id) ON DELETE SET NULL
+    FOREIGN KEY (id_tarif) REFERENCES tarif_pengiriman(id) ON DELETE SET NULL,
+    FOREIGN KEY (validasi_oleh) REFERENCES user(id) ON DELETE SET NULL
 );
 
 CREATE TABLE surat_jalan (
