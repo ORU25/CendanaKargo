@@ -17,6 +17,10 @@
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pengiriman' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-truck-fast me-2"></i> Pengiriman
             </a>
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/pelunasan/" 
+               class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'pelunasan' ? 'active bg-danger text-white border-0' : ''; ?>">
+               <i class="fa-solid fa-truck-fast me-2"></i> Pelunasan
+            </a>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/surat_jalan/" 
                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'surat_jalan' ? 'active bg-danger text-white border-0' : ''; ?>">
                <i class="fa-solid fa-file-lines me-2"></i> Surat Jalan

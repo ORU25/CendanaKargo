@@ -160,6 +160,7 @@
   $where_clause_p = str_replace('tanggal', 'p.tanggal', $where_clause);
   $where_clause_p2 = str_replace('tanggal', 'p2.tanggal', $where_clause);
   $where_clause_pengambilan = str_replace('tanggal', 'pg.tanggal', $where_clause);
+  $where_clause_p_invoice_paid = str_replace('tanggal', 'p.tanggal_pembayaran', $where_clause);
   
 $sql_pendapatan = "
     SELECT u.id, u.username,
@@ -179,12 +180,20 @@ $sql_pendapatan = "
                AND p2.status = 'pod' 
                AND $where_clause_pengambilan), 0
          )) AS cash,
-        SUM(CASE 
+        (SUM(CASE 
             WHEN p.pembayaran = 'transfer' 
                  AND p.id IS NOT NULL 
                  AND $where_clause_p 
                  AND p.status != 'dibatalkan'
-            THEN p.total_tarif ELSE 0 END) AS transfer,
+            THEN p.total_tarif ELSE 0 END) +
+         SUM(CASE 
+            WHEN p.pembayaran = 'invoice' 
+                 AND p.status_pembayaran = 'Sudah Dibayar'
+                 AND p.id IS NOT NULL 
+                 AND $where_clause_p_invoice_paid 
+                 AND p.status != 'dibatalkan'
+            THEN p.total_tarif ELSE 0 END)
+        ) AS transfer,
         SUM(CASE 
             WHEN p.pembayaran = 'bayar_ditempat' 
                  AND p.id IS NOT NULL 
@@ -483,7 +492,7 @@ $sql_pendapatan = "
                     <th style="white-space: nowrap;">Username</th>
                     <th class="text-end" style="white-space: nowrap;">Total</th>
                     <th class="text-end" style="white-space: nowrap;">Cash + BT</th>
-                    <th class="text-end" style="white-space: nowrap;">Transfer</th>
+                    <th class="text-end" style="white-space: nowrap;">Transfer + Invoice Lunas</th>
                     <th class="text-end" style="white-space: nowrap;">Bayar Ditempat</th>
                     <th class="text-end" style="white-space: nowrap;">Invoice (Belum Dibayar)</th>
                     <th class="text-center" style="white-space: nowrap;">Cetak Data</th>

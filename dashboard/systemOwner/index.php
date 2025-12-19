@@ -201,6 +201,9 @@ function get_branch_revenue_data($conn, $date_condition)
     // Buat date condition untuk tanggal pengambilan
     $date_condition_pengambilan = str_replace('p2.tanggal', 'pg.tanggal', $date_condition_p2);
     
+    // Buat date condition untuk tanggal pembayaran invoice (ganti p.tanggal dengan p.tanggal_pembayaran)
+    $date_condition_invoice_paid = str_replace('p.tanggal', 'p.tanggal_pembayaran', $date_condition);
+    
     $sql = "
         SELECT
             kc.nama_cabang,
@@ -213,7 +216,9 @@ function get_branch_revenue_data($conn, $date_condition)
                          AND p2.status = 'pod' 
                          AND $date_condition_pengambilan), 0)
             ) AS cash_revenue,
-            SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS transfer_revenue,
+            (SUM(CASE WHEN p.pembayaran = 'transfer' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) +
+             SUM(CASE WHEN p.pembayaran = 'invoice' AND p.status_pembayaran = 'Sudah Dibayar' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition_invoice_paid THEN p.total_tarif ELSE 0 END)
+            ) AS transfer_revenue,
             SUM(CASE WHEN p.pembayaran = 'bayar_ditempat' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS cod_revenue,
             SUM(CASE WHEN p.pembayaran = 'invoice' AND p.status_pembayaran = 'Belum Dibayar' AND p.cabang_pengirim = kc.nama_cabang AND p.status != 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN p.total_tarif ELSE 0 END) AS invoice_revenue
         FROM
@@ -671,7 +676,7 @@ include '../../components/sidebar_offcanvas.php';
                                         <th>Nama Cabang</th>
                                         <th class="text-end">Total</th>
                                         <th class="text-end">Cash + BT</th>
-                                        <th class="text-end">Transfer</th>
+                                        <th class="text-end">Transfer + Invoice Lunas</th>
                                         <th class="text-end">Bayar Ditempat</th>
                                         <th class="text-end">Invoice (Belum Dibayar)</th>
                                         <th class="text-center">Cetak Data</th>

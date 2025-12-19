@@ -108,12 +108,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         
         // Transfer
         $closing_total_transfer = $conn->query("
-            SELECT SUM(total_tarif) AS total 
-            FROM pengiriman 
-            WHERE DATE(tanggal) = CURDATE()
-              AND id_user = '$closing_user_id'
-              AND pembayaran = 'transfer'
-              AND status != 'dibatalkan'
+            SELECT (SUM(CASE 
+                WHEN pembayaran = 'transfer'
+                     AND id_user = '$closing_user_id'
+                     AND status != 'dibatalkan'
+                     AND DATE(tanggal) = CURDATE()
+                THEN total_tarif ELSE 0 END) +
+             SUM(CASE 
+                WHEN pembayaran = 'invoice'
+                     AND status_pembayaran = 'Sudah Dibayar'
+                     AND id_user = '$closing_user_id'
+                     AND status != 'dibatalkan'
+                     AND DATE(tanggal_pembayaran) = CURDATE()
+                THEN total_tarif ELSE 0 END)
+            ) AS total 
+            FROM pengiriman
         ")->fetch_assoc()['total'] ?? 0;
         
         // bayar_ditempat (COD)
@@ -213,14 +222,25 @@ $total_cash = $conn->query("
     FROM pengiriman p
 ")->fetch_assoc()['total'] ?? 0;
 
-// Transfer: hanya dari pengiriman yang dikirim
+// Transfer + Invoice Lunas: transfer dari pengiriman + invoice yang sudah dibayar (berdasarkan tanggal_pembayaran)
+$where_clause_invoice_paid = str_replace('DATE(tanggal)', 'DATE(tanggal_pembayaran)', $where_clause);
+
 $total_transfer = $conn->query("
-    SELECT SUM(total_tarif) AS total 
-    FROM pengiriman 
-    WHERE $where_clause 
-      AND id_user = '$id_admin'
-      AND pembayaran = 'transfer'
-      AND status != 'dibatalkan'
+    SELECT (SUM(CASE 
+        WHEN pembayaran = 'transfer'
+             AND id_user = '$id_admin'
+             AND status != 'dibatalkan'
+             AND $where_clause
+        THEN total_tarif ELSE 0 END) +
+     SUM(CASE 
+        WHEN pembayaran = 'invoice'
+             AND status_pembayaran = 'Sudah Dibayar'
+             AND id_user = '$id_admin'
+             AND status != 'dibatalkan'
+             AND $where_clause_invoice_paid
+        THEN total_tarif ELSE 0 END)
+    ) AS total 
+    FROM pengiriman
 ")->fetch_assoc()['total'] ?? 0;
 
 // bayar_ditempat (COD): hanya dari pengiriman yang dikirim
@@ -230,6 +250,17 @@ $total_cod = $conn->query("
     WHERE $where_clause 
       AND id_user = '$id_admin'
       AND pembayaran = 'bayar_ditempat'
+      AND status != 'dibatalkan'
+")->fetch_assoc()['total'] ?? 0;
+
+// Invoice Belum Dibayar (Hutang)
+$total_invoice = $conn->query("
+    SELECT SUM(total_tarif) AS total 
+    FROM pengiriman 
+    WHERE $where_clause 
+      AND id_user = '$id_admin'
+      AND pembayaran = 'invoice'
+      AND status_pembayaran = 'Belum Dibayar'
       AND status != 'dibatalkan'
 ")->fetch_assoc()['total'] ?? 0;
 
@@ -380,7 +411,7 @@ include '../../components/sidebar_offcanvas.php';
           <!-- === CARD RINCIAN METODE PEMBAYARAN === -->
         <div class="row g-4 mb-4">
           <!-- Cash -->
-          <div class="col-xl-4 col-md-6">
+          <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
               <div class="card-body">
                 <p class="text-warning mb-1 small fw-bold">TOTAL CASH + BT POD</p>
@@ -395,11 +426,11 @@ include '../../components/sidebar_offcanvas.php';
             </div>
           </div>
 
-          <!-- Transfer -->
-          <div class="col-xl-4 col-md-6">
+          <!-- Transfer + Invoice Lunas -->
+          <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
               <div class="card-body">
-                <p class="text-info mb-1 small fw-bold">TOTAL TRANSFER</p>
+                <p class="text-info mb-1 small fw-bold">TOTAL TRANSFER + INVOICE LUNAS</p>
                 <div class="d-flex justify-content-between align-items-center">
                   <div>
                     <h4 class="mb-0 fw-bold text-info"><?= format_rupiah($total_transfer ?? 0); ?></h4>
@@ -412,7 +443,7 @@ include '../../components/sidebar_offcanvas.php';
           </div>
 
           <!-- bayar_ditempat -->
-          <div class="col-xl-4 col-md-6">
+          <div class="col-md-6">
             <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
               <div class="card-body">
                 <p class="text-danger mb-1 small fw-bold">TOTAL BAYAR DITEMPAT </p>
@@ -422,6 +453,22 @@ include '../../components/sidebar_offcanvas.php';
                     <small class="text-muted">Periode: <?= $selected_date_display; ?></small>
                   </div>
                   <i class="fa-solid fa-truck-ramp-box text-danger opacity-50" style="font-size:1.8rem;"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Invoice Belum Dibayar (Hutang) -->
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100 border border-danger">
+              <div class="card-body">
+                <p class="text-danger mb-1 small fw-bold">INVOICE BELUM DIBAYAR</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-0 fw-bold text-danger"><?= format_rupiah($total_invoice ?? 0); ?></h4>
+                    <small class="text-muted">Hutang Periode: <?= $selected_date_display; ?></small>
+                  </div>
+                  <i class="fa-solid fa-file-invoice-dollar text-danger opacity-50" style="font-size:1.8rem;"></i>
                 </div>
               </div>
             </div>
@@ -635,17 +682,21 @@ include '../../components/sidebar_offcanvas.php';
                 <small class="text-muted d-block">Total Pengiriman</small>
                 <strong><?= $total_pengiriman ?? 0; ?> kiriman</strong>
               </div>
-              <div class="col-4">
+              <div class="col-6">
                 <small class="text-muted d-block">Cash</small>
                 <strong><?= format_rupiah($total_cash ?? 0); ?></strong>
               </div>
-              <div class="col-4">
-                <small class="text-muted d-block">Transfer</small>
+              <div class="col-6">
+                <small class="text-muted d-block">Transfer + Invoice Lunas</small>
                 <strong><?= format_rupiah($total_transfer ?? 0); ?></strong>
               </div>
-              <div class="col-4">
+              <div class="col-6">
                 <small class="text-muted d-block">Bayar Ditempat</small>
                 <strong class="text-danger"><?= format_rupiah($total_cod ?? 0); ?></strong>
+              </div>
+              <div class="col-6">
+                <small class="text-muted d-block">Invoice Belum Dibayar</small>
+                <strong class="text-danger"><?= format_rupiah($total_invoice ?? 0); ?></strong>
               </div>
             </div>
           </div>
