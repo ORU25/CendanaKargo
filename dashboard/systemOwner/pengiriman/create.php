@@ -333,9 +333,9 @@ include '../../../components/sidebar_offcanvas.php';
               <small class="text-muted">Masukkan tarif handling jika ada</small>
             </div>
             <div class="col-md-6">
-              <label for="pembayaran" class="form-label fw-semibold">Tarif Lintas Cabang</label>
+              <label for="pembayaran" class="form-label fw-semibold">Tarif Lintas Tujuan</label>
               <input type="number" class="form-control" id="tarif_lintas_cabang" name="tarif_lintas_cabang" min="0" >
-              <small class="text-muted">Masukkan tarif lintas cabang jika ada</small>
+              <small class="text-muted">Masukkan tarif lintas tujuan jika ada</small>
             </div>
             <div class="col-md-6">
               <label for="pembayaran" class="form-label fw-semibold">Metode Pembayaran</label>
@@ -387,7 +387,7 @@ include '../../../components/sidebar_offcanvas.php';
               <strong class="text-dark" id="est_tarif_handling">Rp -</strong>
             </div>
             <div class="col-md-6">
-              <small class="text-muted d-block">Tarif Lintas Cabang</small>
+              <small class="text-muted d-block">Tarif Lintas Tujuan</small>
               <strong class="text-dark" id="est_tarif_lintas_cabang">Rp -</strong>
             </div>
           </div>

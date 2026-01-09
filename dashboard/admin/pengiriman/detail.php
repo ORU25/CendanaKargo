@@ -211,7 +211,7 @@
                                     <?php endif; ?>
                                 </div>
                                 <div class="col-6 col-md-3">
-                                    <small class="opacity-75 d-block">Tarif Lintas Cabang</small>
+                                    <small class="opacity-75 d-block">Tarif Lintas Tujuan</small>
                                     <?php if($pengiriman['tarif_lintas_cabang'] > 0): ?>
                                     <strong>Rp <?= number_format($pengiriman['tarif_lintas_cabang'], 0, ',', '.'); ?></strong>
                                     <?php else: ?>
