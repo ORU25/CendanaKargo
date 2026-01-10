@@ -218,7 +218,7 @@ function abbreviateName($name) {
         .surat-jalan table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 9px;
+            font-size:11px;
             table-layout: fixed;
         }
 

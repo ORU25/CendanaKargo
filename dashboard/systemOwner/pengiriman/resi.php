@@ -28,7 +28,7 @@ if ($result->num_rows > 0) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
 <link rel="icon" type="image/x-icon" href="../../../assets/favicon.ico">
 <title>Resi Pengiriman Barang</title>
 <style>
@@ -36,233 +36,68 @@ if ($result->num_rows > 0) {
         size: A4 portrait;
         margin: 0;
     }
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    
+    @media print {
+        body { 
+            margin: 0; 
+            padding: 0; 
+        }
+        .container { 
+            width: 210mm; 
+            max-width: none; 
+            margin: 0; 
+            padding: 0; 
+        }
     }
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #e0e0e0;
-    }
-
-    /* === PERBAIKAN LEBAR === */
-    .container {
-        width: 100vw;            /* isi penuh layar */
-        max-width: 210mm;        /* batas maksimum sesuai A4 */
-        height: 297mm;
-        background-color: white;
-        padding: 0;
-        margin: 0 auto;
-        position: relative;
+    
+    .page-break {
         page-break-after: always;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
     }
-    .container:last-child {
+    
+    .page-break:last-child {
         page-break-after: auto;
     }
-    /* ========================= */
-
-    .resi {
-        width: 100%;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        border: 2px solid #000;
-        overflow: hidden;
-    }
-    .header-top {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 6px 8px;
-        border-bottom: 1px solid #000;
-    }
-    .logo {
-        width: 45px;
-        height: 45px;
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background-color: white;
-        font-size: 8px;
-        font-weight: bold;
-        text-align: center;
-        color: #d03542;
-    }
-    .company-header { flex-grow: 1; }
-    .company-name {
-        font-size: 16px;
-        font-weight: bold;
-        color: #d03542;
-        text-align: center;
-        letter-spacing: 1px;
-        margin-bottom: 2px;
-    }
-    .contact-info {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 2px 6px;
-        font-size: 6px;
-        line-height: 1.3;
-    }
-    .contact-left, .contact-middle, .contact-right { 
-        text-align: left;
-    }
-
-    .form-wrapper {
-        display: grid;
-        grid-template-columns: 1fr auto 1fr;
-        gap: 6px;
-        padding: 3px 8px;
-        align-items: flex-start;
-        border-bottom: 1px solid #000;
-    }
-    .form-left, .form-right {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-    .form-line {
-        display: flex;
-        align-items: baseline;
-        gap: 3px;
-        font-size: 8px;
-    }
-    .form-label { font-weight: bold; min-width: 45px; }
-    .form-dots {
-        flex-grow: 1;
-        border-bottom: 1px dotted #000;
-        height: 0.6em;
-    }
-
-    .title-center { text-align: center; }
-    .title {
-        font-size: 14px;
-        font-weight: bold;
-        color: #d03542;
-        letter-spacing: 1px;
-        margin-bottom: 4px;
-    }
-    .resi-line {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 12px;
-        font-weight: bold;
-    }
-    .resi-label { color: #d03542; }
-    .resi-number { color: #8B0000; font-size: 16px; }
-
-    .table-wrapper {
-        padding: 3px 8px;
-        border-bottom: 1px solid #000;
-        overflow: hidden;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 8px;
-    }
-    th, td {
-        border: 1px solid #000;
-        padding: 3px 4px;
-        text-align: left;
-    }
-    th {
-        background-color: #f0f0f0;
-        font-weight: bold;
-        text-align: center;
-        font-size: 7px;
-    }
-    .item-row td {
-        height: 30px;
-        vertical-align: top;
-    }
-    .total-row td {
-        text-align: center;
-        font-weight: bold;
-        font-size: 8px;
-        height: auto;
-        padding: 4px 2px;
-    }
-
-    .bottom-section {
-        padding: 8px 8px 4px 8px;
-        display: flex;
-        gap: 6px;
-        flex-grow: 1;
-        overflow: hidden;
-    }
-    .notes {
-        flex: 0 0 45%;
-        border: 1px solid #000;
-        padding: 8px 6px;
-        background-color: white;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-    .notes ol {
-        margin-left: 16px;
-        font-size: 8px;
-        line-height: 1.4;
-        margin-bottom: 0;
-    }
-    .signature-section {
-        flex: 1;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 4px;
-    }
-    .sig-box {
-        border: 1px solid #000;
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-    }
-    .sig-content { font-size: 6.5px; line-height: 1.2; flex-grow: 1; }
-    .sig-line { border-top: 1px solid #000; margin-top: 4px; height: 20px; }
-    .sig-title { font-weight: bold; font-size: 7px; text-align: center; }
-
-    @media print {
-        body { background-color: white; margin: 0; padding: 0; }
-        .container { width: 210mm; max-width: none; margin: 0; padding: 0; }
-    }
 </style>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#d03542',
+                    secondary: '#8B0000',
+                }
+            }
+        }
+    }
+</script>
 </head>
-<body>
+<body class="bg-gray-300 font-sans">
 
-<div class="container">
+<div class="w-screen max-w-[210mm] h-[297mm] bg-white mx-auto relative page-break overflow-hidden flex flex-col">
 
     <!-- RESI 1 -->
-    <div class="resi">
-        <div class="header-top">
-            <div class="logo ms-2">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" style="width: 80px; height: auto;" class="rounded-circle">
+    <div class="w-full flex-1 flex flex-col border-2 border-black overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-start border-b border-black">
+            <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
+                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
             </div>
-            <div class="company-header">
-                <div class="company-name">PT. CENDANA LINTAS KARGO</div>
-                <div class="contact-info d-flex justify-content-evenly">
-                    <div class="contact-left">
+            <div class="flex-grow py-1.5">
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="flex justify-around text-[7px] leading-tight">
+                    <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>
                         <div><strong>HP:</strong> 082120406688</div>
                         <div><strong>Balikpapan:</strong> 081211220404 - 081127744474</div>
                         <div><strong>Sangatta:</strong> 082151224404 - 081250500026</div>
                     </div>
-                    <div class="contact-middle">
+                    <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
                         <div><strong>Palaran:</strong> 08121367672</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
-                    <div class="contact-right">
+                    <div class="text-left">
                         <div><strong>Lempake:</strong> 085393932050 - 085393932030</div>
                         <div><strong>Tenggarong:</strong> 08115802377 - 08115802399</div>
                         <div><strong>Jl. Jakarta:</strong> 081378888795</div>
@@ -271,113 +106,129 @@ if ($result->num_rows > 0) {
             </div>
         </div>
 
-        <!-- form -->
-        <div class="d-flex justify-content-between px-3 py-1">
-            <div class="form-left fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Dari</span>: <?=$pengiriman['nama_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?></div>
+        <!-- Form Data -->
+        <div class="flex justify-between px-3 py-1">
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?>
+                </div>
             </div>
-            <div class="title-center">
-                <div class="title">SURAT PENGIRIMAN BARANG</div>
-                <div class="resi-line"><span class="resi-label">No. Resi:</span><span class="resi-number"><?=$pengiriman['no_resi']?></span></div>
+            <div class="text-center">
+                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
+                <div class="flex items-center justify-center gap-2 text-xs font-bold">
+                    <span class="text-primary">No. Resi:</span>
+                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
+                </div>
             </div>
-            <div class="form-right fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Kepada</span>: <?=$pengiriman['nama_penerima']?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_penerima']?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_penerima']?></div>
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Kepada</span>: <?=$pengiriman['nama_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_penerima']?>
+                </div>
             </div>
         </div>
 
-        <!-- tabel -->
-        <div class="table-wrapper">
-            <table>
+        <!-- Table -->
+        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+            <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
-                        <th style="width:6%;">No</th>
-                        <th style="width:44%;">Nama Barang</th>
-                        <th style="width:13%;">Berat</th>
-                        <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Metode Pembayaran</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="item-row text-capitalize">
-                        <td class="text-center">1</td>
-                        <td class="text-center"><?=$pengiriman['nama_barang']?></td>
-                        <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
-                        <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
+                    <tr class="capitalize">
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top">1</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['nama_barang']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['berat']?> Kg</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['jumlah']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['pembayaran']?></td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]">Diskon</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]"><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Total</td>
-                        <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-bold text-[11px]">Total</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-bold text-[11px] total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- bawah -->
-        <div class="bottom-section">
-            <div class="notes">
-                <ol>
-                    <li>Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
-                    <li>Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
-                    <li>Pengiriman barang diambil di kantor perwakilan tujuan</li>
-                    <li>Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
+        <!-- Bottom Section -->
+        <div class="px-2 py-2 pb-1 flex gap-1.5 flex-grow overflow-hidden">
+            <div class="flex-[0_0_45%] border border-black p-2 bg-white overflow-hidden flex flex-col justify-start">
+                <ol class="list-decimal ml-2 text-[7px] leading-relaxed mb-0">
+                    <li class="mb-0.5 text-justify">Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
+                    <li class="mb-0.5 text-justify">Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
+                    <li class="mb-0.5 text-justify">Pengiriman barang diambil di kantor perwakilan tujuan</li>
+                    <li class="mb-0.5 text-justify">Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
                 </ol>
             </div>
-            <div class="signature-section">
-                <div class="sig-box">
-                    <div class="sig-content">
+            <div class="flex-1 grid grid-cols-3 gap-1">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Kirim Tgl : <?=$pengiriman['tanggal']?></strong><br><br>
                         <strong>Pengirim,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_pengirim']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-title">Driver,</div>
-                    <div class="sig-line"></div>
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="font-bold text-[7px] text-center">Driver,</div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-content">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Diterima :</strong><br><br>
                         <strong>Penerima,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_penerima']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- RESI 2 -->
-    <div class="resi">
-        <div class="header-top">
-            <div class="logo ms-2">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" style="width: 80px; height: auto;" class="rounded-circle">
+    <div class="w-full flex-1 flex flex-col border-2 border-black overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-start border-b border-black">
+            <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
+                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
             </div>
-            <div class="company-header">
-                <div class="company-name">PT. CENDANA LINTAS KARGO</div>
-                <div class="contact-info d-flex justify-content-evenly">
-                    <div class="contact-left">
+            <div class="flex-grow py-1.5">
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="flex justify-around text-[7px] leading-tight">
+                    <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>
                         <div><strong>HP:</strong> 082120406688</div>
                         <div><strong>Balikpapan:</strong> 081211220404 - 081127744474</div>
                         <div><strong>Sangatta:</strong> 082151224404 - 081250500026</div>
                     </div>
-                    <div class="contact-middle">
+                    <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
                         <div><strong>Palaran:</strong> 08121367672</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
-                    <div class="contact-right">
+                    <div class="text-left">
                         <div><strong>Lempake:</strong> 085393932050 - 085393932030</div>
                         <div><strong>Tenggarong:</strong> 08115802377 - 08115802399</div>
                         <div><strong>Jl. Jakarta:</strong> 081378888795</div>
@@ -386,113 +237,129 @@ if ($result->num_rows > 0) {
             </div>
         </div>
 
-        <!-- form -->
-        <div class="d-flex justify-content-between px-3 py-1">
-            <div class="form-left fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Dari</span>: <?=$pengiriman['nama_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?></div>
+        <!-- Form Data -->
+        <div class="flex justify-between px-3 py-1">
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?>
+                </div>
             </div>
-            <div class="title-center">
-                <div class="title">SURAT PENGIRIMAN BARANG</div>
-                <div class="resi-line"><span class="resi-label">No. Resi:</span><span class="resi-number"><?=$pengiriman['no_resi']?></span></div>
+            <div class="text-center">
+                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
+                <div class="flex items-center justify-center gap-2 text-xs font-bold">
+                    <span class="text-primary">No. Resi:</span>
+                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
+                </div>
             </div>
-            <div class="form-right fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Kepada</span>: <?=$pengiriman['nama_penerima']?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_penerima']?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_penerima']?></div>
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Kepada</span>: <?=$pengiriman['nama_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_penerima']?>
+                </div>
             </div>
         </div>
 
-        <!-- tabel -->
-        <div class="table-wrapper">
-            <table>
+        <!-- Table -->
+        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+            <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
-                        <th style="width:6%;">No</th>
-                        <th style="width:44%;">Nama Barang</th>
-                        <th style="width:13%;">Berat</th>
-                        <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Metode Pembayaran</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="item-row text-capitalize">
-                        <td class="text-center">1</td>
-                        <td class="text-center"><?=$pengiriman['nama_barang']?></td>
-                        <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
-                        <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
+                    <tr class="capitalize">
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top">1</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['nama_barang']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['berat']?> Kg</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['jumlah']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['pembayaran']?></td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]">Diskon</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]"><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Total</td>
-                        <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-bold text-[11px]">Total</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-bold text-[11px] total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- bawah -->
-        <div class="bottom-section">
-            <div class="notes">
-                <ol>
-                    <li>Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
-                    <li>Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
-                    <li>Pengiriman barang diambil di kantor perwakilan tujuan</li>
-                    <li>Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
+        <!-- Bottom Section -->
+        <div class="px-2 py-2 pb-1 flex gap-1.5 flex-grow overflow-hidden">
+            <div class="flex-[0_0_45%] border border-black p-2 bg-white overflow-hidden flex flex-col justify-start">
+                <ol class="list-decimal ml-2 text-[7px] leading-relaxed mb-0">
+                    <li class="mb-0.5 text-justify">Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
+                    <li class="mb-0.5 text-justify">Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
+                    <li class="mb-0.5 text-justify">Pengiriman barang diambil di kantor perwakilan tujuan</li>
+                    <li class="mb-0.5 text-justify">Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
                 </ol>
             </div>
-            <div class="signature-section">
-                <div class="sig-box">
-                    <div class="sig-content">
+            <div class="flex-1 grid grid-cols-3 gap-1">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Kirim Tgl : <?=$pengiriman['tanggal']?></strong><br><br>
                         <strong>Pengirim,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_pengirim']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-title">Driver,</div>
-                    <div class="sig-line"></div>
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="font-bold text-[7px] text-center">Driver,</div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-content">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Diterima :</strong><br><br>
                         <strong>Penerima,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_penerima']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- RESI 3 -->
-    <div class="resi">
-        <div class="header-top">
-            <div class="logo ms-2">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" style="width: 80px; height: auto;" class="rounded-circle">
+    <div class="w-full flex-1 flex flex-col border-2 border-black overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-start border-b border-black">
+            <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
+                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
             </div>
-            <div class="company-header">
-                <div class="company-name">PT. CENDANA LINTAS KARGO</div>
-                <div class="contact-info d-flex justify-content-evenly">
-                    <div class="contact-left">
+            <div class="flex-grow py-1.5">
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="flex justify-around text-[7px] leading-tight">
+                    <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>
                         <div><strong>HP:</strong> 082120406688</div>
                         <div><strong>Balikpapan:</strong> 081211220404 - 081127744474</div>
                         <div><strong>Sangatta:</strong> 082151224404 - 081250500026</div>
                     </div>
-                    <div class="contact-middle">
+                    <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
                         <div><strong>Palaran:</strong> 08121367672</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
-                    <div class="contact-right">
+                    <div class="text-left">
                         <div><strong>Lempake:</strong> 085393932050 - 085393932030</div>
                         <div><strong>Tenggarong:</strong> 08115802377 - 08115802399</div>
                         <div><strong>Jl. Jakarta:</strong> 081378888795</div>
@@ -501,113 +368,124 @@ if ($result->num_rows > 0) {
             </div>
         </div>
 
-        <!-- form -->
-        <div class="d-flex justify-content-between px-3 py-1">
-            <div class="form-left fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Dari</span>: <?=$pengiriman['nama_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?></div>
+        <!-- Form Data -->
+        <div class="flex justify-between px-3 py-1">
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_pengirim'] ?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_pengirim']?>
+                </div>
             </div>
-            <div class="title-center">
-                <div class="title">SURAT PENGIRIMAN BARANG</div>
-                <div class="resi-line"><span class="resi-label">No. Resi:</span><span class="resi-number"><?=$pengiriman['no_resi']?></span></div>
+            <div class="text-center">
+                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
+                <div class="flex items-center justify-center gap-2 text-xs font-bold">
+                    <span class="text-primary">No. Resi:</span>
+                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
+                </div>
             </div>
-            <div class="form-right fw-bold">
-                <div class="form-line text-capitalize"><span class="form-label">Kepada</span>: <?=$pengiriman['nama_penerima']?></div>
-                <div class="form-line"><span class="form-label">Alamat</span>: <?=$pengiriman['cabang_penerima']?></div>
-                <div class="form-line"><span class="form-label">Telp/HP</span>: <?=$pengiriman['telp_penerima']?></div>
+            <div class="flex flex-col gap-1 font-semibold">
+                <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
+                    <span class="font-semibold min-w-[45px]">Kepada</span>: <?=$pengiriman['nama_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Alamat</span>: <?=$pengiriman['cabang_penerima']?>
+                </div>
+                <div class="flex items-baseline gap-1 text-[11px] leading-none">
+                    <span class="font-semibold min-w-[45px]">Telp/HP</span>: <?=$pengiriman['telp_penerima']?>
+                </div>
             </div>
         </div>
 
-        <!-- tabel -->
-        <div class="table-wrapper">
-            <table>
+        <!-- Table -->
+        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+            <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
-                        <th style="width:6%;">No</th>
-                        <th style="width:44%;">Nama Barang</th>
-                        <th style="width:13%;">Berat</th>
-                        <th style="width:13%;">Jumlah</th>
-                        <th style="width:24%;">Metode Pembayaran</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class="item-row text-capitalize">
-                        <td class="text-center">1</td>
-                        <td class="text-center"><?=$pengiriman['nama_barang']?></td>
-                        <td class="text-center"><?=$pengiriman['berat']?> Kg</td>
-                        <td class="text-center"><?=$pengiriman['jumlah']?></td>
-                        <td class="text-center"><?=$pengiriman['pembayaran']?></td>
+                    <tr class="capitalize">
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top">1</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['nama_barang']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['berat']?> Kg</td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['jumlah']?></td>
+                        <td class="border border-black px-1 py-0.5 text-center h-[30px] align-top"><?=$pengiriman['pembayaran']?></td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Diskon</td>
-                        <td class=""><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]">Diskon</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-semibold text-[11px]"><?=$pengiriman['diskon']? $pengiriman['diskon']: 0 ?> %</td>
                     </tr>
-                    <tr class="total-row">
-                        <td colspan="4">Total</td>
-                        <td class="total_tarif"><?=$pengiriman['total_tarif']?></td>
+                    <tr>
+                        <td colspan="4" class="border border-black px-0.5 py-1 text-center font-bold text-[11px]">Total</td>
+                        <td class="border border-black px-0.5 py-1 text-center font-bold text-[11px] total_tarif"><?=$pengiriman['total_tarif']?></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- bawah -->
-        <div class="bottom-section">
-            <div class="notes">
-                <ol>
-                    <li>Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
-                    <li>Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
-                    <li>Pengiriman barang diambil di kantor perwakilan tujuan</li>
-                    <li>Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
+        <!-- Bottom Section -->
+        <div class="px-2 py-2 pb-1 flex gap-1.5 flex-grow overflow-hidden">
+            <div class="flex-[0_0_45%] border border-black p-2 bg-white overflow-hidden flex flex-col justify-start">
+                <ol class="list-decimal ml-2 text-[7px] leading-relaxed mb-0">
+                    <li class="mb-0.5 text-justify">Barang rusak/pecah di ganti sesuai berapa % tingkat kerusakan dan barang hilang di ganti 10x biaya kirim max Rp. 2.000.000,-</li>
+                    <li class="mb-0.5 text-justify">Tidak di perkenan kan membagi foto resi selain kepada penerima atau yang di beri wewenang di karena kan bersifat rahasia</li>
+                    <li class="mb-0.5 text-justify">Pengiriman barang diambil di kantor perwakilan tujuan</li>
+                    <li class="mb-0.5 text-justify">Dilarang mengirim Paket (barang) Terlarang, bisa dilaporkan ke pihak berwajib dan dikenakan sanksi pidana</li>
                 </ol>
             </div>
-            <div class="signature-section">
-                <div class="sig-box">
-                    <div class="sig-content">
+            <div class="flex-1 grid grid-cols-3 gap-1">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Kirim Tgl : <?=$pengiriman['tanggal']?></strong><br><br>
                         <strong>Pengirim,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_pengirim']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-title">Driver,</div>
-                    <div class="sig-line"></div>
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="font-bold text-[7px] text-center">Driver,</div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
-                <div class="sig-box">
-                    <div class="sig-content">
+                <div class="border border-black p-1 flex flex-col justify-between">
+                    <div class="text-[6.5px] leading-tight flex-grow">
                         <strong>Diterima :</strong><br><br>
                         <strong>Penerima,</strong><br><br>
                         <strong>HP/Telp : <?=$pengiriman['telp_penerima']?></strong>
                     </div>
-                    <div class="sig-line"></div>
+                    <div class="border-t border-black mt-1 h-5"></div>
                 </div>
             </div>
         </div>
     </div>
 
+</div>
 
-    <script>
-    // Ambil semua elemen dengan class "harga"
+<script>
+    // Format total tarif ke Rupiah
     const hargaElements = document.querySelectorAll('.total_tarif');
-
     hargaElements.forEach(el => {
-        // Ambil nilai teks (contohnya "150000")
         let value = parseFloat(el.textContent);
-
-        // Format ke Rupiah
         let formatted = value.toLocaleString('id-ID', {
-        style: 'currency',
-        currency: 'IDR'
+            style: 'currency',
+            currency: 'IDR'
         });
-
-        // Masukkan hasil ke elemen
         el.textContent = formatted;
     });
     
+    // Auto print on load (uncomment if needed)
     window.addEventListener('load', () => {
-    window.print();
-  });
+        window.print();
+    });
 </script>
 </body>
 </html>
