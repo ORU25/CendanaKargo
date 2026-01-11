@@ -339,7 +339,7 @@ include '../../../components/sidebar_offcanvas.php';
             </div>
           </div>
           <div class="d-flex justify-content-start mt-4">
-            <button type="submit" class="btn btn-danger fw-semibold" style="width: 120px;">Tambah</button>
+            <button type="submit" id="submitBtn" class="btn btn-danger fw-semibold" style="width: 120px;">Tambah</button>
           </div>
         </form>
       </div>
@@ -550,6 +550,31 @@ document.getElementById('diskon').addEventListener('input', hitungEstimasi);
 document.getElementById('tarif_manual').addEventListener('input', hitungEstimasi);
 document.getElementById('tarif_handling').addEventListener('input', hitungEstimasi);
 document.getElementById('tarif_lintas_cabang').addEventListener('input', hitungEstimasi);
+
+// ============================================
+// PREVENT DOUBLE SUBMISSION
+// ============================================
+const form = document.querySelector('form');
+const submitBtn = document.getElementById('submitBtn');
+let isSubmitting = false;
+
+form.addEventListener('submit', function(e) {
+    if (isSubmitting) {
+        e.preventDefault();
+        return false;
+    }
+    
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+    
+    // Reset after 10 seconds as fail-safe
+    setTimeout(() => {
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Tambah';
+    }, 10000);
+});
 </script>
 
 <?php
