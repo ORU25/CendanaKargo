@@ -566,7 +566,7 @@ form.addEventListener('submit', function(e) {
     
     isSubmitting = true;
     submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses...';
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>memproses..';
     
     // Reset after 10 seconds as fail-safe
     setTimeout(() => {

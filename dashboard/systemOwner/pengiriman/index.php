@@ -40,7 +40,13 @@
     
     // Get paginated data
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ? ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt = $conn->prepare("
+            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+                   cabang_pengirim, cabang_penerima, total_tarif, status, tanggal 
+            FROM pengiriman 
+            WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ? 
+            ORDER BY id DESC LIMIT ? OFFSET ?
+        ");
         $searchParam = "%$search%";
         $stmt->bind_param('ssssii', $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
         $stmt->execute();
@@ -48,7 +54,12 @@
         $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
     } else {
-        $stmt = $conn->prepare("SELECT * FROM pengiriman ORDER BY id DESC LIMIT ? OFFSET ?");
+        $stmt = $conn->prepare("
+            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+                   cabang_pengirim, cabang_penerima, total_tarif, status, tanggal 
+            FROM pengiriman 
+            ORDER BY id DESC LIMIT ? OFFSET ?
+        ");
         $stmt->bind_param('ii', $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();

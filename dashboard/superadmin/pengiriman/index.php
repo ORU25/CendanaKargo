@@ -60,7 +60,9 @@
     // Get paginated data (hanya pengiriman dari atau ke cabang user)
     if ($search !== '') {
         $stmt = $conn->prepare("
-            SELECT * FROM pengiriman 
+            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+                   cabang_penerima, total_tarif, status, tanggal 
+            FROM pengiriman 
             WHERE id_cabang_pengirim = ? 
             AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?) 
             ORDER BY id DESC LIMIT ? OFFSET ?
@@ -73,7 +75,9 @@
         $stmt->close();
     } else {
         $stmt = $conn->prepare("
-            SELECT * FROM pengiriman 
+            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+                   cabang_penerima, total_tarif, status, tanggal 
+            FROM pengiriman 
             WHERE id_cabang_pengirim = ? 
             ORDER BY id DESC LIMIT ? OFFSET ?
         ");

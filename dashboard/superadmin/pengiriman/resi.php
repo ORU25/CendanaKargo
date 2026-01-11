@@ -98,7 +98,7 @@ if ($result->num_rows > 0) {
                     <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
-                        <div><strong>Palaran:</strong> 08121367672</div>
+                        <div><strong>Palaran:</strong> 08121367671</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
                     <div class="text-left">
@@ -229,7 +229,7 @@ if ($result->num_rows > 0) {
                     <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
-                        <div><strong>Palaran:</strong> 08121367672</div>
+                        <div><strong>Palaran:</strong> 08121367671</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
                     <div class="text-left">
@@ -360,7 +360,7 @@ if ($result->num_rows > 0) {
                     <div class="text-left">
                         <div><strong>Melak:</strong> 081251084448</div>
                         <div><strong>Ma. Wahau:</strong> 082350058686 - 082350058822</div>
-                        <div><strong>Palaran:</strong> 08121367672</div>
+                        <div><strong>Palaran:</strong> 08121367671</div>
                         <div><strong>Lambung:</strong> 082255102626</div>
                     </div>
                     <div class="text-left">

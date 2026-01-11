@@ -15,8 +15,9 @@ include '../../../config/database.php';
 $title = "Pengiriman - Cendana Kargo";
 
 $cabang_admin = $_SESSION['cabang'] ?? null;
+$id_cabang_admin = $_SESSION['id_cabang'] ?? null;
 
-if (!$cabang_admin) {
+if (!$cabang_admin || !$id_cabang_admin) {
     header("Location: ../../../?error=no_branch_assigned");
     exit;
 }
@@ -31,14 +32,14 @@ if ($search !== '') {
     $stmt = $conn->prepare("
         SELECT COUNT(*) as total 
         FROM pengiriman 
-        WHERE cabang_pengirim = ? 
+        WHERE id_cabang_pengirim = ? 
         AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('sssss', $cabang_admin, $searchParam, $searchParam, $searchParam, $searchParam);
+    $stmt->bind_param('issss', $id_cabang_admin, $searchParam, $searchParam, $searchParam, $searchParam);
 } else {
-    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE cabang_pengirim = ?");
-    $stmt->bind_param('s', $cabang_admin);
+    $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE id_cabang_pengirim = ?");
+    $stmt->bind_param('i', $id_cabang_admin);
 }
 $stmt->execute();
 $result = $stmt->get_result();
@@ -49,22 +50,26 @@ $total_pages = ceil($total_records / $limit);
 
 if ($search !== '') {
     $stmt = $conn->prepare("
-        SELECT * FROM pengiriman 
-        WHERE cabang_pengirim = ? 
+        SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+               cabang_penerima, total_tarif, status, tanggal 
+        FROM pengiriman 
+        WHERE id_cabang_pengirim = ? 
         AND (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('sssssii', $cabang_admin, $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
+    $stmt->bind_param('isssiii', $id_cabang_admin, $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
-        SELECT * FROM pengiriman 
-        WHERE cabang_pengirim = ? 
+        SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+               cabang_penerima, total_tarif, status, tanggal 
+        FROM pengiriman 
+        WHERE id_cabang_pengirim = ? 
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('sii', $cabang_admin, $limit, $offset);
+    $stmt->bind_param('iii', $id_cabang_admin, $limit, $offset);
 }
 $stmt->execute();
 $result = $stmt->get_result();
