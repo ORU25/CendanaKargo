@@ -31,12 +31,12 @@ if (!$sj) {
     exit;
 }
 
-// Ambil detail pengiriman (maksimal 15)
+// Ambil detail pengiriman (maksimal 20)
 $sql_detail = "SELECT p.* FROM pengiriman p 
                JOIN detail_surat_jalan d ON p.id = d.id_pengiriman 
                WHERE d.id_surat_jalan = ? 
                ORDER BY p.tanggal DESC 
-               LIMIT 15";
+               LIMIT 20";
 $stmt_detail = $conn->prepare($sql_detail);
 $stmt_detail->bind_param("i", $id_surat_jalan);
 $stmt_detail->execute();
@@ -233,9 +233,9 @@ function abbreviateName($name) {
 
         .surat-jalan td {
             border: 1px solid black;
-            padding: 4px;
+            padding: 3px;
             vertical-align: middle;
-            height: 32px;
+            height: 26px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -266,7 +266,7 @@ function abbreviateName($name) {
         .footer-item label {
             display: block;
             font-weight: bold;
-            margin-bottom: 120px;
+            margin-bottom: 80px;
         }
 
         .footer-item .name {
@@ -363,8 +363,8 @@ function abbreviateName($name) {
                         <?php endforeach; ?>
 
                         <?php
-                        // Tambahkan baris kosong sampai total 15 baris
-                        $sisa_baris = 15 - count($pengirimens);
+                        // Tambahkan baris kosong sampai total 20 baris
+                        $sisa_baris = 20 - count($pengirimens);
                         for ($i = 0; $i < $sisa_baris; $i++):
                             ?>
                             <tr>

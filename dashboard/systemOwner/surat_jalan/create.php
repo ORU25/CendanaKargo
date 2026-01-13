@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_resi'])) {
         $count_data = $result_count->fetch_assoc();
         $stmt_count->close();
         
-        if ($count_data['total'] >= 15) {
+        if ($count_data['total'] >= 20) {
             header("Location: create.php?id=$id_surat_jalan&error=max_limit");
             exit;
         }
@@ -486,7 +486,7 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                 }?>
                 <?php if(isset($_GET['error']) && $_GET['error'] == 'max_limit'){
                     $type = "danger";
-                    $message = "Maksimal 15 resi per surat jalan";
+                    $message = "Maksimal 20 resi per surat jalan";
                     include '../../../components/alert.php';
                 }?>
                 <?php if(isset($_GET['error']) && $_GET['error'] == 'already_added'){
@@ -564,9 +564,9 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                             <div class="col-md-3">
                                 <small class="text-muted d-block mb-1">Resi Ditambahkan</small>
                                 <p class="mb-0 fw-bold">
-                                    <span class="<?= $jumlah_resi >= 15 ? 'text-danger' : 'text-success'; ?>">
+                                    <span class="<?= $jumlah_resi >= 20 ? 'text-danger' : 'text-success'; ?>">
                                         <?= $jumlah_resi; ?>
-                                    </span> / 15
+                                    </span> / 20
                                 </p>
                             </div>
                         </div>
@@ -673,7 +673,7 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                                                                 type="submit" 
                                                                 name="add_resi" 
                                                                 class="btn btn-sm btn-success"
-                                                                <?= $jumlah_resi >= 15 ? 'disabled' : ''; ?>
+                                                                <?= $jumlah_resi >= 20 ? 'disabled' : ''; ?>
                                                             >
                                                                 <i class="fa-solid fa-plus"></i>
                                                             </button>
