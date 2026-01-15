@@ -239,11 +239,35 @@ include '../../../components/sidebar_offcanvas.php';
                 <li class="page-item <?= $page_num <= 1 ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&laquo;</a>
                 </li>
-                <?php
-                for ($i = 1; $i <= $total_pages; $i++) {
-                    echo '<li class="page-item '.($i == $page_num ? 'active' : '').'"><a class="page-link" href="?page='.$i.($search ? '&search='.urlencode($search) : '').'">'.$i.'</a></li>';
-                }
-                ?>
+                <?php 
+                $range = 2;
+                $start = max(1, $page_num - $range);
+                $end = min($total_pages, $page_num + $range);
+                
+                if ($start > 1): ?>
+                  <li class="page-item">
+                    <a class="page-link" href="?page=1<?= $search ? '&search=' . urlencode($search) : ''; ?>">1</a>
+                  </li>
+                  <?php if ($start > 2): ?>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                  <?php endif; ?>
+                <?php endif; ?>
+                
+                <?php for ($i = $start; $i <= $end; $i++): ?>
+                  <li class="page-item <?= $i == $page_num ? 'active' : ''; ?>">
+                    <a class="page-link" href="?page=<?= $i; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $i; ?></a>
+                  </li>
+                <?php endfor; ?>
+                
+                <?php if ($end < $total_pages): ?>
+                  <?php if ($end < $total_pages - 1): ?>
+                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                  <?php endif; ?>
+                  <li class="page-item">
+                    <a class="page-link" href="?page=<?= $total_pages; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $total_pages; ?></a>
+                  </li>
+                <?php endif; ?>
+                
             <li class="page-item <?= $page_num >= $total_pages ? 'disabled' : ''; ?>">
                 <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&raquo;</a>
             </li>
