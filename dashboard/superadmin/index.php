@@ -311,6 +311,20 @@ $sql_pendapatan = "
                 Selamat datang, <span class="fw-semibold"><?php echo htmlspecialchars($_SESSION['username']); ?></span>!
               </p>
             </div>
+            <div>
+              <?php 
+              // Build export URL with filter params untuk export cabang
+              $export_cabang_params = 'filter_type=' . urlencode($filter_type);
+              if (!empty($filter_value)) {
+                  $export_cabang_params .= '&filter_value=' . urlencode($filter_value);
+              }
+              ?>
+              <a href="export/exportCabang.php?<?php echo $export_cabang_params; ?>" 
+                 class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel me-1"></i> 
+                Export Data <?php echo htmlspecialchars($cabang_superadmin); ?>
+              </a>
+            </div>
           </div>
 
 

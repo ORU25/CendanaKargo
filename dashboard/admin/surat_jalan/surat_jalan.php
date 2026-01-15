@@ -35,7 +35,7 @@ if (!$sj) {
 $sql_detail = "SELECT p.* FROM pengiriman p 
                JOIN detail_surat_jalan d ON p.id = d.id_pengiriman 
                WHERE d.id_surat_jalan = ? 
-               ORDER BY p.tanggal DESC 
+               ORDER BY p.no_resi ASC 
                LIMIT 20";
 $stmt_detail = $conn->prepare($sql_detail);
 $stmt_detail->bind_param("i", $id_surat_jalan);
