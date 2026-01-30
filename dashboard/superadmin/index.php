@@ -10,6 +10,10 @@
       exit;
   }
 
+  // Release session lock early to improve concurrency
+  // Dashboard only reads session data, doesn't modify it
+  session_write_close();
+
   include '../../config/database.php';
 
   // =======================================================

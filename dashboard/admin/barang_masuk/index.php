@@ -12,6 +12,9 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'admin'){
 
 include '../../../config/database.php';
 
+// Release session lock early to improve concurrency
+session_write_close();
+
 $title = "Barang Masuk - Cendana Kargo";
 
 // Pastikan cabang admin terset di session
@@ -29,7 +32,7 @@ $offset = ($page_num - 1) * $limit;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // Filter status khusus barang masuk
-$status_filter = ["dalam pengiriman"];
+$status_filter = "dalam pengiriman";
 
 // Hitung total data
 if ($search !== '') {
@@ -37,19 +40,19 @@ if ($search !== '') {
         SELECT COUNT(*) as total 
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status IN (?, ?)
+    AND status = ?
         AND cabang_penerima = ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('sssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin);
+  $stmt->bind_param('ssssss', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter, $cabang_admin);
 } else {
     $stmt = $conn->prepare("
         SELECT COUNT(*) as total 
         FROM pengiriman 
-        WHERE status IN (?, ?)
+    WHERE status = ?
         AND cabang_penerima = ?
     ");
-    $stmt->bind_param('sss', $status_filter[0], $status_filter[1], $cabang_admin);
+  $stmt->bind_param('ss', $status_filter, $cabang_admin);
 }
 
 $stmt->execute();
@@ -64,22 +67,22 @@ if ($search !== '') {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status IN (?, ?)
+    AND status = ?
         AND cabang_penerima = ?
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('sssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
+  $stmt->bind_param('ssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter, $cabang_admin, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 
-        WHERE status IN (?, ?)
+    WHERE status = ?
         AND cabang_penerima = ?
         ORDER BY id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('sssii', $status_filter[0], $status_filter[1], $cabang_admin, $limit, $offset);
+  $stmt->bind_param('ssii', $status_filter, $cabang_admin, $limit, $offset);
 }
 
 $stmt->execute();
@@ -110,6 +113,11 @@ include '../../../components/sidebar_offcanvas.php';
                   (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
               <?php endif; ?>
             </p>
+          </div>
+          <div class="mt-2 mt-md-0">
+            <a href="scanner.php" class="btn btn-primary">
+              <i class="fa-solid fa-qrcode"></i> Scan Barcode
+            </a>
           </div>
         </div>
 

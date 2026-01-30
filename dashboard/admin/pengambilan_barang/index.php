@@ -12,6 +12,9 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'admin'){
 
 include '../../../config/database.php';
 
+// Release session lock early to improve concurrency
+session_write_close();
+
 $title = "Pengambilan Barang - Cendana Kargo";
 
 $cabang_admin = $_SESSION['cabang'] ?? '';
@@ -63,7 +66,7 @@ if ($search !== '') {
         ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
         LIMIT ? OFFSET ?
     ");
-    $stmt->bind_param('sssssssii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_admin, $limit, $offset);
+  $stmt->bind_param('ssssssiii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_admin, $limit, $offset);
 } else {
     $stmt = $conn->prepare("
         SELECT * FROM pengiriman 

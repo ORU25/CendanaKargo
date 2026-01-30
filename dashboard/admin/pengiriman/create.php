@@ -14,6 +14,10 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+// This page runs several DB queries; release session lock early to avoid blocking other requests
+// from the same logged-in user (PHP session file locking).
+session_write_close();
+
 include '../../../config/database.php';
 $title = "Dashboard - Cendana Kargo";
 

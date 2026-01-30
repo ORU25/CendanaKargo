@@ -11,10 +11,23 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
 }
 
 include '../../../config/database.php';
+include '../../../vendor/barcode/BarcodeGenerator.php';
 
-$id = $_GET['id'];
-$sql = "SELECT * FROM pengiriman WHERE id = $id";
-$result = $conn->query($sql);
+use Barcode\BarcodeGenerator;
+
+// Release session lock early to improve concurrency
+session_write_close();
+
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+if ($id <= 0) {
+    header("Location: ./?error=not_found");
+    exit;
+}
+
+$stmt = $conn->prepare('SELECT * FROM pengiriman WHERE id = ?');
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $pengiriman = $result->fetch_assoc();
     if($pengiriman['id_cabang_pengirim'] != $_SESSION['id_cabang']){
@@ -25,6 +38,13 @@ if ($result->num_rows > 0) {
     header("Location: ./?error=not_found");
     exit;
 }
+
+$stmt->close();
+
+// Generate barcode
+$barcodeGenerator = new BarcodeGenerator();
+$barcodeGenerator->setHeight(40)->setWidth(2);
+$barcodeSVG = $barcodeGenerator->getBarcodeSVG($pengiriman['no_resi']);
 ?>
 
 <!DOCTYPE html>
@@ -111,7 +131,7 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Form Data -->
-        <div class="flex justify-between px-3 py-1">
+        <div class="flex justify-between px-3 pt-2">
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
                     <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
@@ -124,11 +144,9 @@ if ($result->num_rows > 0) {
                 </div>
             </div>
             <div class="text-center">
-                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
-                <div class="flex items-center justify-center gap-2 text-xs font-bold">
-                    <span class="text-primary">No. Resi:</span>
-                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
-                </div>
+                <div class="flex items-center justify-center font-bold mb-2">
+                    <?=$barcodeSVG?>
+                </div>                    
             </div>
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
@@ -144,14 +162,14 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Table -->
-        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+        <div class="px-2 py-0.5 border-black overflow-hidden">
             <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:50%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Jumlah</th>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
@@ -242,7 +260,7 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Form Data -->
-        <div class="flex justify-between px-3 py-1">
+        <div class="flex justify-between px-3 pt-2">
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
                     <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
@@ -255,11 +273,9 @@ if ($result->num_rows > 0) {
                 </div>
             </div>
             <div class="text-center">
-                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
-                <div class="flex items-center justify-center gap-2 text-xs font-bold">
-                    <span class="text-primary">No. Resi:</span>
-                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
-                </div>
+                <div class="flex items-center justify-center font-bold mb-2">
+                    <?=$barcodeSVG?>
+                </div>                    
             </div>
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
@@ -275,14 +291,14 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Table -->
-        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+        <div class="px-2 py-0.5 border-black overflow-hidden">
             <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:50%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Jumlah</th>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
@@ -373,7 +389,7 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Form Data -->
-        <div class="flex justify-between px-3 py-1">
+        <div class="flex justify-between px-3 pt-2">
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
                     <span class="font-semibold min-w-[45px]">Dari</span>: <?=$pengiriman['nama_pengirim'] ?>
@@ -386,11 +402,9 @@ if ($result->num_rows > 0) {
                 </div>
             </div>
             <div class="text-center">
-                <div class="text-sm font-bold text-primary tracking-wide mb-1">SURAT PENGIRIMAN BARANG</div>
-                <div class="flex items-center justify-center gap-2 text-xs font-bold">
-                    <span class="text-primary">No. Resi:</span>
-                    <span class="text-secondary text-base"><?=$pengiriman['no_resi']?></span>
-                </div>
+                <div class="flex items-center justify-center font-bold mb-2">
+                    <?=$barcodeSVG?>
+                </div>                    
             </div>
             <div class="flex flex-col gap-1 font-semibold">
                 <div class="flex items-baseline gap-1 text-[11px] leading-none capitalize">
@@ -406,14 +420,14 @@ if ($result->num_rows > 0) {
         </div>
 
         <!-- Table -->
-        <div class="px-2 py-0.5 border-b border-black overflow-hidden">
+        <div class="px-2 py-0.5 border-black overflow-hidden">
             <table class="w-full border-collapse text-xs">
                 <thead>
                     <tr>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:6%;">No</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:44%;">Nama Barang</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Berat</th>
-                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:13%;">Jumlah</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:50%;">Nama Barang</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Berat</th>
+                        <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:10%;">Jumlah</th>
                         <th class="border border-black px-1 py-0.5 bg-gray-100 font-bold text-center text-[7px]" style="width:24%;">Metode Pembayaran</th>
                     </tr>
                 </thead>
@@ -471,6 +485,7 @@ if ($result->num_rows > 0) {
             </div>
         </div>
     </div>
+
 
 </div>
 

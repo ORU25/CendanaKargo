@@ -94,10 +94,12 @@
 
     </div>
 
-    <div class="text-start mt-3 mb-3 ms-3">
+    <div class="text-start mt-3 ms-3">
         <a href="<?= BASE_URL; ?>dashboard/change_password" class="btn btn-outline-secondary btn-sm w-60 rounded-2 px-3 fw-bold mb-2">
             <i class="fa-solid fa-key me-2"></i> Ubah Password
         </a>
+    </div>
+    <div class="text-start mb-3 ms-3">
         <a href="<?= BASE_URL; ?>auth/logout" class="btn btn-outline-danger btn-sm w-60 rounded-2 px-3 fw-bold">
             <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
         </a>

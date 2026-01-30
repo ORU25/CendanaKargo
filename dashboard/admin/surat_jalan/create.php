@@ -160,6 +160,101 @@ if (!$cabang_asal_data || !$cabang_tujuan_data) {
     exit;
 }
 
+// Handle scan barcode untuk tambah resi
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['scan_barcode']) && !empty(trim($_POST['scan_barcode']))) {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        header("Location: create.php?id=$id_surat_jalan&error=invalid_token");
+        exit;
+    }
+    
+    $no_resi = trim($_POST['scan_barcode']);
+    
+    // Cari pengiriman berdasarkan no_resi dengan validasi cabang dan status
+    $stmt_scan = $conn->prepare("
+        SELECT id FROM pengiriman 
+        WHERE no_resi = ? 
+        AND cabang_pengirim = ? 
+        AND cabang_penerima = ? 
+        AND status = 'bkd'
+        LIMIT 1
+    ");
+    $stmt_scan->bind_param('sss', $no_resi, $cabang_asal_data['nama_cabang'], $cabang_tujuan_data['nama_cabang']);
+    $stmt_scan->execute();
+    $result_scan = $stmt_scan->get_result();
+    
+    if ($result_scan->num_rows === 0) {
+        $stmt_scan->close();
+        header("Location: create.php?id=$id_surat_jalan&error=scan_not_found");
+        exit;
+    }
+    
+    $pengiriman_data = $result_scan->fetch_assoc();
+    $id_pengiriman = $pengiriman_data['id'];
+    $stmt_scan->close();
+    
+    // Cek jumlah resi yang sudah ditambahkan
+    $stmt_count = $conn->prepare("SELECT COUNT(*) as total FROM detail_surat_jalan WHERE id_surat_jalan = ?");
+    $stmt_count->bind_param('i', $id_surat_jalan);
+    $stmt_count->execute();
+    $result_count = $stmt_count->get_result();
+    $count_data = $result_count->fetch_assoc();
+    $stmt_count->close();
+    
+    if ($count_data['total'] >= 20) {
+        header("Location: create.php?id=$id_surat_jalan&error=max_limit");
+        exit;
+    }
+    
+    // Cek apakah resi sudah ada di surat jalan ini
+    $stmt_check_resi = $conn->prepare("
+        SELECT id FROM detail_surat_jalan 
+        WHERE id_surat_jalan = ? AND id_pengiriman = ?
+    ");
+    $stmt_check_resi->bind_param('ii', $id_surat_jalan, $id_pengiriman);
+    $stmt_check_resi->execute();
+    $result_check_resi = $stmt_check_resi->get_result();
+    
+    if ($result_check_resi->num_rows > 0) {
+        $stmt_check_resi->close();
+        header("Location: create.php?id=$id_surat_jalan&error=already_added");
+        exit;
+    }
+    $stmt_check_resi->close();
+    
+    // Cek apakah resi sudah ada di draft surat jalan lain
+    $stmt_check_draft = $conn->prepare("
+        SELECT sj.no_surat_jalan 
+        FROM detail_surat_jalan dsj
+        JOIN surat_jalan sj ON dsj.id_surat_jalan = sj.id
+        WHERE dsj.id_pengiriman = ? AND sj.status = 'draft' AND sj.id != ?
+        LIMIT 1
+    ");
+    $stmt_check_draft->bind_param('ii', $id_pengiriman, $id_surat_jalan);
+    $stmt_check_draft->execute();
+    $result_check_draft = $stmt_check_draft->get_result();
+    
+    if ($result_check_draft->num_rows > 0) {
+        $stmt_check_draft->close();
+        header("Location: create.php?id=$id_surat_jalan&error=already_in_draft");
+        exit;
+    }
+    $stmt_check_draft->close();
+    
+    // Tambahkan resi ke surat jalan
+    $stmt_add = $conn->prepare("INSERT INTO detail_surat_jalan (id_surat_jalan, id_pengiriman) VALUES (?, ?)");
+    $stmt_add->bind_param('ii', $id_surat_jalan, $id_pengiriman);
+    
+    if ($stmt_add->execute()) {
+        $stmt_add->close();
+        header("Location: create.php?id=$id_surat_jalan&success=scan_added&resi=$no_resi");
+        exit;
+    }
+    $stmt_add->close();
+    
+    header("Location: create.php?id=$id_surat_jalan&error=add_failed");
+    exit;
+}
+
 // Handle tambah resi ke surat jalan
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_resi'])) {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
@@ -479,6 +574,12 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                     $message = "Anda memiliki draft yang belum selesai untuk rute ini. Melanjutkan draft sebelumnya.";
                     include '../../../components/alert.php';
                 }?>
+                <?php if(isset($_GET['success']) && $_GET['success'] == 'scan_added'){
+                    $type = "success";
+                    $resi_no = htmlspecialchars($_GET['resi'] ?? '');
+                    $message = "Resi <strong>$resi_no</strong> berhasil ditambahkan melalui scanner";
+                    include '../../../components/alert.php';
+                }?>
                 <?php if(isset($_GET['success']) && $_GET['success'] == 'added'){
                     $type = "success";
                     $message = "Resi berhasil ditambahkan ke surat jalan";
@@ -529,6 +630,16 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                     $message = "Gagal memberangkatkan surat jalan";
                     include '../../../components/alert.php';
                 }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'scan_not_found'){
+                    $type = "danger";
+                    $message = "Resi tidak ditemukan atau tidak sesuai dengan rute surat jalan ini";
+                    include '../../../components/alert.php';
+                }?>
+                <?php if(isset($_GET['error']) && $_GET['error'] == 'already_in_draft'){
+                    $type = "warning";
+                    $message = "Resi sudah ditambahkan ke draft surat jalan lain";
+                    include '../../../components/alert.php';
+                }?>
 
                 <!-- Header -->
                 <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
@@ -577,6 +688,46 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
                         </div>
                     </div>
                 </div>
+                
+                <!-- Scanner Barcode -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body p-3">
+                        <form method="POST" id="scannerForm" class="row g-2 align-items-end">
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+                            <div class="col-md-8">
+                                <label for="scan_barcode" class="form-label fw-semibold small mb-1">
+                                    <i class="fa-solid fa-barcode me-1 text-primary"></i>Scan Barcode Resi
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="scan_barcode" 
+                                    name="scan_barcode" 
+                                    placeholder="Scan atau ketik nomor resi..."
+                                    autocomplete="off"
+                                    <?= $jumlah_resi >= 20 ? 'disabled' : 'autofocus'; ?>
+                                    style="font-family: 'Courier New', monospace; letter-spacing: 1px;"
+                                >
+                            </div>
+                            <div class="col-md-4">
+                                <button 
+                                    type="submit" 
+                                    class="btn btn-primary w-100"
+                                    <?= $jumlah_resi >= 20 ? 'disabled' : ''; ?>
+                                >
+                                    <i class="fa-solid fa-plus-circle me-1"></i>Tambah Resi
+                                </button>
+                            </div>
+                            <div class="col-12">
+                                <small class="text-muted">
+                                    <i class="fa-solid fa-info-circle me-1"></i>
+                                    Scanner otomatis menambahkan resi. Pastikan resi sesuai rute: <strong><?= htmlspecialchars($cabang_asal_data['nama_cabang']); ?></strong> → <strong><?= htmlspecialchars($cabang_tujuan_data['nama_cabang']); ?></strong>
+                                </small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
 
                 <div class="row g-4">
                     <!-- Resi yang Sudah Ditambahkan -->
@@ -806,5 +957,48 @@ $title = "Tambah Surat Jalan - Cendana Kargo";
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const scanInput = document.getElementById('scan_barcode');
+    const scanForm = document.getElementById('scannerForm');
+    
+    if (scanInput && !scanInput.disabled) {
+        // Auto-submit form setelah delay (simulasi scan barcode)
+        let scanTimeout;
+        scanInput.addEventListener('input', function() {
+            clearTimeout(scanTimeout);
+            const value = this.value.trim();
+            
+            // Auto submit jika panjang >= 8 karakter (asumsi format no resi)
+            if (value.length >= 8) {
+                scanTimeout = setTimeout(function() {
+                    scanForm.submit();
+                }, 300); // Delay 300ms untuk memastikan scan selesai
+            }
+        });
+        
+        // Keep focus on scanner input
+        scanInput.focus();
+        
+        // Refocus when clicking anywhere except interactive elements
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('a, button, .btn, input:not(#scan_barcode), textarea, select, .modal')) {
+                scanInput.focus();
+            }
+        });
+        
+        // Refocus setelah alert ditutup
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            alert.addEventListener('closed.bs.alert', function() {
+                setTimeout(function() {
+                    scanInput.focus();
+                }, 100);
+            });
+        });
+    }
+});
+</script>
 
 <?php include '../../../templates/footer.php'; ?>

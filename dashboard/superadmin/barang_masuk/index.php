@@ -119,6 +119,11 @@ include '../../../components/sidebar_offcanvas.php';
               <?php endif; ?>
             </p>
           </div>
+          <div class="mt-2 mt-md-0">
+            <a href="scanner.php" class="btn btn-primary">
+              <i class="fa-solid fa-qrcode"></i> Scan Barcode
+            </a>
+          </div>
         </div>
 
         <!-- Search -->

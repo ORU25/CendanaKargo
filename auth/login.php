@@ -24,6 +24,9 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+// Development mode - set to true to use test keys that auto-pass
+define('DEV_MODE', true);
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         header("Location: login?error=invalid");
@@ -41,7 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Verify with Cloudflare
-    $secretKey = env('TURNSTILE_SECRET_KEY');
+    // Development mode uses test secret key that always passes
+    $secretKey = DEV_MODE ? '1x0000000000000000000000000000000AA' : env('TURNSTILE_SECRET_KEY');
     
     if (empty($secretKey)) {
         error_log('TURNSTILE_SECRET_KEY not set in .env');
@@ -232,10 +236,15 @@ include '../templates/header.php';
             <!-- Cloudflare Turnstile CAPTCHA -->
             <div class="mb-3 d-flex justify-content-center">
                 <div class="cf-turnstile" 
-                     data-sitekey="0x4AAAAAACAg1S8rwiBokGwN" 
+                     data-sitekey="<?php echo DEV_MODE ? '1x00000000000000000000AA' : '0x4AAAAAACAg1S8rwiBokGwN'; ?>" 
                      data-callback="onLoginCaptchaSuccess"
                      data-theme="light"></div>
             </div>
+            <?php if (DEV_MODE): ?>
+            <p class="text-center text-muted small mb-3">
+                <i class="fas fa-code"></i> Development Mode: CAPTCHA auto-pass enabled
+            </p>
+            <?php endif; ?>
             
             <div class="d-grid">
                 <button type="submit" id="loginBtn" class="btn btn-danger fw-bold" disabled style="opacity: 0.5; cursor: not-allowed;">
