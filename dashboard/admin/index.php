@@ -186,87 +186,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 $where_clause = 'DATE(tanggal) = CURDATE()';
 $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
 
-// === Hitung total pengiriman, surat jalan, dan pendapatan (berdasarkan filter) ===
+// === OPTIMIZED: Gabungkan semua statistik dalam SATU query ===
 $user_id = $_SESSION['user_id'];
-$total_pengiriman = $conn->query("
-    SELECT COUNT(*) AS total 
-    FROM pengiriman 
-    WHERE $where_clause AND id_user = '$user_id' AND id_cabang_pengirim = '$id_cabang_admin'
-")->fetch_assoc()['total'] ?? 0;
-
-$total_surat_jalan = $conn->query("
-    SELECT COUNT(*) AS total 
-    FROM surat_jalan 
-    WHERE $where_clause AND id_cabang_pengirim = '$id_cabang_admin'
-")->fetch_assoc()['total'] ?? 0;
-
-// === TOTAL PENDAPATAN & PEMBAYARAN (khusus admin login) ===
-// Perhitungan sama seperti di dashboard superadmin per admin
 $id_admin = $_SESSION['user_id'];
 
-// Cash: cash dari pengiriman + bayar_ditempat POD yang diambil di cabang ini (berdasarkan tanggal pengambilan)
-$total_cash = $conn->query("
+$stats_query = $conn->prepare("
     SELECT 
-        (SUM(CASE 
-            WHEN p.pembayaran = 'cash' 
-                 AND p.id_user = '$id_admin'
-                 AND p.status != 'dibatalkan'
-                 AND $where_clause
-            THEN p.total_tarif ELSE 0 END) +
-         COALESCE(
-            (SELECT SUM(p2.total_tarif)
-             FROM pengiriman p2 
-             JOIN pengambilan pg ON p2.no_resi = pg.no_resi
-             WHERE pg.id_user = '$id_admin'
-               AND p2.cabang_penerima = '$nama_cabang_admin'
-               AND p2.pembayaran = 'bayar_ditempat' 
-               AND p2.status = 'pod' 
-               AND DATE(pg.tanggal) = CURDATE()), 0
-         )) AS total
-    FROM pengiriman p
-")->fetch_assoc()['total'] ?? 0;
-
-// Transfer + Invoice Lunas: transfer dari pengiriman + invoice yang sudah dibayar (berdasarkan tanggal_pembayaran)
-$where_clause_invoice_paid = str_replace('DATE(tanggal)', 'DATE(tanggal_pembayaran)', $where_clause);
-
-$total_transfer = $conn->query("
-    SELECT (SUM(CASE 
-        WHEN pembayaran = 'transfer'
-             AND id_user = '$id_admin'
-             AND status != 'dibatalkan'
-             AND $where_clause
-        THEN total_tarif ELSE 0 END) +
-     SUM(CASE 
-        WHEN pembayaran = 'invoice'
-             AND status_pembayaran = 'Sudah Dibayar'
-             AND id_user = '$id_admin'
-             AND status != 'dibatalkan'
-             AND $where_clause_invoice_paid
-        THEN total_tarif ELSE 0 END)
-    ) AS total 
+        COUNT(CASE WHEN DATE(tanggal) = CURDATE() AND id_user = ? AND id_cabang_pengirim = ? THEN 1 END) AS total_pengiriman,
+        
+        COALESCE(SUM(CASE 
+            WHEN pembayaran = 'cash' 
+                 AND id_user = ?
+                 AND status != 'dibatalkan'
+                 AND DATE(tanggal) = CURDATE()
+            THEN total_tarif ELSE 0 END), 0) AS cash_pengiriman,
+        
+        COALESCE(SUM(CASE 
+            WHEN pembayaran = 'transfer'
+                 AND id_user = ?
+                 AND status != 'dibatalkan'
+                 AND DATE(tanggal) = CURDATE()
+            THEN total_tarif ELSE 0 END), 0) AS total_transfer_only,
+        
+        COALESCE(SUM(CASE 
+            WHEN pembayaran = 'invoice'
+                 AND status_pembayaran = 'Sudah Dibayar'
+                 AND id_user = ?
+                 AND status != 'dibatalkan'
+                 AND DATE(tanggal_pembayaran) = CURDATE()
+            THEN total_tarif ELSE 0 END), 0) AS invoice_lunas,
+        
+        COALESCE(SUM(CASE 
+            WHEN DATE(tanggal) = CURDATE()
+                 AND id_user = ?
+                 AND pembayaran = 'bayar_ditempat'
+                 AND status != 'dibatalkan'
+            THEN total_tarif ELSE 0 END), 0) AS total_cod,
+        
+        COALESCE(SUM(CASE 
+            WHEN DATE(tanggal) = CURDATE()
+                 AND id_user = ?
+                 AND pembayaran = 'invoice'
+                 AND status_pembayaran = 'Belum Dibayar'
+                 AND status != 'dibatalkan'
+            THEN total_tarif ELSE 0 END), 0) AS total_invoice
     FROM pengiriman
-")->fetch_assoc()['total'] ?? 0;
+");
+$stats_query->bind_param('iiiiiii', $id_admin, $id_cabang_admin, $id_admin, $id_admin, $id_admin, $id_admin, $id_admin);
+$stats_query->execute();
+$stats = $stats_query->get_result()->fetch_assoc();
+$stats_query->close();
 
-// bayar_ditempat (COD): hanya dari pengiriman yang dikirim
-$total_cod = $conn->query("
-    SELECT SUM(total_tarif) AS total 
-    FROM pengiriman 
-    WHERE $where_clause 
-      AND id_user = '$id_admin'
-      AND pembayaran = 'bayar_ditempat'
-      AND status != 'dibatalkan'
-")->fetch_assoc()['total'] ?? 0;
+$total_pengiriman = $stats['total_pengiriman'] ?? 0;
+$cash_pengiriman = $stats['cash_pengiriman'] ?? 0;
+$total_transfer = ($stats['total_transfer_only'] ?? 0) + ($stats['invoice_lunas'] ?? 0);
+$total_cod = $stats['total_cod'] ?? 0;
+$total_invoice = $stats['total_invoice'] ?? 0;
 
-// Invoice Belum Dibayar (Hutang)
-$total_invoice = $conn->query("
-    SELECT SUM(total_tarif) AS total 
-    FROM pengiriman 
-    WHERE $where_clause 
-      AND id_user = '$id_admin'
-      AND pembayaran = 'invoice'
-      AND status_pembayaran = 'Belum Dibayar'
-      AND status != 'dibatalkan'
-")->fetch_assoc()['total'] ?? 0;
+// Query terpisah untuk surat jalan (tabel berbeda)
+$stmt_sj = $conn->prepare("SELECT COUNT(*) AS total FROM surat_jalan WHERE DATE(tanggal) = CURDATE() AND id_cabang_pengirim = ?");
+$stmt_sj->bind_param('i', $id_cabang_admin);
+$stmt_sj->execute();
+$total_surat_jalan = $stmt_sj->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_sj->close();
+
+// Query untuk bayar_ditempat POD yang diambil hari ini
+$stmt_bt_pod = $conn->prepare("
+    SELECT COALESCE(SUM(p.total_tarif), 0) AS total
+    FROM pengiriman p 
+    JOIN pengambilan pg ON p.no_resi = pg.no_resi
+    WHERE pg.id_user = ?
+      AND p.cabang_penerima = ?
+      AND p.pembayaran = 'bayar_ditempat' 
+      AND p.status = 'pod' 
+      AND DATE(pg.tanggal) = CURDATE()
+");
+$stmt_bt_pod->bind_param('is', $id_admin, $nama_cabang_admin);
+$stmt_bt_pod->execute();
+$bt_pod = $stmt_bt_pod->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt_bt_pod->close();
+
+// Total cash = cash pengiriman + BT POD
+$total_cash = $cash_pengiriman + $bt_pod;
 
 // Total pendapatan = cash + transfer (tidak termasuk bayar_ditempat yang belum POD)
 $total_pendapatan = $total_cash + $total_transfer;
@@ -278,29 +279,31 @@ function format_rupiah($angka) {
 }
 
 
-// === Ambil pengiriman keluar (8 terbaru) ===
+// === Ambil pengiriman keluar (8 terbaru) - hanya kolom yang dibutuhkan ===
 $stmt = $conn->prepare("
-    SELECT * FROM pengiriman 
+    SELECT id, no_resi, cabang_penerima, status 
+    FROM pengiriman 
     WHERE id_cabang_pengirim = ? 
-    ORDER BY tanggal DESC, id DESC 
+    ORDER BY id DESC 
     LIMIT 8
 ");
 $stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
-$pengiriman_keluar = $stmt->get_result();
+$pengiriman_keluar = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 // === Ambil pengiriman masuk (8 terbaru, hanya status 'dalam pengiriman') ===
 $stmt = $conn->prepare("
-    SELECT * FROM pengiriman 
+    SELECT id, no_resi, cabang_pengirim, status 
+    FROM pengiriman 
     WHERE id_cabang_penerima = ? 
     AND LOWER(status) = 'dalam pengiriman'
-    ORDER BY tanggal DESC, id DESC 
+    ORDER BY id DESC 
     LIMIT 8
 ");
 $stmt->bind_param('i', $id_cabang_admin);
 $stmt->execute();
-$pengiriman_masuk = $stmt->get_result();
+$pengiriman_masuk = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 $title = "Dashboard - Cendana Kargo";
@@ -569,8 +572,8 @@ include '../../components/sidebar_offcanvas.php';
                       </tr>
                     </thead>
                     <tbody>
-                      <?php if ($pengiriman_keluar->num_rows > 0): ?>
-                        <?php while ($row = $pengiriman_keluar->fetch_assoc()): ?>
+                      <?php if (count($pengiriman_keluar) > 0): ?>
+                        <?php foreach ($pengiriman_keluar as $row): ?>
                           <tr>
                             <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
                             <td><?= htmlspecialchars($row['cabang_penerima']); ?></td>
@@ -593,7 +596,7 @@ include '../../components/sidebar_offcanvas.php';
                               </a>
                             </td>
                           </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                       <?php else: ?>
                         <tr><td colspan="4" class="text-center py-4 text-muted">Belum ada pengiriman keluar.</td></tr>
                       <?php endif; ?>
@@ -623,8 +626,8 @@ include '../../components/sidebar_offcanvas.php';
                       </tr>
                     </thead>
                     <tbody>
-                      <?php if ($pengiriman_masuk->num_rows > 0): ?>
-                        <?php while ($row = $pengiriman_masuk->fetch_assoc()): ?>
+                      <?php if (count($pengiriman_masuk) > 0): ?>
+                        <?php foreach ($pengiriman_masuk as $row): ?>
                           <tr>
                             <td class="px-3 fw-semibold"><?= htmlspecialchars($row['no_resi']); ?></td>
                             <td><?= htmlspecialchars($row['cabang_pengirim']); ?></td>
@@ -637,7 +640,7 @@ include '../../components/sidebar_offcanvas.php';
                               </a>
                             </td>
                           </tr>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                       <?php else: ?>
                         <tr>
                           <td colspan="4" class="text-center py-4 text-muted">

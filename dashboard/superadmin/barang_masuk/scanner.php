@@ -16,6 +16,7 @@ if (empty($_SESSION['csrf_token'])) {
 }
 
 include '../../../config/database.php';
+session_write_close();
 
 $title = "Scanner Barcode - Cendana Kargo";
 

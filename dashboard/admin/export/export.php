@@ -17,6 +17,7 @@ include '../../../config/database.php';
 // Ambil data user yang login
 $user_id = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+session_write_close();
 
 // Cek apakah sudah closing hari ini
 $today = date('Y-m-d');

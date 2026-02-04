@@ -23,6 +23,7 @@ $cabang_admin = $_SESSION['cabang'] ?? '';
 if (empty($cabang_admin)) {
     die("Cabang admin tidak ditemukan di session. Pastikan diset saat login.");
 }
+session_write_close();
 
 $scanned_data = null;
 $scan_error = null;

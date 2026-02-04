@@ -15,13 +15,17 @@
     }
 
     include '../../../config/database.php';
+    session_write_close();
     
     // Handle cancel shipment (only for BKD status)
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cancel_shipment'])) {
+        session_start(); // Restart session for POST processing
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            session_write_close();
             header('Location: detail?id=' . intval($_GET['id']) . '&error=cancel_failed');
             exit;
         }
+        session_write_close();
         $id_update = (int)($_POST['id'] ?? 0);
         $keterangan = trim((string)($_POST['keterangan'] ?? ''));
 

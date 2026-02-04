@@ -15,6 +15,7 @@
     }
 
     include '../../../config/database.php';
+    session_write_close();
     
     // Ambil data pengiriman
     $pengiriman = null;

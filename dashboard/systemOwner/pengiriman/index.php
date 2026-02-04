@@ -11,61 +11,66 @@
     }
 
     include '../../../config/database.php';
+    session_write_close();
     
     $title = "Pengiriman - Cendana Kargo";
     
     // Pagination settings
-    $limit = 10; // Data per halaman
+    $limit = 10;
     $page_num = isset($_GET['page']) && is_numeric($_GET['page']) && $_GET['page'] > 0 ? (int)$_GET['page'] : 1;
     $offset = ($page_num - 1) * $limit;
     
     // Search functionality
     $search = isset($_GET['search']) ? trim($_GET['search']) : '';
     
-    // Get total records
+    // Badge class mapping (avoid switch in loop)
+    $badgeMap = [
+        'bkd' => 'warning',
+        'dalam pengiriman' => 'primary', 
+        'sampai tujuan' => 'info',
+        'pod' => 'success',
+        'dibatalkan' => 'danger'
+    ];
+    
+    // Build query once
+    $baseQuery = "FROM pengiriman";
+    $whereClause = "";
+    $params = [];
+    $types = "";
+    
     if ($search !== '') {
-        $stmt = $conn->prepare("SELECT COUNT(*) as total FROM pengiriman WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?");
         $searchParam = "%$search%";
-        $stmt->bind_param('ssss', $searchParam, $searchParam, $searchParam, $searchParam);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $total_records = $result->fetch_assoc()['total'];
-        $stmt->close();
-    } else {
-        $result = $conn->query("SELECT COUNT(*) as total FROM pengiriman");
-        $total_records = $result->fetch_assoc()['total'];
+        $whereClause = " WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?";
+        $params = [$searchParam, $searchParam, $searchParam, $searchParam];
+        $types = "ssss";
     }
     
-    $total_pages = ceil($total_records / $limit);
+    // Fetch LIMIT + 1 to check if next page exists (no COUNT needed)
+    $fetchLimit = $limit + 1;
+    $dataParams = $params;
+    $dataTypes = $types;
+    $dataParams[] = $fetchLimit;
+    $dataParams[] = $offset;
+    $dataTypes .= "ii";
     
-    // Get paginated data
-    if ($search !== '') {
-        $stmt = $conn->prepare("
-            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
-                   cabang_pengirim, cabang_penerima, total_tarif, status, tanggal 
-            FROM pengiriman 
-            WHERE no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ? 
-            ORDER BY id DESC LIMIT ? OFFSET ?
-        ");
-        $searchParam = "%$search%";
-        $stmt->bind_param('ssssii', $searchParam, $searchParam, $searchParam, $searchParam, $limit, $offset);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
-    } else {
-        $stmt = $conn->prepare("
-            SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
-                   cabang_pengirim, cabang_penerima, total_tarif, status, tanggal 
-            FROM pengiriman 
-            ORDER BY id DESC LIMIT ? OFFSET ?
-        ");
-        $stmt->bind_param('ii', $limit, $offset);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        $pengirimans = $result->fetch_all(MYSQLI_ASSOC);
-        $stmt->close();
+    $stmt = $conn->prepare("
+        SELECT id, no_resi, nama_pengirim, nama_penerima, nama_barang, 
+               cabang_penerima, total_tarif, status, tanggal 
+        $baseQuery $whereClause 
+        ORDER BY id DESC LIMIT ? OFFSET ?
+    ");
+    
+    $stmt->bind_param($dataTypes, ...$dataParams);
+    $stmt->execute();
+    $pengirimans = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    
+    // Check if there's a next page
+    $hasNextPage = count($pengirimans) > $limit;
+    if ($hasNextPage) {
+        array_pop($pengirimans); // Remove the extra record
     }
+    $hasPrevPage = $page_num > 1;
 ?>
 
 <?php
@@ -99,9 +104,9 @@
                 <div>
                     <h1 class="h4 mb-1 fw-bold">Daftar Pengiriman</h1>
                     <p class="text-muted small mb-0">
-                        Menampilkan <?= count($pengirimans); ?> dari <?= $total_records; ?> pengiriman
-                        <?php if ($total_pages > 1): ?>
-                            (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
+                        Menampilkan <?= count($pengirimans); ?> data
+                        <?php if ($hasPrevPage || $hasNextPage): ?>
+                            (Halaman <?= $page_num; ?>)
                         <?php endif; ?>
                     </p>
                 </div>
@@ -166,15 +171,7 @@
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($pengirimans as $p): 
-                                        // Tentukan warna badge
-                                        $badgeClass = 'secondary';
-                                        switch(strtolower($p['status'])) {
-                                            case 'bkd': $badgeClass = 'warning'; break;
-                                            case 'dalam pengiriman': $badgeClass = 'primary'; break;
-                                            case 'sampai tujuan': $badgeClass = 'info'; break;
-                                            case 'pod': $badgeClass = 'success'; break;
-                                            case 'dibatalkan': $badgeClass = 'danger'; break;
-                                        }
+                                        $badgeClass = $badgeMap[strtolower($p['status'])] ?? 'secondary';
                                     ?>
                                     <tr class="text-capitalize">
                                         <td class="px-4"><span class="badge bg-dark"><?= htmlspecialchars($p['no_resi']); ?></span></td>
@@ -200,47 +197,29 @@
             </div>
 
             <!-- Pagination -->
-            <?php if ($total_pages > 1): ?>
+            <?php if ($hasPrevPage || $hasNextPage): ?>
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <div class="text-muted small">
-                    Menampilkan <?= $offset + 1; ?> - <?= min($offset + $limit, $total_records); ?> dari <?= $total_records; ?> data
+                    Halaman <?= $page_num; ?>
                 </div>
                 <nav aria-label="Navigasi halaman">
                     <ul class="pagination pagination-sm mb-0">
                         <!-- Previous Button -->
-                        <li class="page-item <?= $page_num <= 1 ? 'disabled' : ''; ?>">
+                        <li class="page-item <?= !$hasPrevPage ? 'disabled' : ''; ?>">
                             <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" aria-label="Previous">
-                                <span aria-hidden="true">&laquo;</span>
+                                <i class="fa-solid fa-chevron-left"></i> Sebelumnya
                             </a>
                         </li>
 
-                        <?php
-                        // Pagination logic: show first, last, current, and nearby pages
-                        $range = 2; // Pages to show around current page
-                        
-                        for ($i = 1; $i <= $total_pages; $i++) {
-                            // Always show first page, last page, current page, and pages within range
-                            if ($i == 1 || $i == $total_pages || ($i >= $page_num - $range && $i <= $page_num + $range)) {
-                                ?>
-                                <li class="page-item <?= $i == $page_num ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?= $i; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $i; ?></a>
-                                </li>
-                                <?php
-                            } elseif ($i == $page_num - $range - 1 || $i == $page_num + $range + 1) {
-                                // Show ellipsis for gaps
-                                ?>
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
-                                <?php
-                            }
-                        }
-                        ?>
+                        <!-- Current Page -->
+                        <li class="page-item active">
+                            <span class="page-link"><?= $page_num; ?></span>
+                        </li>
 
                         <!-- Next Button -->
-                        <li class="page-item <?= $page_num >= $total_pages ? 'disabled' : ''; ?>">
+                        <li class="page-item <?= !$hasNextPage ? 'disabled' : ''; ?>">
                             <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>" aria-label="Next">
-                                <span aria-hidden="true">&raquo;</span>
+                                Selanjutnya <i class="fa-solid fa-chevron-right"></i>
                             </a>
                         </li>
                     </ul>

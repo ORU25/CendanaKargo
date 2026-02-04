@@ -11,6 +11,7 @@
     }
 
     include '../../../config/database.php';
+    session_write_close();
     
     $title = "Pelunasan Invoice - Cendana Kargo";
     

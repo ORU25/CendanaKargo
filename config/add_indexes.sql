@@ -22,5 +22,23 @@ ALTER TABLE pengiriman ADD INDEX idx_status (status);
 -- Index untuk tanggal (untuk sorting dan filter)
 ALTER TABLE pengiriman ADD INDEX idx_tanggal (tanggal);
 
+-- =====================================================
+-- TAMBAHAN INDEX - 2026-02-04
+-- Untuk optimasi dashboard dan laporan
+-- =====================================================
+
+-- Index untuk cabang penerima (pengiriman masuk)
+ALTER TABLE pengiriman ADD INDEX idx_cabang_penerima (id_cabang_penerima);
+
+-- Index untuk status_pembayaran (filter revenue)
+ALTER TABLE pengiriman ADD INDEX idx_status_pembayaran (status_pembayaran);
+
+-- Composite index untuk query dashboard statistik harian
+-- (cabang + tanggal) - sangat membantu query COUNT dengan filter tanggal
+ALTER TABLE pengiriman ADD INDEX idx_cabang_tanggal (id_cabang_pengirim, tanggal);
+
+-- Composite index untuk revenue query (pembayaran + tanggal)
+ALTER TABLE pengiriman ADD INDEX idx_pembayaran_tanggal (status_pembayaran, tanggal);
+
 -- Verify indexes
 SHOW INDEX FROM pengiriman WHERE Key_name LIKE 'idx_%';

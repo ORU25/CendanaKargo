@@ -16,6 +16,7 @@ include '../../../config/database.php';
 // Ambil data user yang login
 $cabang_admin = $_SESSION['cabang'] ?? '';
 $id_cabang_admin = $_SESSION['id_cabang'] ?? 0;
+session_write_close();
 
 if (empty($cabang_admin) || $id_cabang_admin == 0) {
     die("Cabang admin tidak ditemukan di session.");

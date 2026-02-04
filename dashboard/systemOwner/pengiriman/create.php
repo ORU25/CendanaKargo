@@ -20,12 +20,16 @@ $title = "Dashboard - Cendana Kargo";
 $sqlCabang = "SELECT * FROM kantor_cabang ORDER BY id ASC";
 $resultCabang = $conn->query($sqlCabang);
 $cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) : [];
+session_write_close();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    session_start(); // Restart session for CSRF check
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        session_write_close();
         header("Location: create?error=failed");
         exit;
     }
+    session_write_close();
 
     $asal = trim($_POST['id_cabang_asal']);
     $tujuan = trim($_POST['id_cabang_tujuan']);

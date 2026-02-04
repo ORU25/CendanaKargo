@@ -10,8 +10,7 @@ if(isset($_SESSION['role']) && $_SESSION['role'] !== 'superAdmin'){
     exit;
 }
 
-include '../../../config/database.php';
-
+include '../../../config/database.php';session_write_close();
 $title = "Barang Masuk - Cendana Kargo";
 
 $cabang_admin = $_SESSION['cabang'] ?? null;

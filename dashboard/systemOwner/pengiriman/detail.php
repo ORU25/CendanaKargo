@@ -15,13 +15,17 @@
     }
 
     include '../../../config/database.php';
+    session_write_close();
     
     // Handle update status
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+        session_start(); // Restart session for POST processing
         if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+            session_write_close();
             header('Location: detail?id=' . intval($_GET['id']) . '&error=update_failed');
             exit;
         }
+        session_write_close();
         $id_update = (int)($_POST['id'] ?? 0);
         $status_baru = trim((string)($_POST['status'] ?? ''));
         $keterangan = trim((string)($_POST['keterangan'] ?? ''));

@@ -11,6 +11,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] !== 'admin') {
 }
 
 include '../../../config/database.php';
+session_write_close();
 
 $id_surat_jalan = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($id_surat_jalan == 0) {

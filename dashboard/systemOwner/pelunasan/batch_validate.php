@@ -10,8 +10,7 @@
         exit;
     }
 
-    include '../../../config/database.php';
-    
+    include '../../../config/database.php';    session_write_close();    
     // Hanya terima POST request
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         header("Location: ./index.php?error=invalid_request");

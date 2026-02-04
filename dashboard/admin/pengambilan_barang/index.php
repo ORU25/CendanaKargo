@@ -31,56 +31,45 @@ $offset = ($page_num - 1) * $limit;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 $status_filter = ["sampai tujuan", "pod"];
 
+// Fetch LIMIT + 1 to check if next page exists (no COUNT needed)
+$fetchLimit = $limit + 1;
+
 if ($search !== '') {
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as total 
+        SELECT id, no_resi, nama_barang, nama_pengirim, nama_penerima, 
+               cabang_pengirim, cabang_penerima, total_tarif, tanggal, status 
         FROM pengiriman 
         WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
         AND status IN (?, ?)
         AND id_cabang_penerima = ?
+        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
+        LIMIT ? OFFSET ?
     ");
     $searchParam = "%$search%";
-    $stmt->bind_param('ssssssi', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_admin);
+    $stmt->bind_param('ssssssiii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_admin, $fetchLimit, $offset);
 } else {
     $stmt = $conn->prepare("
-        SELECT COUNT(*) as total 
+        SELECT id, no_resi, nama_barang, nama_pengirim, nama_penerima, 
+               cabang_pengirim, cabang_penerima, total_tarif, tanggal, status 
         FROM pengiriman 
         WHERE status IN (?, ?)
         AND id_cabang_penerima = ?
-    ");
-    $stmt->bind_param('ssi', $status_filter[0], $status_filter[1], $id_cabang_admin);
-}
-$stmt->execute();
-$result = $stmt->get_result();
-$total_records = $result->fetch_assoc()['total'] ?? 0;
-$stmt->close();
-
-$total_pages = ceil($total_records / $limit);
-
-if ($search !== '') {
-    $stmt = $conn->prepare("
-        SELECT * FROM pengiriman 
-        WHERE (no_resi LIKE ? OR nama_barang LIKE ? OR nama_pengirim LIKE ? OR nama_penerima LIKE ?)
-        AND status IN (?, ?)
-        AND id_cabang_penerima = ?
         ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
         LIMIT ? OFFSET ?
     ");
-  $stmt->bind_param('ssssssiii', $searchParam, $searchParam, $searchParam, $searchParam, $status_filter[0], $status_filter[1], $id_cabang_admin, $limit, $offset);
-} else {
-    $stmt = $conn->prepare("
-        SELECT * FROM pengiriman 
-        WHERE status IN (?, ?)
-        AND id_cabang_penerima = ?
-        ORDER BY FIELD(status, 'sampai tujuan', 'pod'), id DESC 
-        LIMIT ? OFFSET ?
-    ");
-    $stmt->bind_param('ssiii', $status_filter[0], $status_filter[1], $id_cabang_admin, $limit, $offset);
+    $stmt->bind_param('ssiii', $status_filter[0], $status_filter[1], $id_cabang_admin, $fetchLimit, $offset);
 }
 $stmt->execute();
 $result = $stmt->get_result();
 $pengambilan_barang = $result->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
+
+// Check if there's a next page
+$hasNextPage = count($pengambilan_barang) > $limit;
+if ($hasNextPage) {
+    array_pop($pengambilan_barang); // Remove the extra record
+}
+$hasPrevPage = $page_num > 1;
 
 $page = "pengambilan_barang";
 include '../../../templates/header.php';
@@ -111,9 +100,9 @@ include '../../../components/sidebar_offcanvas.php';
           <div>
             <h1 class="h4 mb-1 fw-bold">Daftar Pengambilan Barang (Cabang <?= htmlspecialchars($cabang_admin); ?>)</h1>
             <p class="text-muted small mb-0">
-              Menampilkan <?= count($pengambilan_barang); ?> dari <?= $total_records; ?> data
-              <?php if ($total_pages > 1): ?>
-                  (Halaman <?= $page_num; ?> dari <?= $total_pages; ?>)
+              Menampilkan <?= count($pengambilan_barang); ?> data
+              <?php if ($hasPrevPage || $hasNextPage): ?>
+                  (Halaman <?= $page_num; ?>)
               <?php endif; ?>
             </p>
           </div>
@@ -234,47 +223,25 @@ include '../../../components/sidebar_offcanvas.php';
         </div>
 
         <!-- pagination -->
-        <?php if ($total_pages > 1): ?>
+        <?php if ($hasPrevPage || $hasNextPage): ?>
         <div class="d-flex justify-content-between align-items-center mt-4">
           <div class="text-muted small">
-            Menampilkan <?= $offset + 1; ?> - <?= min($offset + $limit, $total_records); ?> dari <?= $total_records; ?> data
+            Halaman <?= $page_num; ?>
           </div>
           <nav>
             <ul class="pagination pagination-sm mb-0">
-              <li class="page-item <?= $page_num <= 1 ? 'disabled' : ''; ?>">
-                <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&laquo;</a>
+              <li class="page-item <?= !$hasPrevPage ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?= $page_num - 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">
+                  <i class="fa-solid fa-chevron-left"></i> Sebelumnya
+                </a>
               </li>
-              <?php 
-              $range = 2;
-              $start = max(1, $page_num - $range);
-              $end = min($total_pages, $page_num + $range);
-              
-              if ($start > 1): ?>
-                <li class="page-item">
-                  <a class="page-link" href="?page=1<?= $search ? '&search=' . urlencode($search) : ''; ?>">1</a>
-                </li>
-                <?php if ($start > 2): ?>
-                  <li class="page-item disabled"><span class="page-link">...</span></li>
-                <?php endif; ?>
-              <?php endif; ?>
-              
-              <?php for ($i = $start; $i <= $end; $i++): ?>
-                <li class="page-item <?= $i == $page_num ? 'active' : ''; ?>">
-                  <a class="page-link" href="?page=<?= $i; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $i; ?></a>
-                </li>
-              <?php endfor; ?>
-              
-              <?php if ($end < $total_pages): ?>
-                <?php if ($end < $total_pages - 1): ?>
-                  <li class="page-item disabled"><span class="page-link">...</span></li>
-                <?php endif; ?>
-                <li class="page-item">
-                  <a class="page-link" href="?page=<?= $total_pages; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>"><?= $total_pages; ?></a>
-                </li>
-              <?php endif; ?>
-              
-              <li class="page-item <?= $page_num >= $total_pages ? 'disabled' : ''; ?>">
-                <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">&raquo;</a>
+              <li class="page-item active">
+                <span class="page-link"><?= $page_num; ?></span>
+              </li>
+              <li class="page-item <?= !$hasNextPage ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?= $page_num + 1; ?><?= $search ? '&search=' . urlencode($search) : ''; ?>">
+                  Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+                </a>
               </li>
             </ul>
           </nav>

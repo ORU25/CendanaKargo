@@ -17,6 +17,7 @@ include '../../../config/database.php';
 $cabang = isset($_GET['cabang']) ? $_GET['cabang'] : '';
 $filter_type = isset($_GET['filter_type']) ? $_GET['filter_type'] : 'bulan_ini';
 $filter_value = isset($_GET['filter_value']) ? $_GET['filter_value'] : '';
+session_write_close();
 
 // Tentukan kondisi tanggal berdasarkan filter_type
 $date_condition = '';

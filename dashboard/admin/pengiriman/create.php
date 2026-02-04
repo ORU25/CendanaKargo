@@ -14,6 +14,10 @@ if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
+// Extract session data before closing
+$user_id = $_SESSION['user_id'];
+$csrf_token = $_SESSION['csrf_token'];
+
 // This page runs several DB queries; release session lock early to avoid blocking other requests
 // from the same logged-in user (PHP session file locking).
 session_write_close();
@@ -26,7 +30,7 @@ $title = "Dashboard - Cendana Kargo";
 // =======================================================
 $today = date('Y-m-d');
 $stmt_closing = $conn->prepare("SELECT id FROM closing WHERE id_user = ? AND tanggal_closing = ?");
-$stmt_closing->bind_param('is', $_SESSION['user_id'], $today);
+$stmt_closing->bind_param('is', $user_id, $today);
 $stmt_closing->execute();
 $is_closed_today = $stmt_closing->get_result()->num_rows > 0;
 $stmt_closing->close();
@@ -41,12 +45,15 @@ $resultCabang = $conn->query($sqlCabang);
 $cabangs = $resultCabang->num_rows > 0 ? $resultCabang->fetch_all(MYSQLI_ASSOC) : [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    session_start(); // Restart session for POST processing
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        session_write_close();
         header("Location: create?error=failed");
         exit;
     }
 
     $asal = $_SESSION['id_cabang']; // Gunakan cabang user sendiri
+    session_write_close();
     $tujuan = trim($_POST['id_cabang_tujuan']);
     $nama_pengirim = trim($_POST['nama_pengirim']);
     $telp_pengirim = trim($_POST['telp_pengirim']);

@@ -7,6 +7,7 @@ include '../../../config/database.php';
 $cabang = $_SESSION['cabang'] ?? '';
 $filter_type = isset($_GET['filter_type']) ? trim($_GET['filter_type']) : 'bulan_ini';
 $filter_value = isset($_GET['filter_value']) ? trim($_GET['filter_value']) : '';
+session_write_close();
 
 if (empty($cabang)) {
     header("Location: ../index.php?error=no_cabang");
