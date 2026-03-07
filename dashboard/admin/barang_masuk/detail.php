@@ -85,6 +85,11 @@
             }
             $stmt->close();
         }
+        
+        if (!$pengiriman) {
+            header("Location: ./?error=not_found");
+            exit;
+        }
 
         if($pengiriman['cabang_penerima'] != $_SESSION['cabang']){
             header("Location: ./?error=not_found");
@@ -127,11 +132,6 @@
         }
     }
     
-
-    if (!$pengiriman) {
-        header("Location: ./?error=not_found");
-        exit;
-    }
 
     $title = "Detail Pengiriman - Cendana Kargo";
 ?>

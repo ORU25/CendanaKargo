@@ -40,5 +40,15 @@ ALTER TABLE pengiriman ADD INDEX idx_cabang_tanggal (id_cabang_pengirim, tanggal
 -- Composite index untuk revenue query (pembayaran + tanggal)
 ALTER TABLE pengiriman ADD INDEX idx_pembayaran_tanggal (status_pembayaran, tanggal);
 
+-- =====================================================
+-- TAMBAHAN INDEX - 2026-02-05
+-- Untuk optimasi halaman Barang Masuk (admin cabang)
+-- Query: WHERE status = ? AND cabang_penerima = ? ORDER BY id DESC
+-- =====================================================
+
+-- Composite index untuk barang masuk (status + cabang_penerima + id DESC)
+-- Ini sangat penting untuk data puluhan ribu dengan 10 cabang akses bersamaan
+ALTER TABLE pengiriman ADD INDEX idx_status_cabang_penerima (status, cabang_penerima, id DESC);
+
 -- Verify indexes
 SHOW INDEX FROM pengiriman WHERE Key_name LIKE 'idx_%';

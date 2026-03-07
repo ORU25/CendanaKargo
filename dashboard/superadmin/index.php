@@ -127,13 +127,27 @@
       AND (u.role != 'systemOwner' OR u.role IS NULL)
   ")->fetch_assoc()['total'] ?? 0;
   
-  // Total pendapatan: cash + transfer dari cabang + bayar_ditempat POD ke cabang (tidak termasuk systemOwner)
+  // Total pendapatan: cash + transfer (termasuk invoice sudah dibayar) dari cabang (tidak termasuk systemOwner)
+  // Sesuai dengan logika di systemOwner: total_revenue = cash_revenue + transfer_revenue
+  
+  // Buat where clause untuk invoice yang sudah dibayar (menggunakan tanggal_pembayaran)
+  $where_clause_invoice_paid = str_replace('tanggal', 'tanggal_pembayaran', $where_clause);
+  $where_clause_pengambilan = str_replace('tanggal', 'pg.tanggal', $where_clause);
+  
   $total_pendapatan = $conn->query("
     SELECT 
       (SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'cash' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
+       COALESCE((SELECT SUM(p2.total_tarif)
+                 FROM pengiriman p2 
+                 JOIN pengambilan pg ON p2.no_resi = pg.no_resi
+                 JOIN user u2 ON pg.id_user = u2.id
+                 WHERE p2.cabang_penerima = '$cabang_superadmin'
+                   AND p2.pembayaran = 'bayar_ditempat' 
+                   AND p2.status = 'pod' 
+                   AND $where_clause_pengambilan
+                   AND (u2.role != 'systemOwner' OR u2.role IS NULL)), 0) +
        SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'transfer' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
-       SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'invoice' AND p.status_pembayaran = 'Belum Dibayar' AND p.status != 'dibatalkan' THEN p.total_tarif ELSE 0 END) +
-       SUM(CASE WHEN p.cabang_penerima = '$cabang_superadmin' AND p.pembayaran = 'bayar_ditempat' AND p.status = 'pod' THEN p.total_tarif ELSE 0 END)) AS total
+       SUM(CASE WHEN p.cabang_pengirim = '$cabang_superadmin' AND p.pembayaran = 'invoice' AND p.status_pembayaran = 'Sudah Dibayar' AND p.status != 'dibatalkan' AND $where_clause_invoice_paid THEN p.total_tarif ELSE 0 END)) AS total
     FROM pengiriman p
     LEFT JOIN user u ON p.id_user = u.id
     WHERE $where_clause
