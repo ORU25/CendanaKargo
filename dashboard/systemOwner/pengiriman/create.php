@@ -315,18 +315,18 @@ include '../../../components/sidebar_offcanvas.php';
 
             <div class="col-md-6">
               <label for="berat" class="form-label fw-semibold">Berat (kg)</label>
-              <input type="number" class="form-control" id="berat" name="berat" required>
+              <input type="number" class="form-control" id="berat" name="berat" min="0" required>
             </div>
 
             <div class="col-md-6">
               <label for="jumlah" class="form-label fw-semibold">Jumlah</label>
-              <input type="number" class="form-control" id="jumlah" name="jumlah" required>
+              <input type="number" class="form-control" id="jumlah" name="jumlah" min="0" required>
             </div>
 
             <div class="col-md-6">
               <label for="diskon" class="form-label fw-semibold">Diskon % (opsional)</label>
               <input type="number" class="form-control" id="diskon" name="diskon" 
-                     min="0" max="100" step="0.01"
+                     min="0" max="100"
                      placeholder="Masukkan diskon 0-100%">
               <small class="text-muted">Kosongkan jika tidak ada diskon</small>
             </div>
