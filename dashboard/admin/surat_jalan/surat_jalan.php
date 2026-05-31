@@ -316,9 +316,9 @@ function abbreviateName($name) {
     <div class="page-container">
         <div class="surat-jalan">
             <div class="header">
-                <div class="logo"><img src="../../../assets/logo.jpg" alt="Logo"></div>
+                <div class="logo"><img src="../../../assets/logo.png" alt="Logo"></div>
                 <div class="header-text">
-                    <h1>PT. CENDANA LINTAS KARGO</h1>
+                    <h1>PT. CENDANA MITRA PERKASA</h1>
                     <h2>SURAT JALAN BARANG</h2>
                     <p>NO. : <?= htmlspecialchars($sj['no_surat_jalan']); ?></p>
                 </div>

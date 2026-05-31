@@ -17,7 +17,7 @@ $dataFile = 'content.json';
 // Data Default
 $defaultData = [
     'settings' => [
-        'siteName' => 'Cendana Lintas Kargo',
+        'siteName' => 'Cendana Mitra Perkasa',
         'navLogo' => 'assets/logo.jpg',
         'footerLogo' => 'assets/clk.png'
     ],
@@ -29,7 +29,7 @@ $defaultData = [
     'id' => [
         'heroTitle' => "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         'heroText' => "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
-        'whyTitle' => "Mengapa Memilih Cendana Lintas Kargo?",
+        'whyTitle' => "Mengapa Memilih Cendana Mitra Perkasa?",
         'whyText' => "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
         'layanan1' => "Pengiriman Cepat",
         'layanan1desc' => "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
@@ -47,7 +47,7 @@ $defaultData = [
     'en' => [
         'heroTitle' => "Fast, Safe, and Reliable Shipping Solutions",
         'heroText' => "We deliver goods across Indonesia with affordable rates and trusted service.",
-        'whyTitle' => "Why Choose Cendana Lintas Kargo?",
+        'whyTitle' => "Why Choose Cendana Mitra Perkasa?",
         'whyText' => "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
         'layanan1' => "Fast Delivery",
         'layanan1desc' => "Your goods are shipped quickly and safely with accurate estimates.",
@@ -232,7 +232,7 @@ include '../../../components/sidebar_offcanvas.php';
                             <input type="hidden" name="section_type" value="settings">
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Nama Website</label>
-                                <input type="text" class="form-control" name="siteName" value="<?= isset($currentData['settings']['siteName']) ? htmlspecialchars($currentData['settings']['siteName']) : 'Cendana Lintas Kargo' ?>" placeholder="Masukkan nama website" required>
+                                <input type="text" class="form-control" name="siteName" value="<?= isset($currentData['settings']['siteName']) ? htmlspecialchars($currentData['settings']['siteName']) : 'Cendana Mitra Perkasa' ?>" placeholder="Masukkan nama website" required>
                             </div>
                             <hr class="my-4">
                             <div class="row">

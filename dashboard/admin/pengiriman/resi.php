@@ -94,10 +94,10 @@ $barcodeSVG = $barcodeGenerator->getBarcodeSVG($pengiriman['no_resi']);
         <!-- Header -->
         <div class="flex items-start border-b border-black">
             <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
+                <img src="../../../assets/logo.png" alt="Logo Perusahaan" class="w-20 h-auto">
             </div>
             <div class="flex-grow py-1.5">
-                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA MITRA PERKASA</div>
                 <div class="flex justify-around text-[7px] leading-tight">
                     <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>
@@ -223,10 +223,10 @@ $barcodeSVG = $barcodeGenerator->getBarcodeSVG($pengiriman['no_resi']);
         <!-- Header -->
         <div class="flex items-start border-b border-black">
             <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
+                <img src="../../../assets/logo.png" alt="Logo Perusahaan" class="w-20 h-auto">
             </div>
             <div class="flex-grow py-1.5">
-                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA MITRA PERKASA</div>
                 <div class="flex justify-around text-[7px] leading-tight">
                     <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>
@@ -352,10 +352,10 @@ $barcodeSVG = $barcodeGenerator->getBarcodeSVG($pengiriman['no_resi']);
         <!-- Header -->
         <div class="flex items-start border-b border-black">
             <div class="w-[70px] h-[70px] flex-shrink-0 flex items-center justify-center bg-white ms-4 mb-1">
-                <img src="../../../assets/logo.jpg" alt="Logo Perusahaan" class="w-20 h-auto rounded-full">
+                <img src="../../../assets/logo.png" alt="Logo Perusahaan" class="w-20 h-auto">
             </div>
             <div class="flex-grow py-1.5">
-                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA LINTAS KARGO</div>
+                <div class="text-base font-bold text-primary text-center tracking-wide mb-0.5">PT. CENDANA MITRA PERKASA</div>
                 <div class="flex justify-around text-[7px] leading-tight">
                     <div class="text-left">
                         <div><strong>Kantor Pusat:</strong> Jl. Cendana No.8 Samarinda</div>

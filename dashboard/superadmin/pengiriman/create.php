@@ -556,6 +556,15 @@ document.getElementById('tarif_handling').addEventListener('input', hitungEstima
 document.getElementById('tarif_lintas_cabang').addEventListener('input', hitungEstimasi);
 
 // ============================================
+// PREVENT WHEEL SCROLL CHANGE ON NUMBER INPUTS
+// ============================================
+document.querySelectorAll('input[type="number"]').forEach((input) => {
+    input.addEventListener('wheel', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+});
+
+// ============================================
 // PREVENT DOUBLE SUBMISSION
 // ============================================
 const form = document.querySelector('form');

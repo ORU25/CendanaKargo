@@ -187,7 +187,7 @@ include '../templates/header.php';
   <div class="container d-flex justify-content-center align-items-center">
     <div class="card login-card shadow-lg p-4" style="width: 350px; border-top: 5px solid #dc3545;">
         <a href="../" class="mx-auto">
-            <img src="../assets/logo.jpg" alt="Logo Cendana Lintas Kargo" width="100px" />
+            <img src="../assets/logo.png" alt="Logo Cendana Mitra Perkasa" width="100px" />
         </a>
         <h3 class="text-center text-danger mb-4 fw-bold">Login</h3>
         <form action="login" method="post" id="loginForm">

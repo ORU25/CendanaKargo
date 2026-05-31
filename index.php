@@ -5,9 +5,8 @@ $content = [];
 // 1. UPDATE DEFAULT DATA (Agar tidak error jika JSON terhapus)
 $defaultData = [
     'settings' => [
-        'siteName' => 'Cendana Lintas Kargo',
-        'navLogo' => 'assets/logo.jpg',
-        'footerLogo' => 'assets/clk.png'
+        'siteName' => 'Cendana Mitra Perkasa',
+        'navLogo' => 'assets/clk.png',
     ],
     'sliders' => [
         'slider1' => 'assets/slider/slider1.jpg',
@@ -17,7 +16,7 @@ $defaultData = [
     'id' => [
         'heroTitle' => "Solusi Pengiriman Cepat, Aman, dan Terpercaya",
         'heroText' => "Kami melayani pengiriman barang ke seluruh Indonesia dengan tarif bersahabat dan layanan terbaik.",
-        'whyTitle' => "Mengapa Memilih Cendana Lintas Kargo?",
+        'whyTitle' => "Mengapa Memilih Cendana Mitra Perkasa?",
         'whyText' => "Kami berkomitmen memberikan layanan terbaik dengan pengiriman tepat waktu, sistem pelacakan canggih, serta tarif transparan dan bersahabat untuk seluruh pelanggan kami.",
         'layanan1' => "Pengiriman Cepat",
         'layanan1desc' => "Barang Anda dikirim dengan estimasi waktu akurat dan pengantaran cepat serta aman.",
@@ -35,7 +34,7 @@ $defaultData = [
     'en' => [
         'heroTitle' => "Fast, Safe, and Reliable Shipping Solutions",
         'heroText' => "We deliver goods across Indonesia with affordable rates and trusted service.",
-        'whyTitle' => "Why Choose Cendana Lintas Kargo?",
+        'whyTitle' => "Why Choose Cendana Mitra Perkasa?",
         'whyText' => "We provide on-time delivery, advanced tracking systems, and transparent rates for all customers.",
         'layanan1' => "Fast Delivery",
         'layanan1desc' => "Your goods are shipped quickly and safely with accurate estimates.",
@@ -78,7 +77,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Cendana Lintas Kargo</title>
+  <title>Cendana Mitra Perkasa</title>
 
   <link rel="stylesheet" href="Bootstrap/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
@@ -96,10 +95,10 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         <?php
             $navLogo = isset($content['settings']['navLogo']) ? $content['settings']['navLogo'] : 'assets/logo.jpg';
         ?>
-        <img src="<?php echo $navLogo; ?>" alt="Logo Cendana Lintas Kargo" class="logo" />
+        <img src="<?php echo $navLogo; ?>" alt="Logo Cendana Mitra Perkasa" class="logo" />
         </a>
         <?php
-            $siteName = isset($content['settings']['siteName']) ? $content['settings']['siteName'] : 'Cendana Lintas Kargo';
+            $siteName = isset($content['settings']['siteName']) ? $content['settings']['siteName'] : 'Cendana Mitra Perkasa';
         ?>
         <h1><?php echo htmlspecialchars($siteName); ?></h1>
       </div>
@@ -358,9 +357,9 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         <?php
             $footerLogo = isset($content['settings']['footerLogo']) ? $content['settings']['footerLogo'] : 'assets/clk.png';
         ?>
-        <img src="<?php echo $footerLogo; ?>" alt="Logo Cendana Lintas Kargo" class="footer-logo" />
+        <img src="<?php echo $footerLogo; ?>" alt="Logo Cendana Mitra Perkasa" class="footer-logo" />
         <div>
-          <h3>Cendana Lintas Kargo</h3>
+          <h3>Cendana Mitra Perkasa</h3>
           <p id="footerDesc"><?php echo t('footerDesc', 'id'); ?></p>
         </div>
       </div>
@@ -373,7 +372,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
       </div>
     </div>
     <div class="footer-bottom">
-      <span id="footerCopyright">© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.</span>
+      <span id="footerCopyright">© 2026 Cendana Mitra Perkasa. Semua Hak Dilindungi.</span>
     </div>
   </footer>
 
@@ -573,7 +572,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         statusSelesai: "Selesai",
         statusDibatalkan: "Dibatalkan",
         footerContactTitle: "Hubungi Kami",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. Semua Hak Dilindungi.",
+        footerCopyright: "© 2025 Cendana Mitra Perkasa. Semua Hak Dilindungi.",
       },
       en: {
         navBeranda: "Home",
@@ -645,7 +644,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
         statusSelesai: "Completed",
         statusDibatalkan: "Cancelled",
         footerContactTitle: "Contact Us",
-        footerCopyright: "© 2025 Cendana Lintas Kargo. All Rights Reserved.",
+        footerCopyright: "© 2025 Cendana Mitra Perkasa. All Rights Reserved.",
       }
     };
 

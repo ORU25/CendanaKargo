@@ -2,9 +2,9 @@
   <div class="container-fluid">
         <div class="d-flex align-items-center">
             <a href="<?= BASE_URL; ?>">
-                <img src="<?= BASE_URL; ?>assets/clk.png" alt="cendana logo" width="40" height="40" class="me-2">
+                <img src="<?= BASE_URL; ?>assets/clk.png" alt="cendana logo" width="40" height="40" class="me-2 rounded-2">
             </a>
-            <a class="fw-bold navbar-brand m-0 fs-5" href="<?= BASE_URL; ?>">PT Cendana Lintas Kargo</a>
+            <a class="fw-bold navbar-brand m-0 fs-5" href="<?= BASE_URL; ?>">PT Cendana Mitra Perkasa</a>
         </div>
     <div class="d-lg-flex">
         <span class="navbar-text text-white me-3 d-none d-lg-block">
