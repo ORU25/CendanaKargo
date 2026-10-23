@@ -38,6 +38,10 @@
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'customisasi' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-pen-to-square me-2"></i> Kustomisasi Web
             </a>
+            <a href="<?= BASE_URL; ?>dashboard/systemOwner/export/" 
+                class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'export_data' ? 'active bg-danger text-white border-0' : ''; ?>">
+                <i class="fa-solid fa-file-export me-2"></i> Export Data
+            </a>
 
         <?php elseif($_SESSION['role'] == 'superAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/" 

@@ -149,7 +149,7 @@ foreach ($data as $row) {
     }
     echo "<td align='center'>" . $metode . "</td>";
     
-    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . $row['total_tarif'] . "</td>";
+    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . (float)$row['total_tarif'] . "</td>";
     
     // Format status
     switch ($row['status']) {

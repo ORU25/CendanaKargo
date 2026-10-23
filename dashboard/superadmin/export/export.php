@@ -353,7 +353,7 @@ while ($row = $resultCash->fetch_assoc()) {
     echo "<td>" . $metode . "</td>";
     echo "<td>" . htmlspecialchars($row['dibuat_oleh'] ?? '-') . "</td>";
     echo "<td>" . htmlspecialchars($row['nama_driver'] ?? '') . "</td>";
-    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . $row['total'] . "</td>";
+    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . (float)$row['total'] . "</td>";
     echo "</tr>";
 
     $totalCash += (float)$row['total'];
@@ -428,7 +428,7 @@ while ($row = $resultTransfer->fetch_assoc()) {
     echo "<td>" . $metode_display . "</td>";
     echo "<td>" . htmlspecialchars($row['dibuat_oleh'] ?? '-') . "</td>";
     echo "<td>" . htmlspecialchars($row['nama_driver'] ?? '') . "</td>";
-    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . $row['total'] . "</td>";
+    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . (float)$row['total'] . "</td>";
     echo "</tr>";
 
     $totalTransfer += (float)$row['total'];
@@ -500,7 +500,7 @@ while ($row = $resultbayar_ditempat->fetch_assoc()) {
     echo "<td>Bayar Ditempat</td>";
     echo "<td>" . htmlspecialchars($row['dibuat_oleh'] ?? '-') . "</td>";
     echo "<td>" . htmlspecialchars($row['nama_driver'] ?? '') . "</td>";
-    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . $row['total'] . "</td>";
+    echo "<td align='right' style='mso-number-format:\"#,##0\"'>" . (float)$row['total'] . "</td>";
     echo "</tr>";
 
     $totalbayar_ditempat += (float)$row['total'];
@@ -572,7 +572,7 @@ while ($row = $resultInvoice->fetch_assoc()) {
     echo "<td>Invoice</td>";
     echo "<td>" . htmlspecialchars($row['dibuat_oleh'] ?? '-') . "</td>";
     echo "<td>" . htmlspecialchars($row['nama_driver'] ?? '') . "</td>";
-    echo "<td align='right' style='mso-number-format:\"#,##0\"; font-weight:bold;'>" . $row['total'] . "</td>";
+    echo "<td align='right' style='mso-number-format:\"#,##0\"; font-weight:bold;'>" . (float)$row['total'] . "</td>";
     echo "</tr>";
 
     $totalInvoice += (float)$row['total'];
