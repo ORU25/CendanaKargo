@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="<?= BASE_URL; ?>Bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="<?= BASE_URL; ?>Bootstrap/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="<?= BASE_URL; ?>/assets/favicon.ico">
+    <link rel="apple-touch-icon" href="<?= BASE_URL; ?>assets/apple-touch-icon.png">
     
     <!-- Cloudflare Turnstile CAPTCHA -->
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>

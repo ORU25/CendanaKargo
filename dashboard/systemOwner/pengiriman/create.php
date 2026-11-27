@@ -169,7 +169,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $tarif_manual, $tarif_handling, $tarif_lintas_cabang, $total_tarif
     );
 
-    if ($stmt->execute()) {
+    // Resi bisa bentrok jika 2 request dari cabang sama bersamaan (COUNT sama) -> coba nomor berikutnya
+    $ok = false;
+    for ($try = 0; $try < 5; $try++) {
+        try {
+            $ok = $stmt->execute();
+            $errno = $stmt->errno;
+        } catch (mysqli_sql_exception $e) {
+            $errno = $e->getCode();
+        }
+        if ($ok || $errno !== 1062) break; // 1062 = duplicate entry
+        $no_resi = $kode_cabang_asal . (++$urutan); // bind_param by reference, ikut terupdate
+    }
+
+    if ($ok) {
         // Ambil ID pengiriman yang baru dibuat
         $id_pengiriman_baru = $conn->insert_id;
         
@@ -589,12 +602,8 @@ form.addEventListener('submit', function(e) {
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Memproses..';
     
-    // Reset after 10 seconds as fail-safe
-    setTimeout(() => {
-        isSubmitting = false;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = 'Tambah';
-    }, 10000);
+    // Sengaja tanpa reset: tombol aktif lagi saat request masih jalan = pengiriman dobel.
+    // Halaman pasti berganti sendiri (redirect sukses/gagal atau halaman error server).
 });
 </script>
 

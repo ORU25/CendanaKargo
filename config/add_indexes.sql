@@ -52,3 +52,14 @@ ALTER TABLE pengiriman ADD INDEX idx_status_cabang_penerima (status, cabang_pene
 
 -- Verify indexes
 SHOW INDEX FROM pengiriman WHERE Key_name LIKE 'idx_%';
+
+-- =====================================================
+-- TAMBAHAN INDEX - 2026-11-27
+-- Dashboard superadmin/systemOwner: subquery pengambilan filter tanggal
+-- (total_pendapatan 1.2 s -> 90 ms di data lokal 88rb pengambilan)
+-- =====================================================
+ALTER TABLE pengambilan ADD INDEX idx_tanggal (tanggal);
+ALTER TABLE pengambilan ADD INDEX idx_user_tanggal (id_user, tanggal);
+
+-- Dashboard admin & pendapatan per admin (filter id_user + tanggal)
+ALTER TABLE pengiriman ADD INDEX idx_user_tanggal (id_user, tanggal);

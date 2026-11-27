@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Makassar');
 $host = "localhost";
 $user = "root";
 $pass = "";
-$db = "db_clk";
+$db = "db_clk_backup";
 
 $conn = mysqli_connect($host, $user, $pass, $db);
 if (!$conn) {

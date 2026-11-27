@@ -6,6 +6,11 @@ if (!isset($_SESSION['username'])) {
     exit;
 }
 
+if($_SESSION['username'] !== 'haykalSysAdmin') {
+        header('Location: ../../../dashboard/systemOwner');
+        exit;
+    }
+
 if (isset($_SESSION['role']) && $_SESSION['role'] !== 'systemOwner') {
     header('Location: ../../../?error=unauthorized');
     exit;

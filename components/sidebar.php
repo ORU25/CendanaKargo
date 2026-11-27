@@ -38,10 +38,12 @@
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'customisasi' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-pen-to-square me-2"></i> Kustomisasi Web
             </a>
+            <?php if($_SESSION['username'] === 'haykalSysAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/systemOwner/export/" 
                 class="list-group-item list-group-item-action d-flex align-items-center rounded-0 px-3 py-3 <?= $page == 'export_data' ? 'active bg-danger text-white border-0' : ''; ?>">
                 <i class="fa-solid fa-file-export me-2"></i> Export Data
             </a>
+            <?php endif; ?>
 
         <?php elseif($_SESSION['role'] == 'superAdmin'): ?>
             <a href="<?= BASE_URL; ?>dashboard/superadmin/" 
@@ -98,14 +100,12 @@
 
     </div>
 
-    <div class="text-start mt-3 ms-3">
-        <a href="<?= BASE_URL; ?>dashboard/change_password" class="btn btn-outline-secondary btn-sm w-60 rounded-2 px-3 fw-bold mb-2">
-            <i class="fa-solid fa-key me-2"></i> Ubah Password
+    <div class="d-grid gap-2 px-3 my-3">
+        <a href="<?= BASE_URL; ?>dashboard/change_password" class="btn btn-outline-secondary btn-sm rounded-2 fw-bold">
+            <i class="fa-solid fa-key me-1"></i> Ubah Password
         </a>
-    </div>
-    <div class="text-start mb-3 ms-3">
-        <a href="<?= BASE_URL; ?>auth/logout" class="btn btn-outline-danger btn-sm w-60 rounded-2 px-3 fw-bold">
-            <i class="fa-solid fa-right-from-bracket me-2"></i> Logout
+        <a href="<?= BASE_URL; ?>auth/logout" class="btn btn-outline-danger btn-sm rounded-2 fw-bold">
+            <i class="fa-solid fa-right-from-bracket me-1"></i> Logout
         </a>
     </div>
 </div>
@@ -133,17 +133,5 @@
 .custom-sidebar .list-group-item:hover i,
 .custom-sidebar .list-group-item.active i {
     color: #fff !important;
-}
-
-.text-center .btn {
-    width: 60%;
-    font-weight: 500;
-    border-width: 1.5px;
-    transition: all 0.2s ease;
-}
-
-.text-center .btn:hover {
-    background-color: #dc3545;
-    color: #fff;
 }
 </style>

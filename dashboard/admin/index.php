@@ -91,12 +91,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // Cash: cash dari pengiriman + bayar_ditempat POD yang diambil (berdasarkan tanggal pengambilan)
         $closing_total_cash = $conn->query("
             SELECT 
-                (SUM(CASE 
-                    WHEN p.pembayaran = 'cash' 
+                (COALESCE(SUM(CASE
+                    WHEN p.pembayaran = 'cash'
                          AND p.id_user = '$closing_user_id'
                          AND p.status != 'dibatalkan'
                          AND DATE(p.tanggal) = CURDATE()
-                    THEN p.total_tarif ELSE 0 END) +
+                    THEN p.total_tarif ELSE 0 END), 0) +
                  COALESCE(
                     (SELECT SUM(p2.total_tarif)
                      FROM pengiriman p2 
@@ -108,6 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                        AND DATE(pg.tanggal) = CURDATE()), 0
                  )) AS total
             FROM pengiriman p
+            WHERE p.id_user = '$closing_user_id' AND p.tanggal >= CURDATE()
         ")->fetch_assoc()['total'] ?? 0;
         
         // Transfer
@@ -125,8 +126,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                      AND status != 'dibatalkan'
                      AND DATE(tanggal_pembayaran) = CURDATE()
                 THEN total_tarif ELSE 0 END)
-            ) AS total 
+            ) AS total
             FROM pengiriman
+            WHERE id_user = '$closing_user_id'
+              AND (tanggal >= CURDATE() OR tanggal_pembayaran >= CURDATE())
         ")->fetch_assoc()['total'] ?? 0;
         
         // bayar_ditempat (COD)
@@ -231,8 +234,9 @@ $stats_query = $conn->prepare("
                  AND status != 'dibatalkan'
             THEN total_tarif ELSE 0 END), 0) AS total_invoice
     FROM pengiriman
+    WHERE id_user = ? AND (tanggal >= CURDATE() OR tanggal_pembayaran >= CURDATE())
 ");
-$stats_query->bind_param('iiiiiii', $id_admin, $id_cabang_admin, $id_admin, $id_admin, $id_admin, $id_admin, $id_admin);
+$stats_query->bind_param('iiiiiiii', $id_admin, $id_cabang_admin, $id_admin, $id_admin, $id_admin, $id_admin, $id_admin, $id_admin);
 $stats_query->execute();
 $stats = $stats_query->get_result()->fetch_assoc();
 $stats_query->close();

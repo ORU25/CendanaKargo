@@ -68,49 +68,49 @@ if (isset($_GET['filter_value'])) {
 // Proses filter berdasarkan tipe
 switch ($filter_type) {
     case 'hari_ini':
-        $date_condition = 'DATE(p.tanggal) = CURDATE()';
-        $date_condition_sj = 'DATE(sj.tanggal) = CURDATE()';
+        $date_condition = 'p.tanggal >= CURDATE() AND p.tanggal < CURDATE() + INTERVAL 1 DAY';
+        $date_condition_sj = 'sj.tanggal >= CURDATE() AND sj.tanggal < CURDATE() + INTERVAL 1 DAY';
         $selected_date_display = 'Hari Ini - ' . format_tanggal_indonesia(time());
         break;
     
     case 'bulan_ini':
-        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition = "p.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND p.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+        $date_condition_sj = "sj.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND sj.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
         $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         break;
     
     case 'tanggal_spesifik':
         if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
-            $date_condition = "DATE(p.tanggal) = '" . $filter_value . "'";
-            $date_condition_sj = "DATE(sj.tanggal) = '" . $filter_value . "'";
+            $date_condition = "p.tanggal >= '$filter_value' AND p.tanggal < '$filter_value' + INTERVAL 1 DAY";
+            $date_condition_sj = "sj.tanggal >= '$filter_value' AND sj.tanggal < '$filter_value' + INTERVAL 1 DAY";
             $selected_date_display = 'Tanggal - ' . format_tanggal_indonesia(strtotime($filter_value));
         } else {
             // fallback ke bulan ini jika tanggal tidak valid
             $filter_type = 'bulan_ini';
-            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition = "p.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND p.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+            $date_condition_sj = "sj.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND sj.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
             $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         }
         break;
     
     case 'bulan_spesifik':
         if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
-            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = '" . $filter_value . "'";
-            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = '" . $filter_value . "'";
+            $date_condition = "p.tanggal >= '$filter_value-01' AND p.tanggal < '$filter_value-01' + INTERVAL 1 MONTH";
+            $date_condition_sj = "sj.tanggal >= '$filter_value-01' AND sj.tanggal < '$filter_value-01' + INTERVAL 1 MONTH";
             $selected_date_display = 'Bulan - ' . format_bulan_tahun_indonesia(strtotime($filter_value . '-01'));
         } else {
             // fallback ke bulan ini jika bulan tidak valid
             $filter_type = 'bulan_ini';
-            $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-            $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+            $date_condition = "p.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND p.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+            $date_condition_sj = "sj.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND sj.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
             $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         }
         break;
     
     default:
         // Default: bulan ini
-        $date_condition = "DATE_FORMAT(p.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
-        $date_condition_sj = "DATE_FORMAT(sj.tanggal, '%Y-%m') = DATE_FORMAT(CURDATE(), '%Y-%m')";
+        $date_condition = "p.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND p.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+        $date_condition_sj = "sj.tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND sj.tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
         $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
         break;
 }
@@ -228,7 +228,8 @@ function get_branch_revenue_data($conn, $date_condition)
         FROM
             kantor_cabang kc
         LEFT JOIN
-            pengiriman p ON kc.nama_cabang = p.cabang_pengirim 
+            pengiriman p ON kc.nama_cabang = p.cabang_pengirim
+                AND (($date_condition) OR ($date_condition_invoice_paid))
         GROUP BY
             kc.id, kc.nama_cabang
         ORDER BY
@@ -257,20 +258,20 @@ function get_branch_revenue_data($conn, $date_condition)
 function get_branch_shipment_data($conn, $date_condition) // Hapus $date_param
 {$data = [];
     // Kondisi tanggal diterapkan di dalam SUM/CASE untuk menjaga LEFT JOIN
-    // Catatan: sampai_tujuan dan POD dihitung berdasarkan cabang_penerima (cabang tujuan)
+    // Semua status dihitung dari sisi cabang pengirim, jadi BKD + dalam pengiriman + sampai + POD + batal = total
     $sql = "
             SELECT
                 kc.nama_cabang,
                 SUM(CASE WHEN p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS total_shipments,
                 SUM(CASE WHEN p.status = 'bkd' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_proses,
                 SUM(CASE WHEN p.status = 'dalam pengiriman' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_pengiriman,
-                (SELECT COUNT(*) FROM pengiriman WHERE cabang_penerima = kc.nama_cabang AND status = 'sampai tujuan' AND $date_condition) AS count_sampai_tujuan,
-                (SELECT COUNT(*) FROM pengiriman WHERE cabang_penerima = kc.nama_cabang AND status = 'pod' AND $date_condition) AS count_selesai,
+                SUM(CASE WHEN p.status = 'sampai tujuan' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_sampai_tujuan,
+                SUM(CASE WHEN p.status = 'pod' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_selesai,
                 SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $date_condition THEN 1 ELSE 0 END) AS count_dibatalkan
             FROM
                 kantor_cabang kc
             LEFT JOIN
-                pengiriman p ON kc.nama_cabang = p.cabang_pengirim
+                pengiriman p ON kc.nama_cabang = p.cabang_pengirim AND $date_condition
             GROUP BY
                 kc.id, kc.nama_cabang
             ORDER BY
@@ -307,7 +308,7 @@ function get_branch_manifest_data($conn, $date_condition_sj) // Hapus $date_para
             FROM
                 kantor_cabang kc
             LEFT JOIN
-                surat_jalan sj ON kc.id = sj.id_cabang_pengirim
+                surat_jalan sj ON kc.id = sj.id_cabang_pengirim AND $date_condition_sj
             GROUP BY
                 kc.id, kc.nama_cabang
             ORDER BY
@@ -753,7 +754,7 @@ include '../../components/sidebar_offcanvas.php';
                                     foreach ($all_branches as $branch_name) {
                                     $data = $shipment_data[$branch_name] ?? [
                                         'total_shipments' => 0, 'count_proses' => 0,
-                                        'count_pengiriman' => 0, 'cont_sampai_tujuan' => 0,
+                                        'count_pengiriman' => 0, 'count_sampai_tujuan' => 0,
                                         'count_selesai' => 0, 'count_dibatalkan' => 0,
                                     ];
                                     ?>

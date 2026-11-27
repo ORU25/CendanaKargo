@@ -70,37 +70,37 @@
           break;
       
       case 'bulan_ini':
-          $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+          $where_clause = "tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
           $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
           break;
       
       case 'tanggal_spesifik':
           if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filter_value)) {
-              $where_clause = "DATE(tanggal) = '" . $filter_value . "'";
+              $where_clause = "tanggal >= '$filter_value' AND tanggal < '$filter_value' + INTERVAL 1 DAY";
               $selected_date_display = 'Tanggal - ' . format_tanggal_indonesia(strtotime($filter_value));
           } else {
               // fallback ke bulan ini jika tanggal tidak valid
               $filter_type = 'bulan_ini';
-              $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+              $where_clause = "tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
               $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
           }
           break;
       
       case 'bulan_spesifik':
           if (!empty($filter_value) && preg_match('/^\d{4}-\d{2}$/', $filter_value)) {
-              $where_clause = "DATE_FORMAT(tanggal, '%Y-%m') = '" . $filter_value . "'";
+              $where_clause = "tanggal >= '$filter_value-01' AND tanggal < '$filter_value-01' + INTERVAL 1 MONTH";
               $selected_date_display = 'Bulan - ' . format_bulan_tahun_indonesia(strtotime($filter_value . '-01'));
           } else {
               // fallback ke bulan ini jika bulan tidak valid
               $filter_type = 'bulan_ini';
-              $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+              $where_clause = "tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
               $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
           }
           break;
       
       default:
           // Default: bulan ini
-          $where_clause = "MONTH(tanggal) = MONTH(CURDATE()) AND YEAR(tanggal) = YEAR(CURDATE())";
+          $where_clause = "tanggal >= DATE_FORMAT(CURDATE(), '%Y-%m-01') AND tanggal < DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
           $selected_date_display = 'Bulan Ini - ' . format_bulan_tahun_indonesia(time());
           break;
   }
@@ -227,7 +227,8 @@ $sql_pendapatan = "
             THEN p.total_tarif ELSE 0 END) AS invoice
     FROM user u
     LEFT JOIN pengiriman p ON u.id = p.id_user
-    WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
+        AND (($where_clause_p) OR ($where_clause_p_invoice_paid))
+    WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?)
         AND u.role != 'systemOwner'
     GROUP BY u.id, u.username
     ORDER BY u.username
@@ -254,8 +255,8 @@ $sql_pendapatan = "
           SUM(CASE WHEN p.status = 'dibatalkan' AND p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS batal,
           SUM(CASE WHEN p.id IS NOT NULL AND $where_clause_p THEN 1 ELSE 0 END) AS total
       FROM user u
-      LEFT JOIN pengiriman p ON u.id = p.id_user
-      WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?) 
+      LEFT JOIN pengiriman p ON u.id = p.id_user AND $where_clause_p
+      WHERE u.id_cabang = (SELECT id FROM kantor_cabang WHERE nama_cabang = ?)
 
       GROUP BY u.id, u.username
       ORDER BY u.username

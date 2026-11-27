@@ -83,6 +83,7 @@ if(isset($_GET['error']) && $_GET['error'] == 'unauthorized'){
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
   <link rel="icon" href="assets/favicon.ico" />
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
   
   <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
